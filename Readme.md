@@ -1,4 +1,4 @@
-# TES-Reloaded-Source
+# TESReloaded
 
 One of the biggest project of the modding community.<br>
 Sources inside the package are for TES Reloaded project:<br>

@@ -29,6 +29,7 @@
 #define kNewMasterDataHandler	 0x0043DE50
 #define kNewMenuInterfaceManager 0x00A5DE30 // Special case: this cannot be detoured because it is called in preinit and the plugin is not attached yet
 #define kNewQueuedModelLoader	 0x00430470
+#define kShadowSceneNode		 0x00000000
 #define SetMenuManager MenuManager = *(MenuInterfaceManager**)0x012E3548
 #endif
 
@@ -72,7 +73,7 @@ TES* GameInitialization::TrackNewTES(char* RootData, NiNode* ObjectLODRoot, NiNo
 #elif defined(NEWVEGAS) || defined(SKYRIM)
 TES* (__thiscall GameInitialization::* NewTES)(char*, NiNode*, NiNode*, Sky*, NiNode*);
 TES* (__thiscall GameInitialization::* TrackNewTES)(char*, NiNode*, NiNode*, Sky*, NiNode*);
-TES* GameInitialization::TrackNewTES(char* RootData, NiNode* ObjectLODRoot, NiNode* LODRoot, Sky* Sky, NiNode* WaterLOD) { Tes = (TES*)(this->*NewTES)(RootData, ObjectLODRoot, LODRoot, Sky, WaterLOD); return Tes; }
+TES* GameInitialization::TrackNewTES(char* RootData, NiNode* ObjectLODRoot, NiNode* LODRoot, Sky* Sky, NiNode* WaterLOD) { Tes = (TES*)(this->*NewTES)(RootData, ObjectLODRoot, LODRoot, Sky, WaterLOD); SceneNode = *(ShadowSceneNode**)kShadowSceneNode; return Tes; }
 #endif
 
 PlayerCharacter* (__thiscall GameInitialization::* NewPlayerCharacter)();

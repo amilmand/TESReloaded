@@ -598,6 +598,32 @@ class SettingManager {
 public:
 	SettingManager();
 
+	enum SettingsDataType {
+		Boolean		= 0,
+		UInteger8	= 1,
+		UInteger16	= 2,
+		UInteger32	= 3,
+		Integer16	= 4,
+		Integer32	= 5,
+		Float		= 6,
+	};
+
+	struct SettingsData {
+		SettingsDataType DataType;
+		union {
+			bool*			BooleanData;
+			UInt8*			UInteger8Data;
+			UInt16*			UInteger16Data;
+			UInt32*			UInteger32Data;
+			SInt16*			Integer16Data;
+			int*			Integer32Data;
+			float*			FloatData;
+		};
+	};
+
+	typedef std::unordered_map<std::string, SettingsData> SettingsDataMap;
+
+	void							InitializeSettingsMap();
 	void							LoadSettings();
 	void							SaveSettings(const char* Item, const char* Definition);
 	DefinitionsList					GetMenuItems();
@@ -618,6 +644,7 @@ public:
 
 	char							CurrentPath[MAX_PATH];
 	bool							GameLoading;
+	SettingsDataMap					SettingsMap;
 	SettingsMainStruct				SettingsMain;
 	SettingsGrassStruct				SettingsGrass;
 	SettingsHDRStruct				SettingsHDR;

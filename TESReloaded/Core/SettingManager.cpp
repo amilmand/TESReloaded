@@ -69,6 +69,9 @@ SettingManager::SettingManager() {
 
 	Logger::Log("Starting the settings manager...");
 	TheSettingManager = this;
+	
+	GameLoading = false;
+	InitializeSettingsMap();
 
 	GetCurrentDirectoryA(MAX_PATH, CurrentPath);
 	strcpy(Filename, CurrentPath);
@@ -439,7 +442,27 @@ SettingManager::SettingManager() {
 	SettingsMain.Develop.TraceShaders = GetPrivateProfileIntA("Develop", "TraceShaders", 0, Filename);
 	SettingsMain.Develop.LogShaders = GetPrivateProfileIntA("Develop", "LogShaders", 0, Filename);
 
-	GameLoading = false;
+}
+
+void SettingManager::InitializeSettingsMap() {
+
+	SettingsData SD;
+
+	SD.BooleanData = &SettingsMain.Main.FPSOverlay;
+	SettingsMap["Main.FPSOverlay"] = SD;
+	SD.UInteger16Data = &SettingsMain.Main.ScreenshotKey;
+	SettingsMap["Main.ScreenshotKey"] = SD;
+	SD.FloatData = &SettingsMain.Main.FarPlaneDistance;
+	SettingsMap["Main.FarPlaneDistance"] = SD;
+
+	SD.BooleanData = &SettingsMain.CameraMode.ChasingFirst;
+	SettingsMap["CameraMode.ChasingFirst"] = SD;
+	SD.BooleanData = &SettingsMain.CameraMode.ChasingThird;
+	SettingsMap["CameraMode.ChasingThird"] = SD;
+	SD.BooleanData = &SettingsMain.CameraMode.FirstPersonAiming;
+	SettingsMap["CameraMode.FirstPersonAiming"] = SD;
+	SD.UInteger8Data = &SettingsMain.CameraMode.Crosshair;
+	SettingsMap["CameraMode.Crosshair"] = SD;
 
 }
 

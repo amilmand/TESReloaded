@@ -2416,7 +2416,7 @@ assert(sizeof(NiD3DVertexShader) == 0x038);
 
 class NiD3DPixelShader : public NiD3DShaderProgram {
 public:
-	IDirect3DPixelShader9* ShaderHandle;	// 28
+	IDirect3DPixelShader9*			ShaderHandle;	// 28
 };
 assert(sizeof(NiD3DPixelShader) == 0x02C);
 

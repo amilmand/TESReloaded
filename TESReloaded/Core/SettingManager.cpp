@@ -317,6 +317,7 @@ SettingManager::SettingManager() {
 	SettingsMain.Shaders.Terrain = GetPrivateProfileIntA("Shaders", "Terrain", 0, Filename);
 	SettingsMain.Shaders.Blood = GetPrivateProfileIntA("Shaders", "Blood", 0, Filename);
 	SettingsMain.Shaders.NightEye = GetPrivateProfileIntA("Shaders", "NightEye", 0, Filename);
+	SettingsMain.Shaders.Extra = GetPrivateProfileIntA("Shaders", "Extra", 0, Filename);
 	
 	SettingsMain.Effects.Underwater = GetPrivateProfileIntA("Effects", "Underwater", 0, Filename);
 	SettingsMain.Effects.WaterLens = GetPrivateProfileIntA("Effects", "WaterLens", 0, Filename);
@@ -446,23 +447,109 @@ SettingManager::SettingManager() {
 
 void SettingManager::InitializeSettingsMap() {
 
-	SettingsData SD;
+	SettingData SD;
 
+	SD.Flags = SettingData::SettingFlagAll;
 	SD.BooleanData = &SettingsMain.Main.FPSOverlay;
-	SettingsMap["Main.FPSOverlay"] = SD;
+	SettingsMap["Main.Main.FPSOverlay"] = SD;
 	SD.UInteger16Data = &SettingsMain.Main.ScreenshotKey;
-	SettingsMap["Main.ScreenshotKey"] = SD;
+	SettingsMap["Main.Main.ScreenshotKey"] = SD;
+	SD.Flags = SettingData::SettingFlagOblivion;
 	SD.FloatData = &SettingsMain.Main.FarPlaneDistance;
-	SettingsMap["Main.FarPlaneDistance"] = SD;
-
+	SettingsMap["Main.Main.FarPlaneDistance"] = SD;
+	
+	SD.Flags = SettingData::SettingFlagAll;
 	SD.BooleanData = &SettingsMain.CameraMode.ChasingFirst;
-	SettingsMap["CameraMode.ChasingFirst"] = SD;
+	SettingsMap["Main.CameraMode.ChasingFirst"] = SD;
 	SD.BooleanData = &SettingsMain.CameraMode.ChasingThird;
-	SettingsMap["CameraMode.ChasingThird"] = SD;
+	SettingsMap["Main.CameraMode.ChasingThird"] = SD;
 	SD.BooleanData = &SettingsMain.CameraMode.FirstPersonAiming;
-	SettingsMap["CameraMode.FirstPersonAiming"] = SD;
+	SettingsMap["Main.CameraMode.FirstPersonAiming"] = SD;
 	SD.UInteger8Data = &SettingsMain.CameraMode.Crosshair;
-	SettingsMap["CameraMode.Crosshair"] = SD;
+	SettingsMap["Main.CameraMode.Crosshair"] = SD;
+	SD.FloatData = &SettingsMain.CameraMode.Offset.x;
+	SettingsMap["Main.CameraMode.Offset.x"] = SD;
+	SD.FloatData = &SettingsMain.CameraMode.Offset.y;
+	SettingsMap["Main.CameraMode.Offset.y"] = SD;
+	SD.FloatData = &SettingsMain.CameraMode.Offset.z;
+	SettingsMap["Main.CameraMode.Offset.z"] = SD;
+	SD.Flags = SettingData::SettingFlagNewVegas;
+	SD.FloatData = &SettingsMain.CameraMode.OneHandAimingOffset.x;
+	SettingsMap["Main.CameraMode.OneHandAimingOffset.x"] = SD;
+	SD.FloatData = &SettingsMain.CameraMode.OneHandAimingOffset.y;
+	SettingsMap["Main.CameraMode.OneHandAimingOffset.y"] = SD;
+	SD.FloatData = &SettingsMain.CameraMode.OneHandAimingOffset.z;
+	SettingsMap["Main.CameraMode.OneHandAimingOffset.z"] = SD;
+	SD.FloatData = &SettingsMain.CameraMode.TwoHandAimingOffset.x;
+	SettingsMap["Main.CameraMode.TwoHandAimingOffset.x"] = SD;
+	SD.FloatData = &SettingsMain.CameraMode.TwoHandAimingOffset.y;
+	SettingsMap["Main.CameraMode.TwoHandAimingOffset.y"] = SD;
+	SD.FloatData = &SettingsMain.CameraMode.TwoHandAimingOffset.z;
+	SettingsMap["Main.CameraMode.TwoHandAimingOffset.z"] = SD;
+	SD.Flags = SettingData::SettingFlagOblivion;
+	SD.FloatData = &SettingsMain.CameraMode.BowAimingOffset.x;
+	SettingsMap["Main.CameraMode.BowAimingOffset.x"] = SD;
+	SD.FloatData = &SettingsMain.CameraMode.BowAimingOffset.y;
+	SettingsMap["Main.CameraMode.BowAimingOffset.y"] = SD;
+	SD.FloatData = &SettingsMain.CameraMode.BowAimingOffset.z;
+	SettingsMap["Main.CameraMode.BowAimingOffset.z"] = SD;
+	SD.Flags = SettingData::SettingFlagOblivionNewVegas;
+	SD.FloatData = &SettingsMain.CameraMode.DialogOffset.x;
+	SettingsMap["Main.CameraMode.DialogOffset.x"] = SD;
+	SD.FloatData = &SettingsMain.CameraMode.DialogOffset.y;
+	SettingsMap["Main.CameraMode.DialogOffset.y"] = SD;
+	SD.FloatData = &SettingsMain.CameraMode.DialogOffset.z;
+	SettingsMap["Main.CameraMode.DialogOffset.z"] = SD;
+	SD.FloatData = &SettingsMain.CameraMode.FoV;
+	SettingsMap["Main.CameraMode.FoV"] = SD;
+	
+	SD.Flags = SettingData::SettingFlagOblivion;
+	SD.BooleanData = &SettingsMain.EquipmentMode.SleepingEquipment;
+	SettingsMap["Main.EquipmentMode.SleepingEquipment"] = SD;
+	SD.BooleanData = &SettingsMain.EquipmentMode.SwimmingEquipment;
+	SettingsMap["Main.EquipmentMode.SwimmingEquipment"] = SD;
+	SD.UInteger16Data = &SettingsMain.EquipmentMode.TorchKey;
+	SettingsMap["Main.EquipmentMode.TorchKey"] = SD;
+	SD.UInteger16Data = &SettingsMain.EquipmentMode.CombatEquipmentKey;
+	SettingsMap["Main.EquipmentMode.CombatEquipmentKey"] = SD;
+	SD.FloatData = &SettingsMain.EquipmentMode.DualBlockDelay;
+	SettingsMap["Main.EquipmentMode.DualBlockDelay"] = SD;
+	SD.FloatData = &SettingsMain.EquipmentMode.ShieldOnBackPos.x;
+	SettingsMap["Main.EquipmentMode.ShieldOnBackPos.x"] = SD;
+	SD.FloatData = &SettingsMain.EquipmentMode.ShieldOnBackPos.y;
+	SettingsMap["Main.EquipmentMode.ShieldOnBackPos.y"] = SD;
+	SD.FloatData = &SettingsMain.EquipmentMode.ShieldOnBackPos.z;
+	SettingsMap["Main.EquipmentMode.ShieldOnBackPos.z"] = SD;
+	SD.FloatData = &SettingsMain.EquipmentMode.ShieldOnBackRot.x;
+	SettingsMap["Main.EquipmentMode.ShieldOnBackRot.x"] = SD;
+	SD.FloatData = &SettingsMain.EquipmentMode.ShieldOnBackRot.y;
+	SettingsMap["Main.EquipmentMode.ShieldOnBackRot.y"] = SD;
+	SD.FloatData = &SettingsMain.EquipmentMode.ShieldOnBackRot.z;
+	SettingsMap["Main.EquipmentMode.ShieldOnBackRot.z"] = SD;
+	SD.FloatData = &SettingsMain.EquipmentMode.TorchOnBeltPos.x;
+	SettingsMap["Main.EquipmentMode.TorchOnBeltPos.x"] = SD;
+	SD.FloatData = &SettingsMain.EquipmentMode.TorchOnBeltPos.y;
+	SettingsMap["Main.EquipmentMode.TorchOnBeltPos.y"] = SD;
+	SD.FloatData = &SettingsMain.EquipmentMode.TorchOnBeltPos.z;
+	SettingsMap["Main.EquipmentMode.TorchOnBeltPos.z"] = SD;
+	SD.FloatData = &SettingsMain.EquipmentMode.TorchOnBeltRot.x;
+	SettingsMap["Main.EquipmentMode.TorchOnBeltRot.x"] = SD;
+	SD.FloatData = &SettingsMain.EquipmentMode.TorchOnBeltRot.y;
+	SettingsMap["Main.EquipmentMode.TorchOnBeltRot.y"] = SD;
+	SD.FloatData = &SettingsMain.EquipmentMode.TorchOnBeltRot.z;
+	SettingsMap["Main.EquipmentMode.TorchOnBeltRot.z"] = SD;
+	SD.FloatData = &SettingsMain.EquipmentMode.WeaponOnBackPos.x;
+	SettingsMap["Main.EquipmentMode.WeaponOnBackPos.x"] = SD;
+	SD.FloatData = &SettingsMain.EquipmentMode.WeaponOnBackPos.y;
+	SettingsMap["Main.EquipmentMode.WeaponOnBackPos.y"] = SD;
+	SD.FloatData = &SettingsMain.EquipmentMode.WeaponOnBackPos.z;
+	SettingsMap["Main.EquipmentMode.WeaponOnBackPos.z"] = SD;
+	SD.FloatData = &SettingsMain.EquipmentMode.WeaponOnBackRot.x;
+	SettingsMap["Main.EquipmentMode.WeaponOnBackRot.x"] = SD;
+	SD.FloatData = &SettingsMain.EquipmentMode.WeaponOnBackRot.y;
+	SettingsMap["Main.EquipmentMode.WeaponOnBackRot.y"] = SD;
+	SD.FloatData = &SettingsMain.EquipmentMode.WeaponOnBackRot.z;
+	SettingsMap["Main.EquipmentMode.WeaponOnBackRot.z"] = SD;
 
 }
 
@@ -1535,40 +1622,34 @@ DefinitionsList SettingManager::GetMenuDefinitions(const char* Item) {
 	}
 	else if (!strcmp(Item, "Shader")) {
 		Definitions["AmbientOcclusion"] = "Ambient Occlusion";
-#if defined(OBLIVION)
-		Definitions["Blood"] = "Blood";
-#endif
 		Definitions["BloodLens"] = "Blood on Lens";
 		Definitions["Bloom"] = "Bloom";
 		Definitions["Cinema"] = "Cinema";
 		Definitions["Coloring"] = "Coloring";
 		Definitions["DepthOfField"] = "Depth Of Field";
 		Definitions["GodRays"] = "God Rays";
-#if defined(OBLIVION)
-		Definitions["Grass"] = "Grass";
-		Definitions["HDR"] = "High Dynamic Range";
-#endif
 		Definitions["LowHF"] = "Low Health and Fatigue";
 		Definitions["MotionBlur"] = "Motion Blur";
-#if defined(OBLIVION)
-		Definitions["POM"] = "Parallax Occlusion Mapping";
-#endif
 		Definitions["Precipitations"] = "Precipitations";
-#if defined(OBLIVION) || defined(NEWVEGAS)
-		Definitions["Shadows"] = "Shadows";
-#endif
 		Definitions["Sharpening"] = "Sharpening";
 		Definitions["SMAA"] = "Subpixel Morphological AA";
 		Definitions["SnowAccumulation"] = "Snow Accumulation";
-#if defined(OBLIVION)
-		Definitions["Skin"] = "Skin";
-		Definitions["Terrain"] = "Terrain";
-#endif
 		Definitions["VolumetricFog"] = "Volumetric Fog";
 		Definitions["Underwater"] = "Underwater";
 		Definitions["Water"] = "Water";
 		Definitions["WaterLens"] = "Water on Lens";
 		Definitions["WetWorld"] = "Wet World";
+#if defined(OBLIVION)
+		Definitions["Blood"] = "Blood";
+		Definitions["Grass"] = "Grass";
+		Definitions["HDR"] = "High Dynamic Range";
+		Definitions["POM"] = "Parallax Occlusion Mapping";
+		Definitions["Skin"] = "Skin";
+		Definitions["Terrain"] = "Terrain";
+#endif
+#if defined(OBLIVION) || defined(NEWVEGAS)
+		Definitions["Shadows"] = "Shadows";
+#endif
 	}
 	else if (!strcmp(Item, "Weather")) {
 		#if defined(OBLIVION) || defined(NEWVEGAS)
@@ -3058,14 +3139,10 @@ bool Settings::TrackReadSetting(GameSetting* Setting) {
 		Setting->pValue = (char*)MainMenuMovie;
 	else if ((!strcmp(Setting->Name, "SMainMenuMusic:General") || !strcmp(Setting->Name, "STitleMusic:Loading")) && TheSettingManager->SettingsMain.Main.ReplaceIntro)
 		Setting->pValue = (char*)MainMenuMusic;
-	else if (!strcmp(Setting->Name, "bDoActorShadows:Display") || !strcmp(Setting->Name, "iActorShadowCountExt:Display") || !strcmp(Setting->Name, "iActorShadowCountInt:Display"))
+	else if (!strcmp(Setting->Name, "bDoCanopyShadowPass:Display") || !strcmp(Setting->Name, "bDoActorShadows:Display") || !strcmp(Setting->Name, "iActorShadowCountExt:Display") || !strcmp(Setting->Name, "iActorShadowCountInt:Display"))
 		Setting->iValue = 0;
 	else if (!strcmp(Setting->Name, "bUseWaterDepth:Water") && TheSettingManager->SettingsMain.Shaders.Water)
 		Setting->iValue = 0;
-#if defined(NEWVEGAS)
-	else if (!strcmp(Setting->Name, "bDoCanopyShadowPass:Display"))
-		Setting->iValue = 0;
-#endif
 	return r;
 
 }
@@ -3081,6 +3158,8 @@ bool Settings::TrackWriteSetting(GameSetting* Setting) {
 	else if (!strcmp(Setting->Name, "fLODFadeOutMultActors:LOD") || !strcmp(Setting->Name, "fLODFadeOutMultItems:LOD") || !strcmp(Setting->Name, "fLODFadeOutMultObjects:LOD"))
 		return true;
 	else if (!strcmp(Setting->Name, "iMinGrassSize:Grass") || !strcmp(Setting->Name, "fGrassEndDistance:Grass") || !strcmp(Setting->Name, "fGrassStartFadeDistance:Grass") || !strcmp(Setting->Name, "fGrassWindMagnitudeMax:Grass") || !strcmp(Setting->Name, "fGrassWindMagnitudeMin:Grass") || !strcmp(Setting->Name, "fTexturePctThreshold:Grass"))
+		return true;
+	else if (!strcmp(Setting->Name, "SIntroSequence:General") || !strcmp(Setting->Name, "SMainMenuMovie:General") || !strcmp(Setting->Name, "SMainMenuMusic:General") || !strcmp(Setting->Name, "STitleMusic:Loading"))
 		return true;
 	return (this->*WriteSetting)(Setting);
 	

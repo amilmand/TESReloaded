@@ -181,6 +181,7 @@ struct SettingsMainStruct {
 		bool Skin;
 		bool Terrain;
 		bool Water;
+		bool Extra;
 	};
 
 	struct EffectsStruct {
@@ -598,18 +599,33 @@ class SettingManager {
 public:
 	SettingManager();
 
-	enum SettingsDataType {
-		Boolean		= 0,
-		UInteger8	= 1,
-		UInteger16	= 2,
-		UInteger32	= 3,
-		Integer16	= 4,
-		Integer32	= 5,
-		Float		= 6,
-	};
+	struct SettingData {
+		enum SettingDataType {
+			Boolean		= 0,
+			UInteger8	= 1,
+			UInteger16	= 2,
+			UInteger32	= 3,
+			Integer16	= 4,
+			Integer32	= 5,
+			Float		= 6,
+		};
 
-	struct SettingsData {
-		SettingsDataType DataType;
+		enum SettingFlags {
+			Flag_Oblivion	= 0x00000001,
+			Flag_Skyrim		= 0x00000002,
+			Flag_NewVegas	= 0x00000004,
+		};
+
+		static const UInt32 SettingFlagOblivion = SettingFlags::Flag_Oblivion;
+		static const UInt32 SettingFlagSkyrim = SettingFlags::Flag_Skyrim;
+		static const UInt32 SettingFlagNewVegas = SettingFlags::Flag_NewVegas;
+		static const UInt32 SettingFlagOblivionSkyrim = SettingFlags::Flag_Oblivion | SettingFlags::Flag_Skyrim;
+		static const UInt32 SettingFlagOblivionNewVegas = SettingFlags::Flag_Oblivion | SettingFlags::Flag_NewVegas;
+		static const UInt32 SettingFlagSkyrimNewVegas = SettingFlags::Flag_Skyrim | SettingFlags::Flag_NewVegas;
+		static const UInt32 SettingFlagAll = SettingFlags::Flag_Oblivion | SettingFlags::Flag_Skyrim | SettingFlags::Flag_NewVegas;
+
+		UInt32				Flags;
+		SettingDataType		DataType;
 		union {
 			bool*			BooleanData;
 			UInt8*			UInteger8Data;
@@ -621,7 +637,7 @@ public:
 		};
 	};
 
-	typedef std::unordered_map<std::string, SettingsData> SettingsDataMap;
+	typedef std::unordered_map<std::string, SettingData> SettingsDataMap;
 
 	void							InitializeSettingsMap();
 	void							LoadSettings();

@@ -503,18 +503,6 @@ void ShadowManager::RenderShadowMaps() {
 	D3DXVECTOR4* ShadowData = &TheShaderManager->ShaderConst.Shadow.Data;
 	D3DXVECTOR4* OrthoData = &TheShaderManager->ShaderConst.Shadow.OrthoData;
 
-#if defined(OBLIVION)
-	// This part "creates" a fake canopy map only one time to avoid random canopy shadows if i forgot to replace a shader.
-	// By now i cannot disable the canopy map pass in Oblivion.ini otherwise the game changes the shaders used for the rendering.
-	NiRenderedTexture* CanopyMap = *(NiRenderedTexture**)0x00B4310C;
-	if (!CanopyMap) {
-		NiRenderedTexture* (__cdecl * CreateNiRenderedTexture)(UInt32, UInt32, NiRenderer*, NiTexture::FormatPrefs*) = (NiRenderedTexture* (__cdecl *)(UInt32, UInt32, NiRenderer*, NiTexture::FormatPrefs*))0x0072A9B0;
-		void (__cdecl * SetTextureCanopyMap)(NiRenderedTexture*) = (void (__cdecl *)(NiRenderedTexture*))0x00441850;
-		NiTexture::FormatPrefs FP = { NiRenderedTexture::PixelLayout::kPixelLayout_TrueColor32, NiRenderedTexture::AlphaFormat::kAlpha_Smooth, NiRenderedTexture::MipMapFlag::kMipMap_Default };
-		SetTextureCanopyMap(CreateNiRenderedTexture(1, 1, TheRenderManager, &FP));
-	}
-#endif
-
 	Device->GetDepthStencilSurface(&DepthSurface);
 	TheRenderManager->SetupSceneCamera();
 	if (Player->GetWorldSpace()) {
@@ -765,14 +753,6 @@ void CreateShadowsHook() {
 
 #if defined(NEWVEGAS)
 	WriteRelJump(kLeavesNodeName, (UInt32)LeavesNodeNameHook);
-#elif defined(OBLIVION)
-	// This part "disables" the canopy map pass but values are anyway passed to the shaders (they are not used when OR shadows).
-	// By now i cannot disable the canopy map pass in Oblivion.ini otherwise the game changes the shaders used for the rendering.
-	WriteRelJump(0x0040D637, 0x0040D655); //Avoid tree canopy shadows rendering
-	WriteRelJump(0x004425F7, 0x00442621); //Skip canopy map deinitialization (the game disposes/recreates the map every cell changed)
-	WriteRelJump(0x004446FB, 0x00444723); //Skip canopy map deinitialization (the game disposes/recreates the map every cell changed)
-	WriteRelJump(0x00444CCF, 0x00444CF9); //Skip canopy map deinitialization (the game disposes/recreates the map every cell changed)
-	WriteRelJump(0x0055F5C9, 0x0055F5ED); //Skip canopy map deinitialization (the game disposes/recreates the map every cell changed)
 #endif
 }
 

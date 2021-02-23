@@ -1,8 +1,6 @@
 #pragma once
 
-class TESRDirect3DDevice9 : public IDirect3DDevice9Ex
-{
-
+class TESRDirect3DDevice9 : public IDirect3DDevice9Ex {
 public:
 	TESRDirect3DDevice9(IDirect3D9Ex* D3DInterface, IDirect3DDevice9Ex* D3DDevice);
 	~TESRDirect3DDevice9();
@@ -150,5 +148,4 @@ public:
 private:
 	IDirect3D9Ex* D3DInterface;
 	IDirect3DDevice9Ex* D3DDevice;
-
 };

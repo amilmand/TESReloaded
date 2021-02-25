@@ -1860,7 +1860,7 @@ void ShaderManager::CreateEffect(EffectRecordType EffectType) {
 			H = FindFirstFileA((LPCSTR)Filename, &File);
 			if (H != INVALID_HANDLE_VALUE) {
 				cFileName = (char*)File.cFileName;
-				if (SettingsMain->Develop.CompileEffects) File.cFileName[strlen(cFileName) - 5] = NULL; da rivedere
+				if (SettingsMain->Develop.CompileEffects) File.cFileName[strlen(cFileName) - 5] = '\0';
 				strcpy(Filename, EffectsPath);
 				strcat(Filename, "ExtraEffects\\");
 				strcat(Filename, cFileName);
@@ -1868,7 +1868,7 @@ void ShaderManager::CreateEffect(EffectRecordType EffectType) {
 				if (LoadEffect(EffectType, ExtraEffect, Filename)) ExtraEffects[std::string(cFileName).substr(0, strlen(cFileName) - 3)] = ExtraEffect;
 				while (FindNextFileA(H, &File)) {
 					cFileName = (char*)File.cFileName;
-					if (SettingsMain->Develop.CompileEffects) File.cFileName[strlen(cFileName) - 5] = NULL;
+					if (SettingsMain->Develop.CompileEffects) File.cFileName[strlen(cFileName) - 5] = '\0';
 					strcpy(Filename, EffectsPath);
 					strcat(Filename, "ExtraEffects\\");
 					strcat(Filename, cFileName);

@@ -1627,6 +1627,8 @@ DefinitionsList SettingManager::GetMenuDefinitions(const char* Item) {
 		Definitions["Cinema"] = "Cinema";
 		Definitions["Coloring"] = "Coloring";
 		Definitions["DepthOfField"] = "Depth Of Field";
+		Definitions["ExtraEffects"] = "Extra Effects";
+		Definitions["ExtraShaders"] = "Extra Shaders";
 		Definitions["GodRays"] = "God Rays";
 		Definitions["LowHF"] = "Low Health and Fatigue";
 		Definitions["MotionBlur"] = "Motion Blur";
@@ -3002,6 +3004,10 @@ bool SettingManager::GetMenuShaderEnabled(const char* Name)
 		Value = SettingsMain.Effects.Coloring;
 	else if (!strcmp(Name, "DepthOfField"))
 		Value = SettingsMain.Effects.DepthOfField;
+	else if (!strcmp(Name, "ExtraEffects"))
+		Value = SettingsMain.Effects.Extra;
+	else if (!strcmp(Name, "ExtraShaders"))
+		Value = SettingsMain.Shaders.Extra;
 	else if (!strcmp(Name, "GodRays"))
 		Value = SettingsMain.Effects.GodRays;
 	else if (!strcmp(Name, "Grass"))

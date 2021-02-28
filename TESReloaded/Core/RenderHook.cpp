@@ -119,7 +119,8 @@ void RenderHook::TrackRender(BSRenderedTexture* RenderedTexture, int Arg2, int A
 	
 	TheRenderManager->SetSceneGraph();
 	TheShaderManager->UpdateConstants();
-	if (TheSettingManager->SettingsMain.Develop.TraceShaders && DWNode::Get() == NULL && TheKeyboardManager->OnKeyDown(TheSettingManager->SettingsMain.Develop.TraceShaders)) DWNode::Create();
+	if (TheSettingManager->SettingsMain.Develop.TraceShaders && MenuManager->IsActive(Menu::MenuType::kMenuType_None) && TheKeyboardManager->OnKeyDown(TheSettingManager->SettingsMain.Develop.TraceShaders) && DWNode::Get() == NULL) DWNode::Create();
+	if (TheSettingManager->SettingsMain.Develop.LogShaders && MenuManager->IsActive(Menu::MenuType::kMenuType_None) && TheKeyboardManager->OnKeyDown(TheSettingManager->SettingsMain.Develop.LogShaders)) Logger::Log("START FRAME LOG");
 	(this->*Render)(RenderedTexture, Arg2, Arg3);
 
 }
@@ -248,8 +249,8 @@ void RenderHook::TrackRender(BSRenderedTexture* RenderedTexture) {
 	TheRenderManager->SetSceneGraph();
 	TheShaderManager->UpdateConstants();
 	if (TheRenderManager->BackBuffer) TheRenderManager->defaultRTGroup->RenderTargets[0]->data->Surface = TheRenderManager->defaultRTGroup->RenderTargets[1]->data->Surface;
-	if (TheSettingManager->SettingsMain.Develop.TraceShaders && DWNode::Get() == NULL && TheKeyboardManager->OnKeyDown(TheSettingManager->SettingsMain.Develop.TraceShaders)) DWNode::Create();
-	if (TheSettingManager->SettingsMain.Develop.LogShaders && TheKeyboardManager->OnKeyDown(TheSettingManager->SettingsMain.Develop.LogShaders)) Logger::Log("START FRAME LOG");
+	if (TheSettingManager->SettingsMain.Develop.TraceShaders && MenuManager->IsActive(Menu::MenuType::kMenuType_None) && TheKeyboardManager->OnKeyDown(TheSettingManager->SettingsMain.Develop.TraceShaders) && DWNode::Get() == NULL) DWNode::Create();
+	if (TheSettingManager->SettingsMain.Develop.LogShaders && MenuManager->IsActive(Menu::MenuType::kMenuType_None) && TheKeyboardManager->OnKeyDown(TheSettingManager->SettingsMain.Develop.LogShaders)) Logger::Log("START FRAME LOG");
 	(this->*Render)(RenderedTexture);
 
 }
@@ -748,12 +749,19 @@ void CreateRenderHook() {
 	WriteRelJump(0x007D1BCD, 0x007D1BFD); // Patches the use of Lighting30Shader only for the hair
 	WriteRelJump(0x0049C3A2, 0x0049C41D); // Avoids to manage the cells culling for reflections
 	WriteRelJump(0x0049C8CB, 0x0049C931); // Avoids to manage the cells culling for reflections
+	if (TheSettingManager->SettingsMain.Shaders.Water) {
+		WriteRelJump(0x007E1ACC, 0x007E1B1D); // Disables the first WaterHeightMap shader pass
+		WriteRelJump(0x007E1B76, 0x007E1BC7); // Disables the second WaterHeightMap shader pass
+		WriteRelJump(0x007E1CA1, 0x007E1CEE); // Disables the third WaterHeightMap shader pass
+		WriteRelJump(0x007E1E87, 0x007E1EDD); // Disables the fourth WaterHeightMap shader pass
+		SafeWrite32(0x007E109C, 0); // Disables additional WaterHeightMap shader passes
+		*LocalWaterHiRes = 1;
+	}
 	if (TheSettingManager->SettingsMain.Main.AnisotropicFilter >= 2) {
 		SafeWrite8(0x007BE1D3, TheSettingManager->SettingsMain.Main.AnisotropicFilter);
 		SafeWrite8(0x007BE32B, TheSettingManager->SettingsMain.Main.AnisotropicFilter);
 	}
 	if (TheSettingManager->SettingsMain.Main.RemovePrecipitations) WriteRelJump(0x00543167, 0x00543176);
-	*LocalWaterHiRes = 1; // Fixes a bug on the WaterHeightMapConstructor
 #elif defined(SKYRIM)
 	WriteRelJump(kRenderingGeometry,		(UInt32)RenderingGeometryHook);
 	if (TheSettingManager->SettingsMain.ShadowMode.NearQuality) {

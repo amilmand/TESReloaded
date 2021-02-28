@@ -20,7 +20,7 @@ class Creature;
 class SkinInfo;
 class BoundObjectListHead;
 class Character;
-class WaterSurfaceManager;
+class WaterManager;
 class WaterPlaneData;
 class Script;
 class EnchantmentItem;
@@ -8215,7 +8215,7 @@ public:
 	UInt8				unk51;					// 51
 	UInt8				unk52;					// 52
 	UInt8				CellBorders;			// 53
-	WaterSurfaceManager* waterSurfaceManager;	// 54
+	WaterManager*		waterManager;			// 54
 	WaterPlaneData*		waterNodeData;			// 58
 	Sky*				sky;					// 5C
 	UInt32				unk60;					// 60

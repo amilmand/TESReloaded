@@ -20,6 +20,8 @@ static const UInt32 kDetectorWindowCreateTreeView = 0x004D6476;
 static const UInt32 kDetectorWindowCreateTreeViewReturn = 0x004D647F;
 static const UInt32 kDetectorWindowDumpAttributes = 0x004D6A2E;
 static const UInt32 kDetectorWindowDumpAttributesReturn = 0x004D69C5;
+static const UInt32 kDetectorWindowConsoleCommand = 0x00872D09;
+static const UInt32 kDetectorWindowConsoleCommandReturn = 0x00872D10;
 #elif defined(OBLIVION)
 #define kRender 0x0040C830
 #define kProcessImageSpaceShaders 0x007B48E0
@@ -35,6 +37,8 @@ static const UInt32 kDetectorWindowCreateTreeView = 0x00495E1F;
 static const UInt32 kDetectorWindowCreateTreeViewReturn = 0x00495E27;
 static const UInt32 kDetectorWindowDumpAttributes = 0x004967C7;
 static const UInt32 kDetectorWindowDumpAttributesReturn = 0x004967CD;
+static const UInt32 kDetectorWindowConsoleCommand = 0x0040CC6C;
+static const UInt32 kDetectorWindowConsoleCommandReturn = 0x0040CC73;
 static bool ProcessReflectionsGeos = false;
 #elif defined(SKYRIM)
 #define kRender 0x0069BDF0
@@ -99,7 +103,7 @@ void* RenderHook::TrackShowDetectorWindow(HWND Handle, HINSTANCE Instance, NiNod
 	NiAVObject* Object = NULL;
 	void* r = NULL;
 
-	r = (this->*ShowDetectorWindow)(Handle, Instance, RootNode, "Pipeline detector by Alenet", X, Y, 1024, 1024);
+	r = (this->*ShowDetectorWindow)(Handle, Instance, RootNode, "Pipeline detector by Alenet", X, Y, 1280, 1024);
 	for (int i = 0; i < RootNode->m_children.end; i++) {
 		NiNode* Node = (NiNode*)RootNode->m_children.data[i];
 		Node->m_children.data[0] = NULL;
@@ -140,7 +144,7 @@ void __cdecl TrackSetupRenderingPass(UInt32 PassIndex, NiD3DShader* Shader) {
 		if (PixelShader->ShaderProg) PixelShader->ShaderProg->SetCT();
 		if (DWNode::Get()) {
 			char Name[256];
-			sprintf(Name, "Pass %s (%s %s)", Geometry->m_pcName, VertexShader->ShaderName, PixelShader->ShaderName);
+			sprintf(Name, "Pass %i %s, %s (%s %s)", PassIndex, GetPassDescription(PassIndex), Geometry->m_pcName, VertexShader->ShaderName, PixelShader->ShaderName);
 			if (!VertexShader->ShaderProg) strcat(Name, " - Vertex: vanilla");
 			if (!PixelShader->ShaderProg) strcat(Name, " - Pixel: vanilla");
 			DWNode::AddNode(Name, Geometry->m_parent, Geometry);
@@ -300,17 +304,18 @@ float RenderHook::TrackFarPlane() {
 UInt32 (__thiscall RenderHook::* SetupShaderPrograms)(NiGeometry*, NiSkinInstance*, NiSkinPartition::Partition*, NiGeometryBufferData*, NiPropertyState*, NiDynamicEffectState*, NiTransform*, UInt32);
 UInt32 (__thiscall RenderHook::* TrackSetupShaderPrograms)(NiGeometry*, NiSkinInstance*, NiSkinPartition::Partition*, NiGeometryBufferData*, NiPropertyState*, NiDynamicEffectState*, NiTransform*, UInt32);
 UInt32 RenderHook::TrackSetupShaderPrograms(NiGeometry* Geometry, NiSkinInstance* SkinInstance, NiSkinPartition::Partition* SkinPartition, NiGeometryBufferData* GeometryBufferData, NiPropertyState* PropertyState, NiDynamicEffectState* EffectState, NiTransform* WorldTransform, UInt32 WorldBound) {
-
+	
+	UInt32 PassIndex = *(UInt32*)0x00B42E90;
 	NiD3DPass* Pass = ((NiD3DShader*)this)->CurrentPass;
 	NiD3DVertexShaderEx* VertexShader = (NiD3DVertexShaderEx*)Pass->VertexShader;
 	NiD3DPixelShaderEx* PixelShader = (NiD3DPixelShaderEx*)Pass->PixelShader;
-
+	
 	if (VertexShader && PixelShader) {
 		if (VertexShader->ShaderProg && TheRenderManager->renderState->GetVertexShader() != VertexShader->ShaderHandle) VertexShader->ShaderProg->SetCT();
 		if (PixelShader->ShaderProg && TheRenderManager->renderState->GetPixelShader() != PixelShader->ShaderHandle) PixelShader->ShaderProg->SetCT();
 		if (DWNode::Get()) {
 			char Name[256];
-			sprintf(Name, "Pass %s (%s %s)", Geometry->m_pcName, VertexShader->ShaderName, PixelShader->ShaderName);
+			sprintf(Name, "Pass %i %s, %s (%s %s)", PassIndex, GetPassDescription(PassIndex), Geometry->m_pcName, VertexShader->ShaderName, PixelShader->ShaderName);
 			if (!VertexShader->ShaderProg) strcat(Name, " - Vertex: vanilla");
 			if (!PixelShader->ShaderProg) strcat(Name, " - Pixel: vanilla");
 			DWNode::AddNode(Name, Geometry->m_parent, Geometry);
@@ -638,6 +643,15 @@ static __declspec(naked) void DetectorWindowDumpAttributesHook() {
 	}
 
 }
+
+static __declspec(naked) void DetectorWindowConsoleCommandHook() {
+
+	__asm {
+		call	DWNode::Create
+		jmp		kDetectorWindowConsoleCommandReturn
+	}
+
+}
 #endif
 
 void CreateRenderHook() {
@@ -718,9 +732,10 @@ void CreateRenderHook() {
 
 	WriteRelJump(kRenderInterface,				(UInt32)RenderInterface);
 #if defined(NEWVEGAS) || defined(OBLIVION)
-	WriteRelCall(kDetectorWindowSetNodeName,    (UInt32)DetectorWindowSetNodeName);
-	WriteRelJump(kDetectorWindowCreateTreeView, (UInt32)DetectorWindowCreateTreeViewHook);
-	WriteRelJump(kDetectorWindowDumpAttributes, (UInt32)DetectorWindowDumpAttributesHook);
+	WriteRelCall(kDetectorWindowSetNodeName,	(UInt32)DetectorWindowSetNodeName);
+	WriteRelJump(kDetectorWindowCreateTreeView,	(UInt32)DetectorWindowCreateTreeViewHook);
+	WriteRelJump(kDetectorWindowDumpAttributes,	(UInt32)DetectorWindowDumpAttributesHook);
+	WriteRelJump(kDetectorWindowConsoleCommand, (UInt32)DetectorWindowConsoleCommandHook);
 	WriteRelJump(kDetectorWindowScale,			kDetectorWindowScaleReturn); // Avoids to add the scale to the node description in the detector window
 #endif
 #if defined(NEWVEGAS)

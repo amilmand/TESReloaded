@@ -4242,7 +4242,7 @@ public:
 	TESObjectCELL**						interiorsBuffer;	// 38
 	TESObjectCELL**						exteriorsBuffer;	// 3C
 	UInt32								unk40[9];			// 40
-	WaterSurfaceManager*				waterSurfaceManager;	// 64
+	WaterManager*						waterManager;		// 64
 	Sky*								sky;				// 68
 	TList<void>							activeIMODs;		// 6C TList<ImageSpaceModifierInstance>
 	UInt32								unk74[3];			// 74
@@ -5154,6 +5154,7 @@ static float* LocalGrassWindMagnitudeMin = (float*)0x00000000;
 static void* (__cdecl* MemoryAlloc)(size_t) = (void* (__cdecl*)(size_t))0x00AA13E0;
 static bool  (__cdecl* ExtractArgs)(CommandParam*, void*, UInt32*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptEventList*, ...) = (bool (__cdecl*)(CommandParam*, void*, UInt32*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptEventList*, ...))0x005ACCB0;
 static void  (* PrintToConsole)(const char*, ...) = (void (*)(const char*, ...))0x00703C00;
+static char* (__cdecl* GetPassDescription)(UInt32) = (char* (__cdecl*)(UInt32))0x00B4F9D0;
 #elif defined(OBLIVION)
 class BSString {
 public:
@@ -8903,6 +8904,7 @@ static bool  (__cdecl* ExtractArgs)(CommandParam*, void*, UInt32*, TESObjectREFR
 static void  (__cdecl* DrawGrass)(TESObjectCELL*, NiNode*, float, float, float, float, float, int, float, float, float) = (void (__cdecl*)(TESObjectCELL*, NiNode*, float, float, float, float, float, int, float, float, float))0x004EB3F0;
 static void  (* PrintToConsole)(const char*, ...) = (void (*)(const char*, ...))0x00579B60;
 static ShaderDefinition* (__cdecl* GetShaderDefinition)(UInt32) = (ShaderDefinition* (__cdecl*)(UInt32))0x007B4290;
+static char* (__cdecl* GetPassDescription)(UInt32) = (char* (__cdecl*)(UInt32))0x007B4920;
 #elif defined(SKYRIM)
 static const void* RTTI_BSExtraData = (void*)0x0123C200;
 static const void* RTTI_ExtraEditorID = (void*)0x0123C21C;

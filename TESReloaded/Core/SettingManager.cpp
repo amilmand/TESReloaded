@@ -3147,8 +3147,10 @@ bool Settings::TrackReadSetting(GameSetting* Setting) {
 		Setting->pValue = (char*)MainMenuMusic;
 	else if (!strcmp(Setting->Name, "bDoCanopyShadowPass:Display") || !strcmp(Setting->Name, "bDoActorShadows:Display") || !strcmp(Setting->Name, "iActorShadowCountExt:Display") || !strcmp(Setting->Name, "iActorShadowCountInt:Display"))
 		Setting->iValue = 0;
+#if defined(OBLIVION)
 	else if (!strcmp(Setting->Name, "bUseWaterDepth:Water") && TheSettingManager->SettingsMain.Shaders.Water)
 		Setting->iValue = 0;
+#endif
 	return r;
 
 }

@@ -67,6 +67,7 @@ public:
 	void	TrackRenderFirstPerson(NiDX9Renderer*, NiGeometry*, Sun*, BSRenderedTexture*);
 	void	TrackRenderPipboyScreen(NiGeometry*, NiDX9Renderer*);
 	float	TrackGetWaterHeightLOD();
+	void	TrackRenderReflections(NiCamera*, ShadowSceneNode*);
 #elif defined (OBLIVION)
 	void*	TrackShowDetectorWindow(HWND, HINSTANCE, NiNode*, char*, int, int, int, int);
 	void	TrackRender(BSRenderedTexture*);
@@ -151,6 +152,21 @@ void __cdecl TrackSetupRenderingPass(UInt32 PassIndex, NiD3DShader* Shader) {
 		}
 		if (TheSettingManager->SettingsMain.Develop.LogShaders && TheKeyboardManager->OnKeyDown(TheSettingManager->SettingsMain.Develop.LogShaders)) Logger::Log("Pass %s (%s %s)", Geometry->m_pcName, VertexShader->ShaderName, PixelShader->ShaderName);
 	}
+
+}
+
+void (__thiscall RenderHook::* RenderReflections)(NiCamera*, ShadowSceneNode*);
+void (__thiscall RenderHook::* TrackRenderReflections)(NiCamera*, ShadowSceneNode*);
+void RenderHook::TrackRenderReflections(NiCamera* Camera, ShadowSceneNode* SceneNode) {
+	
+	D3DXVECTOR4* ShadowData = &TheShaderManager->ShaderConst.Shadow.Data;
+	float ShadowDataBackup = ShadowData->x;
+
+	if (DWNode::Get()) DWNode::AddNode("BEGIN REFLECTIONS RENDERING", NULL, NULL);
+	ShadowData->x = -1.0f; // Disables the shadows rendering for water reflections (the geo is rendered with the same shaders used in the normal scene!)
+	(this->*RenderReflections)(Camera, SceneNode);
+	ShadowData->x = ShadowDataBackup;
+	if (DWNode::Get()) DWNode::AddNode("END REFLECTIONS RENDERING", NULL, NULL);
 
 }
 
@@ -252,6 +268,7 @@ void RenderHook::TrackRender(BSRenderedTexture* RenderedTexture) {
 	
 	TheRenderManager->SetSceneGraph();
 	TheShaderManager->UpdateConstants();
+	TheOcclusionManager->PerformOcclusionCulling();
 	if (TheRenderManager->BackBuffer) TheRenderManager->defaultRTGroup->RenderTargets[0]->data->Surface = TheRenderManager->defaultRTGroup->RenderTargets[1]->data->Surface;
 	if (TheSettingManager->SettingsMain.Develop.TraceShaders && MenuManager->IsActive(Menu::MenuType::kMenuType_None) && TheKeyboardManager->OnKeyDown(TheSettingManager->SettingsMain.Develop.TraceShaders) && DWNode::Get() == NULL) DWNode::Create();
 	if (TheSettingManager->SettingsMain.Develop.LogShaders && MenuManager->IsActive(Menu::MenuType::kMenuType_None) && TheKeyboardManager->OnKeyDown(TheSettingManager->SettingsMain.Develop.LogShaders)) Logger::Log("START FRAME LOG");
@@ -671,6 +688,8 @@ void CreateRenderHook() {
 	TrackRenderPipboyScreen					= &RenderHook::TrackRenderPipboyScreen;
 	*((int*)&GetWaterHeightLOD)				= 0x0045CD80;
 	TrackGetWaterHeightLOD					= &RenderHook::TrackGetWaterHeightLOD;
+	*((int*)&RenderReflections)				= 0x004E1BC0;
+	TrackRenderReflections					= &RenderHook::TrackRenderReflections;
 #elif defined(OBLIVION)
 	*((int*)&ShowDetectorWindow)			= 0x00496CB0;
 	TrackShowDetectorWindow					= &RenderHook::TrackShowDetectorWindow;
@@ -708,6 +727,7 @@ void CreateRenderHook() {
 	DetourAttach(&(PVOID&)RenderFirstPerson,			*((PVOID*)&TrackRenderFirstPerson));
 	DetourAttach(&(PVOID&)RenderPipboyScreen,			*((PVOID*)&TrackRenderPipboyScreen));
 	DetourAttach(&(PVOID&)GetWaterHeightLOD,			*((PVOID*)&TrackGetWaterHeightLOD));
+	DetourAttach(&(PVOID&)RenderReflections,			*((PVOID*)&TrackRenderReflections));
 	DetourAttach(&(PVOID&)SetupRenderingPass,					  &TrackSetupRenderingPass);
 	DetourAttach(&(PVOID&)SetShaderPackage,						  &TrackSetShaderPackage);
 #elif defined(OBLIVION)

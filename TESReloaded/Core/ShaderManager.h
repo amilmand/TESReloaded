@@ -41,6 +41,9 @@ struct ShaderConstants {
 		D3DXVECTOR4		ShadowLightPosition[4];
 		D3DXVECTOR4		ShadowCubeMapBlend;
 	};
+	struct OcclusionMapStruct {
+		D3DXMATRIX		OcclusionWorldViewProj;
+	};
 	struct WaterStruct {
 		D3DXVECTOR4		waterCoefficients;
 		D3DXVECTOR4		waveParams;
@@ -164,6 +167,7 @@ struct ShaderConstants {
 	float					currentfogEnd;
 	float					oldfogEnd;
 	ShadowMapStruct			ShadowMap;
+	OcclusionMapStruct		OcclusionMap;
 	WaterStruct				Water;
 	HDRStruct				HDR;
 	GrassStruct				Grass;

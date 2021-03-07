@@ -23,8 +23,7 @@ public:
 		PlaneBottom	= 5,
 	};
 
-	void					CreateD3DMatrix(D3DMATRIX* Matrix, NiTransform* Transform);
-	void					GetFrustum(ShadowMapTypeEnum ShadowMapType, D3DMATRIX* Matrix);
+	void					SetFrustum(ShadowMapTypeEnum ShadowMapType, D3DMATRIX* Matrix);
 	bool					InFrustum(ShadowMapTypeEnum ShadowMapType, NiNode* Node);
 	TESObjectREFR*			GetRef(TESObjectREFR* Ref, SettingsShadowStruct::FormsStruct* Forms, SettingsShadowStruct::ExcludedFormsList* ExcludedForms);
 	void					RenderObject(NiAVObject* Object, float MinRadius);
@@ -35,13 +34,13 @@ public:
 	void					ClearShadowCubeMaps(IDirect3DDevice9* Device, int From, ShadowCubeMapStateEnum NewState);
 	void					CalculateBlend(NiPointLight** Lights, int LightIndex);
 
-	IDirect3DTexture9*		ShadowMapTexture[3];
-	IDirect3DSurface9*		ShadowMapSurface[3];
-	IDirect3DSurface9*		ShadowMapDepthSurface[3];
 	ShaderRecord*			ShadowMapVertex;
 	ShaderRecord*			ShadowMapPixel;
 	IDirect3DVertexShader9* ShadowMapVertexShader;
 	IDirect3DPixelShader9*  ShadowMapPixelShader;
+	IDirect3DTexture9*		ShadowMapTexture[3];
+	IDirect3DSurface9*		ShadowMapSurface[3];
+	IDirect3DSurface9*		ShadowMapDepthSurface[3];
 	D3DVIEWPORT9			ShadowMapViewPort[3];
 	D3DXPLANE				ShadowMapFrustum[3][6];
 	NiVector4				BillboardRight;

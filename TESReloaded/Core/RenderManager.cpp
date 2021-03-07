@@ -7,6 +7,31 @@
 #endif
 #define RESZ_CODE 0x7FA05000
 
+void RenderManager::CreateD3DMatrix(D3DMATRIX* Matrix, NiTransform* Transform) {
+
+	NiMatrix33* Rot = &Transform->rot;
+	NiPoint3* Pos = &Transform->pos;
+	float Scale = Transform->scale;
+
+	Matrix->_11 = Rot->data[0][0] * Scale;
+	Matrix->_12 = Rot->data[1][0] * Scale;
+	Matrix->_13 = Rot->data[2][0] * Scale;
+	Matrix->_14 = 0.0f;
+	Matrix->_21 = Rot->data[0][1] * Scale;
+	Matrix->_22 = Rot->data[1][1] * Scale;
+	Matrix->_23 = Rot->data[2][1] * Scale;
+	Matrix->_24 = 0.0f;
+	Matrix->_31 = Rot->data[0][2] * Scale;
+	Matrix->_32 = Rot->data[1][2] * Scale;
+	Matrix->_33 = Rot->data[2][2] * Scale;
+	Matrix->_34 = 0.0f;
+	Matrix->_41 = Pos->x - CameraPosition.x;
+	Matrix->_42 = Pos->y - CameraPosition.y;
+	Matrix->_43 = Pos->z - CameraPosition.z;
+	Matrix->_44 = 1.0f;
+
+}
+
 void RenderManager::GetSceneCameraData() {
 
 	NiCamera* Camera = WorldSceneGraph->camera;
@@ -30,14 +55,11 @@ void RenderManager::SetupSceneCamera() {
 	NiCamera* Camera = WorldSceneGraph->camera;
 
 	if (Camera) {
+		NiPoint3 Loc = *(NiPoint3*)0x00B3F9A8;
 		NiPoint3 Forward = { 0.0f, 0.0f, 0.0f };
 		NiPoint3 Up = { 0.0f, 0.0f, 0.0f };
 		NiPoint3 Right = { 0.0f, 0.0f, 0.0f };
 		NiPoint3* CameraWorldTranslate = (NiPoint3*)kCameraWorldTranslate;
-		D3DMATRIX* World = &TheRenderManager->worldMatrix;
-		D3DMATRIX* View = &TheRenderManager->viewMatrix;
-		D3DMATRIX* InvView = &TheRenderManager->invViewMatrix;
-		D3DMATRIX* Proj = &TheRenderManager->projMatrix;
 		D3DXMATRIX InvProj;
 		NiMatrix33* WorldRotate = &Camera->m_worldTransform.rot;
 		NiPoint3* WorldTranslate = &Camera->m_worldTransform.pos;
@@ -61,78 +83,78 @@ void RenderManager::SetupSceneCamera() {
 		Right.z = WorldRotate->data[2][2];
 
 		// We set up the world matrix always to default (image space) because we use it only in image space shaders
-		World->_11 = 1.0f;
-		World->_12 = 0.0f;
-		World->_13 = 0.0f;
-		World->_14 = 0.0f;
-		World->_21 = 0.0f;
-		World->_22 = 1.0f;
-		World->_23 = 0.0f;
-		World->_24 = 0.0f;
-		World->_31 = 0.0f;
-		World->_32 = 0.0f;
-		World->_33 = 1.0f;
-		World->_34 = 0.0f;
-		World->_41 = -WorldTranslate->x;
-		World->_42 = -WorldTranslate->y;
-		World->_43 = -WorldTranslate->z;
-		World->_44 = 1.0f;
+		worldMatrix._11 = 1.0f;
+		worldMatrix._12 = 0.0f;
+		worldMatrix._13 = 0.0f;
+		worldMatrix._14 = 0.0f;
+		worldMatrix._21 = 0.0f;
+		worldMatrix._22 = 1.0f;
+		worldMatrix._23 = 0.0f;
+		worldMatrix._24 = 0.0f;
+		worldMatrix._31 = 0.0f;
+		worldMatrix._32 = 0.0f;
+		worldMatrix._33 = 1.0f;
+		worldMatrix._34 = 0.0f;
+		worldMatrix._41 = -WorldTranslate->x;
+		worldMatrix._42 = -WorldTranslate->y;
+		worldMatrix._43 = -WorldTranslate->z;
+		worldMatrix._44 = 1.0f;
 
-		View->_11 = Right.x;
-		View->_12 = Up.x;
-		View->_13 = Forward.x;
-		View->_14 = 0.0f;
-		View->_21 = Right.y;
-		View->_22 = Up.y;
-		View->_23 = Forward.y;
-		View->_24 = 0.0f;
-		View->_31 = Right.z;
-		View->_32 = Up.z;
-		View->_33 = Forward.z;
-		View->_34 = 0.0f;
-		View->_41 = 0.0f;
-		View->_42 = 0.0f;
-		View->_43 = 0.0f;
-		View->_44 = 1.0f;
+		viewMatrix._11 = Right.x;
+		viewMatrix._12 = Up.x;
+		viewMatrix._13 = Forward.x;
+		viewMatrix._14 = 0.0f;
+		viewMatrix._21 = Right.y;
+		viewMatrix._22 = Up.y;
+		viewMatrix._23 = Forward.y;
+		viewMatrix._24 = 0.0f;
+		viewMatrix._31 = Right.z;
+		viewMatrix._32 = Up.z;
+		viewMatrix._33 = Forward.z;
+		viewMatrix._34 = 0.0f;
+		viewMatrix._41 = -(Right * Loc);
+		viewMatrix._42 = -(Up * Loc);
+		viewMatrix._43 = -(Forward * Loc);
+		viewMatrix._44 = 1.0f;
 
-		InvView->_11 = Right.x;
-		InvView->_12 = Right.y;
-		InvView->_13 = Right.z;
-		InvView->_14 = 0.0f;
-		InvView->_21 = Up.x;
-		InvView->_22 = Up.y;
-		InvView->_23 = Up.z;
-		InvView->_24 = 0.0f;
-		InvView->_31 = Forward.x;
-		InvView->_32 = Forward.y;
-		InvView->_33 = Forward.z;
-		InvView->_34 = 0.0f;
-		InvView->_41 = 0.0f;
-		InvView->_42 = 0.0f;
-		InvView->_43 = 0.0f;
-		InvView->_44 = 1.0f;
+		invViewMatrix._11 = Right.x;
+		invViewMatrix._12 = Right.y;
+		invViewMatrix._13 = Right.z;
+		invViewMatrix._14 = 0.0f;
+		invViewMatrix._21 = Up.x;
+		invViewMatrix._22 = Up.y;
+		invViewMatrix._23 = Up.z;
+		invViewMatrix._24 = 0.0f;
+		invViewMatrix._31 = Forward.x;
+		invViewMatrix._32 = Forward.y;
+		invViewMatrix._33 = Forward.z;
+		invViewMatrix._34 = 0.0f;
+		invViewMatrix._41 = Loc.x;
+		invViewMatrix._42 = Loc.y;
+		invViewMatrix._43 = Loc.z;
+		invViewMatrix._44 = 1.0f;
 
-		Proj->_11 = 2.0f / RmL;
-		Proj->_12 = 0.0f;
-		Proj->_13 = 0.0f;
-		Proj->_14 = 0.0f;
-		Proj->_21 = 0.0f;
-		Proj->_22 = 2.0f / TmB;
-		Proj->_23 = 0.0f;
-		Proj->_24 = 0.0f;
-		Proj->_31 = -RpL / RmL;
-		Proj->_32 = -TpB / TmB;
-		Proj->_33 = Frustum->Far * InvFmN;
-		Proj->_34 = 1.0f;
-		Proj->_41 = 0.0f;
-		Proj->_42 = 0.0f;
-		Proj->_43 = -(Frustum->Near * Frustum->Far * InvFmN);
-		Proj->_44 = 0.0f;
-
-		D3DXMatrixInverse(&InvProj, NULL, (D3DXMATRIX*)Proj);
-		InvViewProjMatrix = InvProj * invViewMatrix;
+		projMatrix._11 = 2.0f / RmL;
+		projMatrix._12 = 0.0f;
+		projMatrix._13 = 0.0f;
+		projMatrix._14 = 0.0f;
+		projMatrix._21 = 0.0f;
+		projMatrix._22 = 2.0f / TmB;
+		projMatrix._23 = 0.0f;
+		projMatrix._24 = 0.0f;
+		projMatrix._31 = -RpL / RmL;
+		projMatrix._32 = -TpB / TmB;
+		projMatrix._33 = Frustum->Far * InvFmN;
+		projMatrix._34 = 1.0f;
+		projMatrix._41 = 0.0f;
+		projMatrix._42 = 0.0f;
+		projMatrix._43 = -(Frustum->Near * Frustum->Far * InvFmN);
+		projMatrix._44 = 0.0f;
 
 		WorldViewProjMatrix = worldMatrix * viewMatrix * projMatrix;
+		ViewProjMatrix = viewMatrix * projMatrix;
+		D3DXMatrixInverse(&InvProj, NULL, &projMatrix);
+		InvViewProjMatrix = InvProj * invViewMatrix;
 
 		CameraForward.x = Forward.x;
 		CameraForward.y = Forward.y;

@@ -12,6 +12,7 @@
 #include "GameMenuManager.h"
 #include "KeyboardManager.h"
 #include "ShadowManager.h"
+#include "OcclusionManager.h"
 
 extern SettingManager*		TheSettingManager;
 extern CommandManager*		TheCommandManager;
@@ -23,6 +24,7 @@ extern GameMenuManager*		TheGameMenuManager;
 extern KeyboardManager*		TheKeyboardManager;
 extern GameEventManager*	TheGameEventManager;
 extern ShadowManager*		TheShadowManager;
+extern OcclusionManager*	TheOcclusionManager;
 extern EquipmentManager*	TheEquipmentManager;
 extern ScriptManager*		TheScriptManager;
 

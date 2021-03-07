@@ -75,6 +75,8 @@ assert(sizeof(NiPoint2) == 0x008);
 
 class NiPoint3 {
 public:
+	float NiPoint3::operator* (const NiPoint3 pt) const { return x * pt.x + y * pt.y + z * pt.z; }
+
 	float x;
 	float y;
 	float z;
@@ -187,8 +189,29 @@ public:
 };
 assert(sizeof(NiTransform) == 0x034);
 
+class NiPlane {
+public:
+	enum {
+		NoSide = 0,
+		PositiveSide = 1,
+		NegativeSide = 2,
+	};
+
+	NiPoint3	Normal;
+	float		Constant;
+};
+assert(sizeof(NiPlane) == 0x010);
+
 class NiBound {
 public:
+	UInt32 WhichSide(NiPlane* Plane) {
+		float Distance = Plane->Normal * Center - Plane->Constant;
+		UInt32 Result = NiPlane::NoSide;
+
+		if (Distance <= -Radius) Result = NiPlane::NegativeSide; else if (Distance >= Radius) Result = NiPlane::PositiveSide;
+		return Result;
+	}
+
 	NiPoint3	Center;
 	float		Radius;
 };
@@ -206,6 +229,23 @@ public:
 	UInt8	pad18[3];
 };
 assert(sizeof(NiFrustum) == 0x01C);
+
+class NiFrustumPlanes {
+public:
+	enum {
+		NearPlane = 0,
+		FarPlane = 1,
+		LeftPlane = 2,
+		RightPlane = 3,
+		TopPlane = 4,
+		BottomPlane = 5,
+		MaxPlanes = 6
+	};
+
+	NiPlane	CullingPlanes[MaxPlanes];	// 00
+	UInt32	ActivePlanes;				// 60
+};
+assert(sizeof(NiFrustumPlanes) == 0x064);
 
 class NiViewport {
 public:
@@ -232,12 +272,6 @@ public:
 	float	a;
 };
 assert(sizeof(NiColorAlpha) == 0x010);
-
-struct NiPlane {
-	NiPoint3	Normal;
-	float		Constant;
-};
-assert(sizeof(NiPlane) == 0x010);
 
 #if defined(OBLIVION)
 template <typename T>
@@ -1971,6 +2005,22 @@ public:
 };
 assert(sizeof(NiCamera) == 0x124);
 
+class NiCullingProcess {
+public:
+	virtual void	Destructor(bool freeMemory);
+	virtual void	ProcessCull(NiAVObject* Object);
+	virtual void	Process(NiCamera* Camera, NiAVObject* Object, NiVisibleArray* VisibleGeo);
+	virtual void	AppendVirtual(NiGeometry* Geo);
+
+	UInt8			UseAppendVirtual;	// 04 - always false
+	UInt8			pad05[3];			// 05
+	NiVisibleArray* VisibleGeo;			// 08
+	NiCamera*		Camera;				// 0C
+	NiFrustum		CameraFrustum;		// 10
+	NiFrustumPlanes	Planes;				// 2C
+};
+assert(sizeof(NiCullingProcess) == 0x90);
+
 class SceneGraph : public NiNode {
 public:
 	void			SetCameraFOV(float FoV) { void (__cdecl* UpdateParticleShaderFoVData)(float) = (void (__cdecl*)(float))0x007B70E0; ThisCall(0x00411160, this, FoV, 0); UpdateParticleShaderFoVData(FoV); }
@@ -2032,7 +2082,7 @@ public:
 		kType_Fog,
 		kType_Material,
 		kType_RendSpec,
-		kType_Lighting,
+		kType_Shade,
 		kType_Stencil,
 		kType_Texturing,
 		kType_VertexColor,
@@ -3098,9 +3148,9 @@ public:
 	UInt32								Unk938;							// 938
 	UInt32								Unk93C;							// 93C
 	D3DXMATRIXA16						worldMatrix;					// 940
-	D3DMATRIX							viewMatrix;						// 980
-	D3DMATRIX							projMatrix;						// 9C0
-	D3DMATRIX							invViewMatrix;					// A00
+	D3DXMATRIX							viewMatrix;						// 980
+	D3DXMATRIX							projMatrix;						// 9C0
+	D3DXMATRIX							invViewMatrix;					// A00
 	UInt32								ScreenTextureVerts;				// A40 NiPoint2*
 	NiColorAlpha*						ScreenTextureColors;			// A44
 	UInt32								ScreenTextureTexCoords;			// A48 NiPoint2*
@@ -3308,12 +3358,21 @@ public:
 	
 	bool				IsLightingProperty() {
 							void* VFTBSShaderPPLightingProperty = (void*)0x00A91384;
-							void* VFTHairShaderProperty = (void*)0x00A95ABC;
+							void* VFTLighting30ShaderProperty = (void*)0x00A9576C;
 							void* VFTSpeedTreeBranchShaderProperty = (void*)0x00A92A94;
 							bool r = false;
 							void* VFT = *(void**)this;
 
-							if (VFT == VFTBSShaderPPLightingProperty || VFT == VFTHairShaderProperty || VFT == VFTSpeedTreeBranchShaderProperty) r = true;
+							if (VFT == VFTBSShaderPPLightingProperty || VFT == VFTLighting30ShaderProperty || VFT == VFTSpeedTreeBranchShaderProperty) r = true;
+							return r;
+						}
+	
+	bool				IsWaterProperty() {
+							void* VFTWaterShaderProperty = (void*)0x00A956EC;
+							bool r = false;
+							void* VFT = *(void**)this;
+
+							if (VFT == VFTWaterShaderProperty) r = true;
 							return r;
 						}
 

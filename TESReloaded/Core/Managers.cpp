@@ -8,6 +8,7 @@ GameEventManager*	TheGameEventManager = NULL;
 GameMenuManager*	TheGameMenuManager = NULL;
 KeyboardManager*	TheKeyboardManager = NULL;
 ShadowManager*		TheShadowManager = NULL;
+OcclusionManager*	TheOcclusionManager = NULL;
 EquipmentManager*	TheEquipmentManager = NULL;
 ScriptManager*		TheScriptManager = NULL;
 
@@ -20,6 +21,7 @@ void InitializeManagers() {
 	new KeyboardManager();
 	new GameEventManager();
 	new ShadowManager();
+	new OcclusionManager();
 	new EquipmentManager();
 	new ScriptManager();
 

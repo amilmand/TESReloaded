@@ -119,6 +119,7 @@
     <ClInclude Include="..\TESReloaded\Core\FlyCam.h" />
     <ClInclude Include="..\TESReloaded\Core\FormHook.h" />
     <ClInclude Include="..\TESReloaded\Core\FrameRateManager.h" />
+    <ClInclude Include="..\TESReloaded\Core\OcclusionManager.h" />
     <ClInclude Include="..\TESReloaded\Framework\Detours\detours.h" />
     <ClInclude Include="..\TESReloaded\Framework\Framework.h" />
     <ClInclude Include="..\TESReloaded\Framework\Game.h" />
@@ -160,6 +161,7 @@
     <ClCompile Include="..\TESReloaded\Core\FlyCam.cpp" />
     <ClCompile Include="..\TESReloaded\Core\FormHook.cpp" />
     <ClCompile Include="..\TESReloaded\Core\FrameRateManager.cpp" />
+    <ClCompile Include="..\TESReloaded\Core\OcclusionManager.cpp" />
     <ClCompile Include="..\TESReloaded\Framework\Detours\detours.cpp" />
     <ClCompile Include="..\TESReloaded\Framework\Detours\disasm.cpp" />
     <ClCompile Include="..\TESReloaded\Framework\Detours\modules.cpp" />

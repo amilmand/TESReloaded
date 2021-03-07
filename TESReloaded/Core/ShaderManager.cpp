@@ -119,6 +119,8 @@ void ShaderProgram::SetConstantTableValue(LPCSTR Name, UInt32 Index) {
 		FloatShaderValues[Index].Value = (D3DXVECTOR4*)&TheShaderManager->ShaderConst.ShadowMap.ShadowLightPosition[3];
 	else if (!strcmp(Name, "TESR_ShadowCubeMapBlend"))
 		FloatShaderValues[Index].Value = &TheShaderManager->ShaderConst.ShadowMap.ShadowCubeMapBlend;
+	else if (!strcmp(Name, "TESR_OcclusionWorldViewProjTransform"))
+		FloatShaderValues[Index].Value = (D3DXVECTOR4*)&TheShaderManager->ShaderConst.OcclusionMap.OcclusionWorldViewProj;
 	else if (!strcmp(Name, "TESR_ReciprocalResolution"))
 		FloatShaderValues[Index].Value = &TheShaderManager->ShaderConst.ReciprocalResolution;
 	else if (!strcmp(Name, "TESR_ReciprocalResolutionWater"))
@@ -275,7 +277,10 @@ bool ShaderRecord::LoadShader(const char* Name) {
 	}
 	else if (!memcmp(Name, "Shadow", 6)) {
 		strcat(Path, "Shadows\\");
-	}	
+	}
+	else if (!memcmp(Name, "Occlusion", 9)) {
+		strcat(Path, "Occlusion\\");
+	}
 	else {
 		strcat(Path, "ExtraShaders\\");
 	}

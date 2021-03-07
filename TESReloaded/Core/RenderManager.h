@@ -26,12 +26,14 @@ class RenderManager: public NiDX9Renderer {
 public:
 	void				Initialize();
 	void				ResolveDepthBuffer();
+	void				CreateD3DMatrix(D3DMATRIX* Matrix, NiTransform* Transform);
 	void				GetSceneCameraData();
 	void				SetupSceneCamera();
 	void				SetSceneGraph();
 
-	D3DXMATRIX			InvViewProjMatrix;
 	D3DXMATRIX			WorldViewProjMatrix;
+	D3DXMATRIX			ViewProjMatrix;
+	D3DXMATRIX			InvViewProjMatrix;
 	D3DXVECTOR4			CameraForward;
 	D3DXVECTOR4			CameraPosition;
 	IDirect3DSurface9*	BackBuffer;

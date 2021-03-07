@@ -86,32 +86,7 @@ ShadowManager::ShadowManager() {
 
 }
 
-void ShadowManager::CreateD3DMatrix(D3DMATRIX* Matrix, NiTransform* Transform) {
-
-	NiMatrix33* Rot = &Transform->rot;
-	NiPoint3* Pos = &Transform->pos;
-	float Scale = Transform->scale;
-
-	Matrix->_11 = Rot->data[0][0] * Scale;
-	Matrix->_12 = Rot->data[1][0] * Scale;
-	Matrix->_13 = Rot->data[2][0] * Scale;
-	Matrix->_14 = 0.0f;
-	Matrix->_21 = Rot->data[0][1] * Scale;
-	Matrix->_22 = Rot->data[1][1] * Scale;
-	Matrix->_23 = Rot->data[2][1] * Scale;
-	Matrix->_24 = 0.0f;
-	Matrix->_31 = Rot->data[0][2] * Scale;
-	Matrix->_32 = Rot->data[1][2] * Scale;
-	Matrix->_33 = Rot->data[2][2] * Scale;
-	Matrix->_34 = 0.0f;
-	Matrix->_41 = Pos->x - TheRenderManager->CameraPosition.x;
-	Matrix->_42 = Pos->y - TheRenderManager->CameraPosition.y;
-	Matrix->_43 = Pos->z - TheRenderManager->CameraPosition.z;
-	Matrix->_44 = 1.0f;
-
-}
-
-void ShadowManager::GetFrustum(ShadowMapTypeEnum ShadowMapType, D3DMATRIX* Matrix) {
+void ShadowManager::SetFrustum(ShadowMapTypeEnum ShadowMapType, D3DMATRIX* Matrix) {
 
 	ShadowMapFrustum[ShadowMapType][PlaneNear].a = Matrix->_13;
 	ShadowMapFrustum[ShadowMapType][PlaneNear].b = Matrix->_23;
@@ -251,12 +226,12 @@ void ShadowManager::Render(NiGeometry* Geo) {
 	TheShaderManager->ShaderConst.Shadow.Data.x = 0.0f; // Type of geo (0 normal, 1 actors (skinned), 2 speedtree leaves)
 	TheShaderManager->ShaderConst.Shadow.Data.y = 0.0f; // Alpha control
 	if (GeoData) {
-		CreateD3DMatrix(&TheShaderManager->ShaderConst.ShadowMap.ShadowWorld, &Geo->m_worldTransform);
+		TheRenderManager->CreateD3DMatrix(&TheShaderManager->ShaderConst.ShadowMap.ShadowWorld, &Geo->m_worldTransform);
 		if (Geo->m_parent->m_pcName && !memcmp(Geo->m_parent->m_pcName, "Leaves", 6)) {
 			NiVector4* RockParams = (NiVector4*)kRockParams;
 			NiVector4* RustleParams = (NiVector4*)kRustleParams;
 			NiVector4* WindMatrixes = (NiVector4*)kWindMatrixes;
-			SpeedTreeLeafShaderProperty* STProp = (SpeedTreeLeafShaderProperty*)Geo->GetProperty(NiProperty::PropertyType::kType_Lighting);
+			SpeedTreeLeafShaderProperty* STProp = (SpeedTreeLeafShaderProperty*)Geo->GetProperty(NiProperty::PropertyType::kType_Shade);
 			BSTreeNode* Node = (BSTreeNode*)Geo->m_parent->m_parent;
 			NiDX9SourceTextureData* Texture = (NiDX9SourceTextureData*)Node->TreeModel->LeavesTexture->rendererData;
 
@@ -275,25 +250,21 @@ void ShadowManager::Render(NiGeometry* Geo) {
 			RenderState->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_POINT, false);
 		}
 		else {
-			BSShaderProperty* LProp = (BSShaderProperty*)Geo->GetProperty(NiProperty::PropertyType::kType_Lighting);
-			if (LProp->IsLightingProperty()) {
-				if (AlphaEnabled) {
-					NiAlphaProperty* AProp = (NiAlphaProperty*)Geo->GetProperty(NiProperty::PropertyType::kType_Alpha);
-					if (AProp->flags & NiAlphaProperty::AlphaFlags::ALPHA_BLEND_MASK || AProp->flags & NiAlphaProperty::AlphaFlags::TEST_ENABLE_MASK) {
-						if (NiTexture* Texture = *((BSShaderPPLightingProperty*)LProp)->textures[0]) {
-							TheShaderManager->ShaderConst.Shadow.Data.y = 1.0f;
-							RenderState->SetTexture(0, Texture->rendererData->dTexture);
-							RenderState->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP, false);
-							RenderState->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP, false);
-							RenderState->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT, false);
-							RenderState->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT, false);
-							RenderState->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_POINT, false);
-						}
+			BSShaderProperty* ShaderProperty = (BSShaderProperty*)Geo->GetProperty(NiProperty::PropertyType::kType_Shade);
+			if (!ShaderProperty->IsLightingProperty()) return;
+			if (AlphaEnabled) {
+				NiAlphaProperty* AProp = (NiAlphaProperty*)Geo->GetProperty(NiProperty::PropertyType::kType_Alpha);
+				if (AProp->flags & NiAlphaProperty::AlphaFlags::ALPHA_BLEND_MASK || AProp->flags & NiAlphaProperty::AlphaFlags::TEST_ENABLE_MASK) {
+					if (NiTexture* Texture = *((BSShaderPPLightingProperty*)ShaderProperty)->textures[0]) {
+						TheShaderManager->ShaderConst.Shadow.Data.y = 1.0f;
+						RenderState->SetTexture(0, Texture->rendererData->dTexture);
+						RenderState->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP, false);
+						RenderState->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP, false);
+						RenderState->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT, false);
+						RenderState->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT, false);
+						RenderState->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_POINT, false);
 					}
 				}
-			}
-			else {
-				return;
 			}
 		}
 		TheRenderManager->PackGeometryBuffer(GeoData, ModelData, SkinInstance, ShaderDeclaration);
@@ -378,7 +349,7 @@ void ShadowManager::RenderShadowMap(ShadowMapTypeEnum ShadowMapType, SettingsSha
 	ShadowMap->ShadowCameraToLight[ShadowMapType] = TheRenderManager->InvViewProjMatrix * ShadowMap->ShadowViewProj;
 	BillboardRight = { View._11, View._21, View._31, 0.0f };
 	BillboardUp = { View._12, View._22, View._32, 0.0f };
-	GetFrustum(ShadowMapType, &ShadowMap->ShadowViewProj);
+	SetFrustum(ShadowMapType, &ShadowMap->ShadowViewProj);
 	Device->SetRenderTarget(0, ShadowMapSurface[ShadowMapType]);
 	Device->SetDepthStencilSurface(ShadowMapDepthSurface[ShadowMapType]);
 	Device->SetViewport(&ShadowMapViewPort[ShadowMapType]);
@@ -391,6 +362,13 @@ void ShadowManager::RenderShadowMap(ShadowMapTypeEnum ShadowMapType, SettingsSha
 		RenderState->SetVertexShader(ShadowMapVertexShader, false);
 		RenderState->SetPixelShader(ShadowMapPixelShader, false);
 		Device->BeginScene();
+
+		//NiNode* ObjectLODRoot = Tes->ObjectLODRoot;
+		//for (int i = 0; i < ObjectLODRoot->m_children.end; i++) {
+		//	NiAVObject* Object = ObjectLODRoot->m_children.data[i];
+		//	if (memcmp(Object->m_pcName, "WaterRoot", 9)) RenderObject(Object, 0.0f);
+		//}
+
 		for (UInt32 x = 0; x < *SettingGridsToLoad; x++) {
 			for (UInt32 y = 0; y < *SettingGridsToLoad; y++) {
 				if (TESObjectCELL* Cell = Tes->gridCellArray->GetCell(x, y)) {
@@ -582,12 +560,12 @@ void ShadowManager::RenderShadowMaps() {
 	}
 	Device->SetDepthStencilSurface(DepthSurface);
 
-	//if (TheKeyboardManager->OnKeyDown(25)) {
+	//if (TheKeyboardManager->OnKeyDown(26)) {
 	//	D3DXSaveSurfaceToFileA("C:\\Archivio\\Downloads\\shadowmap0.jpg", D3DXIFF_JPG, ShadowMapSurface[0], NULL, NULL);
 	//	D3DXSaveSurfaceToFileA("C:\\Archivio\\Downloads\\shadowmap1.jpg", D3DXIFF_JPG, ShadowMapSurface[1], NULL, NULL);
 	//	D3DXSaveSurfaceToFileA("C:\\Archivio\\Downloads\\shadowmap2.jpg", D3DXIFF_JPG, ShadowMapSurface[2], NULL, NULL);
 	//}
-	//if (TheKeyboardManager->OnKeyDown(25)) {
+	//if (TheKeyboardManager->OnKeyDown(26)) {
 	//	D3DXSaveSurfaceToFileA("C:\\Archivio\\Downloads\\shadowmap0.jpg", D3DXIFF_JPG, ShadowCubeMapSurface[0][0], NULL, NULL);
 	//	D3DXSaveSurfaceToFileA("C:\\Archivio\\Downloads\\shadowmap1.jpg", D3DXIFF_JPG, ShadowCubeMapSurface[0][1], NULL, NULL);
 	//	D3DXSaveSurfaceToFileA("C:\\Archivio\\Downloads\\shadowmap2.jpg", D3DXIFF_JPG, ShadowCubeMapSurface[0][2], NULL, NULL);

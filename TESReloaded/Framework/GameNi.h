@@ -1930,6 +1930,7 @@ public:
 		kFlag_DisableSorting			= 1 << 6, // For use with sorting/accumulation system
 		kFlag_SelTransformsOverride		= 1 << 7, // Selective update over-ride flags
 		kFlag_IsNode					= 1 << 8, // Is the object a leaf or a node
+		kFlag_IsOccluded				= 1 << 9, // Used by OR to manage occluded geometries
 	};
 	
 	float GetDistance(NiPoint3* Point) {

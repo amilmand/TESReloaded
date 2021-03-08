@@ -4,15 +4,14 @@
 #define RenderStateArgs 0, 0
 #elif defined(OBLIVION)
 #define RenderStateArgs 0
+static const UInt32 kObjectCullHook = 0x007073D6;
+static const UInt32 kObjectCullReturn1 = 0x007073DC;
+static const UInt32 kObjectCullReturn2 = 0x007073E7;
 static const void* VFTNiNode = (void*)0x00A7E38C;
 static const void* VFTBSFadeNode = (void*)0x00A3F944;
 static const void* VFTNiTriShape = (void*)0x00A7ED5C;
 static const void* VFTNiTriStrips = (void*)0x00A7F27C;
 #endif
-#define OcclusionMapSizeX 1920
-#define OcclusionMapSizeY 1080
-//#define OcclusionMapSizeX 480
-//#define OcclusionMapSizeY 270
 
 OcclusionManager::OcclusionManager() {
 	
@@ -20,8 +19,10 @@ OcclusionManager::OcclusionManager() {
 	TheOcclusionManager = this;
 	
 	Tex = NULL;
-
+	
 	IDirect3DDevice9* Device = TheRenderManager->device;
+	UINT OcclusionMapSizeX = TheRenderManager->width; // / 4.0f;
+	UINT OcclusionMapSizeY = TheRenderManager->height; // / 4.0f;
 
 	OcclusionMapVertex = new ShaderRecord();
 	if (OcclusionMapVertex->LoadShader("OcclusionMap.vso")) Device->CreateVertexShader((const DWORD*)OcclusionMapVertex->Function, &OcclusionMapVertexShader);
@@ -50,7 +51,7 @@ bool OcclusionManager::InFrustum(NiNode* Node) {
 			if (ActivePlanes & (1 << i)) {
 				Side = Bound->WhichSide(&Process->Planes.CullingPlanes[i]);
 				if (Side == NiPlane::NegativeSide) break;
-				if (Side == NiPlane::PositiveSide) Process->Planes.ActivePlanes & ~(1 << i);
+				if (Side == NiPlane::PositiveSide) Process->Planes.ActivePlanes &= ~(1 << i);
 			}
 		}
 		if (i == NiFrustumPlanes::MaxPlanes) Result = true;
@@ -75,17 +76,18 @@ void OcclusionManager::RenderObject(NiAVObject* Object, bool Query) {
 			}
 			else if (VFT == VFTNiTriShape || VFT == VFTNiTriStrips) {
 				NiGeometry* Geo = (NiGeometry*)Object;
+				Logger::Log("%s", Geo->m_pcName);
 				if (Geo->shader && Geo->geomData->BuffData) {
 					if (Query) OcclusionQuery->Issue(D3DISSUE_BEGIN);
 					Render(Geo);
 					if (Query) {
-						UInt32 Pixels = 0;
+						DWORD Pixels = 0;
 						OcclusionQuery->Issue(D3DISSUE_END);
 						while (OcclusionQuery->GetData((void*)&Pixels, sizeof(DWORD), D3DGETDATA_FLUSH) == S_FALSE);
-						if (Pixels == 0)
-							Geo->m_flags |= NiAVObject::kFlag_AppCulled; add a new flag to the geo and manage it in the pipeline in the culling process, i cannot use the culled flag otherwise i cannot re-enable it due to the if at the start of the function!
+						if (Pixels <= 0)
+							Geo->m_flags |= NiAVObject::kFlag_IsOccluded;
 						else
-							Geo->m_flags &= ~NiAVObject::kFlag_AppCulled;
+							Geo->m_flags &= ~NiAVObject::kFlag_IsOccluded;
 					}
 				}
 			}
@@ -156,11 +158,11 @@ void OcclusionManager::RenderOcclusionMap() {
 	IDirect3DDevice9* Device = TheRenderManager->device;
 	NiDX9RenderState* RenderState = TheRenderManager->renderState;
 	NiNode* ObjectLODRoot = Tes->ObjectLODRoot;
-	
+
 	Device->SetRenderTarget(0, OcclusionMapSurface);
 	Device->SetDepthStencilSurface(OcclusionMapDepthSurface);
 	Device->SetViewport(&OcclusionMapViewPort);
-	Device->Clear(0L, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DXCOLOR(1.0f, 1.00f, 1.00f, 1.00f), 1.0f, 0L);
+	Device->Clear(0L, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, 0L);
 	RenderState->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE, RenderStateArgs);
 	RenderState->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE, RenderStateArgs);
 	RenderState->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE, RenderStateArgs);
@@ -168,14 +170,35 @@ void OcclusionManager::RenderOcclusionMap() {
 	RenderState->SetVertexShader(OcclusionMapVertexShader, false);
 	RenderState->SetPixelShader(OcclusionMapPixelShader, false);
 	Device->BeginScene();
-	for (int i = 0; i < ObjectLODRoot->m_children.end; i++) {
-		RenderObject(ObjectLODRoot->m_children.data[i], false);
+	//RenderState->SetRenderState(D3DRS_COLORWRITEENABLE, D3DZB_FALSE, RenderStateArgs);
+	//for (int i = 0; i < ObjectLODRoot->m_children.end; i++) {
+	//	Logger::Log("STARTING: %i", i);
+	//	RenderObject(ObjectLODRoot->m_children.data[i], false);
+	//}
+
+	for (UInt32 x = 0; x < *SettingGridsToLoad; x++) {
+		for (UInt32 y = 0; y < *SettingGridsToLoad; y++) {
+			if (TESObjectCELL* Cell = Tes->gridCellArray->GetCell(x, y)) {
+				Logger::Log("STARTING: %i %i", x, y);
+				RenderObject(Cell->niNode, false);
+			}
+		}
 	}
-	for (int i = 0; i < ObjectLODRoot->m_children.end; i++) {
-		RenderObject(ObjectLODRoot->m_children.data[i], true);
-	}
+
+	//RenderObject(ObjectLODRoot->m_children.data[1], false);
+	//RenderObject(ObjectLODRoot->m_children.data[2], false);
+	//RenderObject(ObjectLODRoot->m_children.data[3], false);
+	//RenderState->SetRenderState(D3DRS_COLORWRITEENABLE, D3DZB_FALSE, RenderStateArgs);
+	//RenderState->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE, RenderStateArgs);
+	//for (int i = 0; i < ObjectLODRoot->m_children.end; i++) {
+	//	RenderObject(ObjectLODRoot->m_children.data[i], true);
+	//}
+	//RenderObject(ObjectLODRoot->m_children.data[0], false);
+	//RenderObject(ObjectLODRoot->m_children.data[1], false);
+	//RenderObject(ObjectLODRoot->m_children.data[2], false);
+	//RenderObject(ObjectLODRoot->m_children.data[3], false);
 	Device->EndScene();
-	
+
 }
 
 void OcclusionManager::PerformOcclusionCulling() {
@@ -193,5 +216,25 @@ void OcclusionManager::PerformOcclusionCulling() {
 	if (TheKeyboardManager->OnKeyDown(26)) {
 		D3DXSaveSurfaceToFileA("C:\\Archivio\\Downloads\\occlusionmap.jpg", D3DXIFF_JPG, OcclusionMapSurface, NULL, NULL);
 	}
+
+}
+
+static __declspec(naked) void ObjectCullHook() {
+
+	__asm {
+		test    word ptr [ecx + 0x18], 0x200
+		jnz     short loc_return
+		mov     eax, [esp + 0x04]
+		mov     edx, [eax]
+		jmp		kObjectCullReturn1
+	loc_return:
+		jmp		kObjectCullReturn2
+	}
+
+}
+
+void CreateOcclusionCullingHook() {
+
+	WriteRelJump(kObjectCullHook, (UInt32)ObjectCullHook);
 
 }

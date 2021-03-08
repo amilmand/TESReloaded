@@ -4,11 +4,11 @@ class OcclusionManager { // Never disposed
 public:
 	OcclusionManager();
 
-	bool				InFrustum(NiNode* Node);
-	void				RenderObject(NiAVObject* Object, bool Query);
-	void				Render(NiGeometry* Geo);
-	void				RenderOcclusionMap();
-	void				PerformOcclusionCulling();
+	bool					InFrustum(NiNode* Node);
+	void					RenderObject(NiAVObject* Object, bool Query);
+	void					Render(NiGeometry* Geo);
+	void					RenderOcclusionMap();
+	void					PerformOcclusionCulling();
 	
 	ShaderRecord*			OcclusionMapVertex;
 	ShaderRecord*			OcclusionMapPixel;
@@ -22,3 +22,5 @@ public:
 
 	IDirect3DTexture9*		Tex;
 };
+
+void CreateOcclusionCullingHook();

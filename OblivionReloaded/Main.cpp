@@ -48,6 +48,7 @@ extern "C" {
 			CreateScriptHook();
 			CreateAnimationHook();
 			CreateShadowsHook();
+			CreateOcclusionCullingHook();
 			if (TheSettingManager->SettingsMain.Main.MemoryManagement) CreateMemoryManagementHook();
 			if (TheSettingManager->SettingsMain.GrassMode.Enabled) CreateGrassHook();
 			if (TheSettingManager->SettingsMain.CameraMode.Enabled) CreateCameraModeHook();

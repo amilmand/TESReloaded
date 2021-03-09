@@ -6,6 +6,8 @@ public:
 
 	bool					InFrustum(NiNode* Node);
 	void					RenderObject(NiAVObject* Object, bool Query);
+	void					RenderTerrain(NiAVObject* Object);
+	void					RenderWater(NiAVObject* Object);
 	void					Render(NiGeometry* Geo);
 	void					RenderOcclusionMap();
 	void					PerformOcclusionCulling();
@@ -19,7 +21,7 @@ public:
 	IDirect3DSurface9*		OcclusionMapSurface;
 	IDirect3DSurface9*		OcclusionMapDepthSurface;
 	D3DVIEWPORT9			OcclusionMapViewPort;
-
+	bool					WaterOccluded;
 	IDirect3DTexture9*		Tex;
 };
 

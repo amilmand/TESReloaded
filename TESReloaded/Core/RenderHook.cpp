@@ -372,11 +372,13 @@ void RenderHook::TrackRenderReflections(NiCamera* Camera, ShadowSceneNode* Scene
 	float ParallaxDataBackup = ParallaxData->y;
 
 	if (DWNode::Get()) DWNode::AddNode("BEGIN REFLECTIONS RENDERING", NULL, NULL);
-	ShadowData->x = -1.0f; // Disables the shadows rendering for water reflections (the geo is rendered with the same shaders used in the normal scene!)
-	ParallaxData->y = -1.0f; // Disables the additional POM computation (the geo is rendered with the same shaders used in the normal scene!)
-	(this->*RenderReflections)(Camera, SceneNode);
-	ShadowData->x = ShadowDataBackup;
-	ParallaxData->y = ParallaxDataBackup;
+	if (!TheOcclusionManager->WaterOccluded) {
+		ShadowData->x = -1.0f; // Disables the shadows rendering for water reflections (the geo is rendered with the same shaders used in the normal scene!)
+		ParallaxData->y = -1.0f; // Disables the additional POM computation (the geo is rendered with the same shaders used in the normal scene!)
+		(this->*RenderReflections)(Camera, SceneNode);
+		ShadowData->x = ShadowDataBackup;
+		ParallaxData->y = ParallaxDataBackup;
+	}
 	if (DWNode::Get()) DWNode::AddNode("END REFLECTIONS RENDERING", NULL, NULL);
 
 }

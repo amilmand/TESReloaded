@@ -334,41 +334,6 @@ void GameMenuManager::Render() {
 					Rect.bottom += TextSize + RowSpace;
 					SetRect(&RectShadow, Rect.left + 1, Rect.top + 1, Rect.right + 1, Rect.bottom + 1);
 					if (SelectedRow[3] == Rows[3]) {
-						if (MenuSettings->InfoEnabled && strcmp(SelectedSetting, SettingFirst)) {
-							char FileName[MAX_PATH];
-							strcpy(FileName, DocFile);
-							std::ifstream InfoFile(FileName, std::ios::in);
-							if (InfoFile.is_open()) {
-								bool F = false;
-								size_t P = 0;
-								std::string L;
-								char V[80] = { 'T', 'A', 'G', '-', '\0' };
-								if (!strcmp(SelectedDefinition, "Main"))
-									strcat(V, SelectedSection);
-								else
-									strcat(V, SelectedDefinition);
-								while (InfoFile.good()) {
-									getline(InfoFile, L);
-									if (!F) {
-										P = L.find(V);
-										if (P != std::string::npos) F = true;
-									}
-									else {
-										P = L.find("<var>" + Setting->first);
-										if (P != std::string::npos) {
-											getline(InfoFile, L);
-											strcpy_s(InfoText, L.c_str());
-											break;
-										}
-									}
-								}
-								InfoFile.close();
-							}
-							else {
-								strcat(FileName, " (ERROR OPENING)");
-								strcpy_s(InfoText, FileName);
-							}
-						}
 						strcpy(SelectedSetting, SettingFirst);
 						SelectedValue = Setting->second;
 						if (SelectedColumn >= 3) {

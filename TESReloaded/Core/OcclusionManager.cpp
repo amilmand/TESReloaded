@@ -8,7 +8,6 @@ static const UInt32 kObjectCullHook = 0x007073D6;
 static const UInt32 kObjectCullReturn1 = 0x007073DC;
 static const UInt32 kObjectCullReturn2 = 0x007073E7;
 static const void* VFTNiNode = (void*)0x00A7E38C;
-static const void* VFTBSFadeNode = (void*)0x00A3F944;
 static const void* VFTNiTriShape = (void*)0x00A7ED5C;
 static const void* VFTNiTriStrips = (void*)0x00A7F27C;
 #endif
@@ -62,58 +61,21 @@ bool OcclusionManager::InFrustum(NiNode* Node) {
 
 }
 
-void OcclusionManager::RenderObject(NiAVObject* Object, bool Query) {
+void OcclusionManager::RenderTerrain(NiAVObject* Object) {
 
-	DWORD Pixels = 0;
-
-	if (Object) {
-		if (!(Object->m_flags & NiAVObject::kFlag_AppCulled)) {
-			void* VFT = *(void**)Object;
-			if (VFT == VFTNiNode || VFT == VFTBSFadeNode) {
-				NiNode* Node = (NiNode*)Object;
-				if (InFrustum(Node)) {
-					for (int i = 0; i < Node->m_children.end; i++) {
-						RenderObject(Node->m_children.data[i], Query);
-					}
-				}
-			}
-			else if (VFT == VFTNiTriShape || VFT == VFTNiTriStrips) {
-				NiGeometry* Geo = (NiGeometry*)Object;
-				if (Geo->geomData->BuffData) {
-					if (Query) OcclusionQuery->Issue(D3DISSUE_BEGIN);
-					Render(Geo);
-					if (Query) {
-						OcclusionQuery->Issue(D3DISSUE_END);
-						while (OcclusionQuery->GetData((void*)&Pixels, sizeof(DWORD), D3DGETDATA_FLUSH) == S_FALSE);
-						if (Pixels <= 0)
-							Geo->m_flags |= NiAVObject::kFlag_IsOccluded;
-						else
-							Geo->m_flags &= ~NiAVObject::kFlag_IsOccluded;
-					}
+	if (Object && !(Object->m_flags & NiAVObject::kFlag_AppCulled)) {
+		void* VFT = *(void**)Object;
+		if (VFT == VFTNiNode) {
+			NiNode* Node = (NiNode*)Object;
+			if (InFrustum(Node)) {
+				for (int i = 0; i < Node->m_children.end; i++) {
+					RenderTerrain(Node->m_children.data[i]);
 				}
 			}
 		}
-	}
-
-}
-
-void OcclusionManager::RenderTerrain(NiAVObject* Object) {
-
-	if (Object) {
-		if (!(Object->m_flags & NiAVObject::kFlag_AppCulled)) {
-			void* VFT = *(void**)Object;
-			if (VFT == VFTNiNode) {
-				NiNode* Node = (NiNode*)Object;
-				if (InFrustum(Node)) {
-					for (int i = 0; i < Node->m_children.end; i++) {
-						RenderTerrain(Node->m_children.data[i]);
-					}
-				}
-			}
-			else if (VFT == VFTNiTriShape || VFT == VFTNiTriStrips) {
-				NiGeometry* Geo = (NiGeometry*)Object;
-				if (Geo->geomData->BuffData && Geo->m_pcName && !memcmp(Geo->m_pcName, "Block", 5)) Render(Geo);
-			}
+		else if (VFT == VFTNiTriShape || VFT == VFTNiTriStrips) {
+			NiGeometry* Geo = (NiGeometry*)Object;
+			if (Geo->geomData->BuffData) Render(Geo);
 		}
 	}
 
@@ -141,7 +103,7 @@ void OcclusionManager::RenderWater(NiAVObject* Object) {
 					Render(Geo);
 					OcclusionQuery->Issue(D3DISSUE_END);
 					while (OcclusionQuery->GetData((void*)&Pixels, sizeof(DWORD), D3DGETDATA_FLUSH) == S_FALSE);
-					if (Pixels <= 0) {
+					if (Pixels <= 10) {
 						Geo->m_flags |= NiAVObject::kFlag_IsOccluded;
 					}
 					else {
@@ -162,8 +124,7 @@ void OcclusionManager::Render(NiGeometry* Geo) {
 	int StartIndex = 0;
 	int PrimitiveCount = 0;
 	int StartRegister = 9;
-	NiGeometryData* ModelData = Geo->geomData;
-	NiGeometryBufferData* GeoData = ModelData->BuffData;
+	NiGeometryBufferData* GeoData = Geo->geomData->BuffData;
 	D3DXMATRIX WorldMatrix;
 
 	TheRenderManager->CreateD3DMatrix(&WorldMatrix, &Geo->m_worldTransform);
@@ -214,9 +175,10 @@ void OcclusionManager::Render(NiGeometry* Geo) {
 
 void OcclusionManager::RenderOcclusionMap() {
 
+	NiNode* WaterRoot = *(NiNode**)0x00B35230;
 	IDirect3DDevice9* Device = TheRenderManager->device;
 	NiDX9RenderState* RenderState = TheRenderManager->renderState;
-	NiNode* ObjectLODRoot = Tes->ObjectLODRoot;
+	GridCellArray* CellArray = Tes->gridCellArray;
 
 	Device->SetRenderTarget(0, OcclusionMapSurface);
 	Device->SetDepthStencilSurface(OcclusionMapDepthSurface);
@@ -230,22 +192,16 @@ void OcclusionManager::RenderOcclusionMap() {
 	RenderState->SetPixelShader(OcclusionMapPixelShader, false);
 	Device->BeginScene();
 	//RenderState->SetRenderState(D3DRS_COLORWRITEENABLE, D3DZB_FALSE, RenderStateArgs);
-	for (UInt32 x = 0; x < *SettingGridsToLoad; x++) {
-		for (UInt32 y = 0; y < *SettingGridsToLoad; y++) {
-			if (NiNode* CellNode = Tes->gridCellArray->GetCell(x, y)->niNode) {
-				for (int i = 2; i < 6; i++) {
-					NiNode* TerrainNode = (NiNode*)CellNode->m_children.data[i];
-					if (TerrainNode->m_children.end) RenderObject(TerrainNode->m_children.data[0], false);
-				}
-			}
+	for (UInt32 i = 0; i < CellArray->size * CellArray->size; i++) {
+		NiNode* CellNode = CellArray->grid[i].cell->niNode;
+		for (int i = 2; i < 6; i++) {
+			NiNode* TerrainNode = (NiNode*)CellNode->m_children.data[i];
+			if (TerrainNode->m_children.end) RenderTerrain(TerrainNode->m_children.data[0]);
 		}
 	}
-	//for (int i = 2; i < ObjectLODRoot->m_children.end; i++) {
-	//	RenderTerrain(ObjectLODRoot->m_children.data[i]);
-	//}
-	//RenderState->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE, RenderStateArgs);
-	//WaterOccluded = true;
-	//RenderWater(ObjectLODRoot->m_children.data[1]);
+	RenderState->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE, RenderStateArgs);
+	WaterOccluded = true;
+	RenderWater(WaterRoot);
 	Device->EndScene();
 
 }

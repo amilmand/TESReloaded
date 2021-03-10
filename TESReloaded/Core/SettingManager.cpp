@@ -95,10 +95,11 @@ SettingManager::SettingManager() {
 		strcpy(SettingsMain.Main.ScreenshotPath, value);
 	}
 	if (SettingsMain.Main.ScreenshotPath[strlen(SettingsMain.Main.ScreenshotPath) - 1] != '\\') strcat(SettingsMain.Main.ScreenshotPath, "\\");
-	SettingsMain.Main.ScreenshotType = GetPrivateProfileIntA("Main", "ScreenshotType", 1, Filename);
 	SettingsMain.Main.ScreenshotKey = GetPrivateProfileIntA("Main", "ScreenshotKey", 87, Filename);
 	SettingsMain.Main.FPSOverlay = GetPrivateProfileIntA("Main", "FPSOverlay", 0, Filename);
 	SettingsMain.Main.ReplaceIntro = GetPrivateProfileIntA("Main", "ReplaceIntro", 0, Filename);
+
+	SettingsMain.OcclusionCulling.Enabled = GetPrivateProfileIntA("OcclusionCulling", "Enabled", 1, Filename);
 
 	SettingsMain.FrameRate.Enabled = GetPrivateProfileIntA("FrameRate", "Enabled", 0, Filename);
 	SettingsMain.FrameRate.Average = GetPrivateProfileIntA("FrameRate", "Average", 33, Filename);
@@ -338,7 +339,6 @@ SettingManager::SettingManager() {
 	SettingsMain.Effects.Precipitations = GetPrivateProfileIntA("Effects", "Precipitations", 0, Filename);
 	SettingsMain.Effects.Extra = GetPrivateProfileIntA("Effects", "Extra", 0, Filename);
 
-	SettingsMain.Menu.InfoEnabled = GetPrivateProfileIntA("Menu", "InfoEnabled", 1, Filename);
 	GetPrivateProfileStringA("Menu", "TextFont", "Calibri", SettingsMain.Menu.TextFont, 40, Filename);
 	SettingsMain.Menu.TextSize = GetPrivateProfileIntA("Menu", "TextSize", 22, Filename);
 	GetPrivateProfileStringA("Menu", "TextFontStatus", "Courier New", SettingsMain.Menu.TextFontStatus, 40, Filename);
@@ -1142,6 +1142,7 @@ void SettingManager::LoadSettings() {
 	SettingsShadows.Exteriors.Forms[ShadowManager::ShadowMapTypeEnum::MapNear].Furniture = GetPrivateProfileIntA("ExteriorsNear", "Furniture", 0, Filename);
 	SettingsShadows.Exteriors.Forms[ShadowManager::ShadowMapTypeEnum::MapNear].Misc = GetPrivateProfileIntA("ExteriorsNear", "Misc", 0, Filename);
 	SettingsShadows.Exteriors.Forms[ShadowManager::ShadowMapTypeEnum::MapNear].Statics = GetPrivateProfileIntA("ExteriorsNear", "Statics", 1, Filename);
+	SettingsShadows.Exteriors.Forms[ShadowManager::ShadowMapTypeEnum::MapNear].Terrain = GetPrivateProfileIntA("ExteriorsNear", "Terrain", 0, Filename);
 	SettingsShadows.Exteriors.Forms[ShadowManager::ShadowMapTypeEnum::MapNear].Trees = GetPrivateProfileIntA("ExteriorsNear", "Trees", 1, Filename);
 	GetPrivateProfileStringA("ExteriorsNear", "MinRadius", "10.0", value, SettingStringBuffer, Filename);
 	SettingsShadows.Exteriors.Forms[ShadowManager::ShadowMapTypeEnum::MapNear].MinRadius = atof(value);
@@ -1160,6 +1161,7 @@ void SettingManager::LoadSettings() {
 	SettingsShadows.Exteriors.Forms[ShadowManager::ShadowMapTypeEnum::MapFar].Furniture = GetPrivateProfileIntA("ExteriorsFar", "Furniture", 0, Filename);
 	SettingsShadows.Exteriors.Forms[ShadowManager::ShadowMapTypeEnum::MapFar].Misc = GetPrivateProfileIntA("ExteriorsFar", "Misc", 0, Filename);
 	SettingsShadows.Exteriors.Forms[ShadowManager::ShadowMapTypeEnum::MapFar].Statics = GetPrivateProfileIntA("ExteriorsFar", "Statics", 1, Filename);
+	SettingsShadows.Exteriors.Forms[ShadowManager::ShadowMapTypeEnum::MapFar].Terrain = GetPrivateProfileIntA("ExteriorsFar", "Terrain", 0, Filename);
 	SettingsShadows.Exteriors.Forms[ShadowManager::ShadowMapTypeEnum::MapFar].Trees = GetPrivateProfileIntA("ExteriorsFar", "Trees", 1, Filename);
 	GetPrivateProfileStringA("ExteriorsFar", "MinRadius", "100.0", value, SettingStringBuffer, Filename);
 	SettingsShadows.Exteriors.Forms[ShadowManager::ShadowMapTypeEnum::MapFar].MinRadius = atof(value);
@@ -1178,6 +1180,7 @@ void SettingManager::LoadSettings() {
 	SettingsShadows.Exteriors.Forms[ShadowManager::ShadowMapTypeEnum::MapOrtho].Furniture = GetPrivateProfileIntA("ExteriorsOrtho", "Furniture", 0, Filename);
 	SettingsShadows.Exteriors.Forms[ShadowManager::ShadowMapTypeEnum::MapOrtho].Misc = GetPrivateProfileIntA("ExteriorsOrtho", "Misc", 0, Filename);
 	SettingsShadows.Exteriors.Forms[ShadowManager::ShadowMapTypeEnum::MapOrtho].Statics = GetPrivateProfileIntA("ExteriorsOrtho", "Statics", 1, Filename);
+	SettingsShadows.Exteriors.Forms[ShadowManager::ShadowMapTypeEnum::MapOrtho].Terrain = GetPrivateProfileIntA("ExteriorsOrtho", "Terrain", 0, Filename);
 	SettingsShadows.Exteriors.Forms[ShadowManager::ShadowMapTypeEnum::MapOrtho].Trees = GetPrivateProfileIntA("ExteriorsOrtho", "Trees", 0, Filename);
 	GetPrivateProfileStringA("ExteriorsOrtho", "MinRadius", "100.0", value, SettingStringBuffer, Filename);
 	SettingsShadows.Exteriors.Forms[ShadowManager::ShadowMapTypeEnum::MapOrtho].MinRadius = atof(value);

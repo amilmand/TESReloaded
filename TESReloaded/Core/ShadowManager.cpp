@@ -177,7 +177,7 @@ TESObjectREFR* ShadowManager::GetRef(TESObjectREFR* Ref, SettingsShadowStruct::F
 
 }
 
-void ShadowManager::RenderObject(NiAVObject* Object, float MinRadius) {
+void ShadowManager::RenderExterior(NiAVObject* Object, float MinRadius) {
 	
 	if (Object) {
 		float Radius = Object->GetWorldBoundRadius();
@@ -188,7 +188,7 @@ void ShadowManager::RenderObject(NiAVObject* Object, float MinRadius) {
 				if (VFT == VFTBSFadeNode && ((BSFadeNode*)Object)->FadeAlpha < 0.75f) return;
 				NiNode* Node = (NiNode*)Object;
 				for (int i = 0; i < Node->m_children.end; i++) {
-					RenderObject(Node->m_children.data[i], MinRadius);
+					RenderExterior(Node->m_children.data[i], MinRadius);
 				}
 			}
 			else if (VFT == VFTNiTriShape || VFT == VFTNiTriStrips) {
@@ -204,6 +204,64 @@ void ShadowManager::RenderObject(NiAVObject* Object, float MinRadius) {
 					}
 				}
 			}
+		}
+	}
+
+}
+
+void ShadowManager::RenderInterior(NiAVObject* Object, float MinRadius) {
+	
+	if (Object) {
+		float Radius = Object->GetWorldBoundRadius();
+
+		if (!(Object->m_flags & NiAVObject::kFlag_AppCulled) && Radius >= MinRadius) {
+			void* VFT = *(void**)Object;
+			if (VFT == VFTNiNode || VFT == VFTBSFaceGenNiNode) {
+				NiNode* Node = (NiNode*)Object;
+				for (int i = 0; i < Node->m_children.end; i++) {
+					RenderInterior(Node->m_children.data[i], MinRadius);
+				}
+			}
+			else if (VFT == VFTNiTriShape || VFT == VFTNiTriStrips) {
+				RenderGeo((NiGeometry*)Object);
+			}
+		}
+	}
+
+}
+
+void ShadowManager::RenderTerrain(NiAVObject* Object, ShadowMapTypeEnum ShadowMapType) {
+
+	if (Object && !(Object->m_flags & NiAVObject::kFlag_AppCulled)) {
+		void* VFT = *(void**)Object;
+		if (VFT == VFTNiNode) {
+			NiNode* Node = (NiNode*)Object;
+			if (InFrustum(ShadowMapType, Node)) {
+				for (int i = 0; i < Node->m_children.end; i++) {
+					RenderTerrain(Node->m_children.data[i], ShadowMapType);
+				}
+			}
+		}
+		else if (VFT == VFTNiTriShape || VFT == VFTNiTriStrips) {
+			NiGeometry* Geo = (NiGeometry*)Object;
+			RenderGeo((NiGeometry*)Object);
+		}
+	}
+
+}
+
+void ShadowManager::RenderGeo(NiGeometry* Geo) {
+
+	NiGeometryBufferData* GeoData = NULL;
+
+	if (Geo->shader) {
+		GeoData = Geo->geomData->BuffData;
+		if (GeoData) {
+			Render(Geo);
+		}
+		else if (Geo->skinInstance && Geo->skinInstance->SkinPartition && Geo->skinInstance->SkinPartition->Partitions) {
+			GeoData = Geo->skinInstance->SkinPartition->Partitions[0].BuffData;
+			if (GeoData) Render(Geo);
 		}
 	}
 
@@ -267,7 +325,7 @@ void ShadowManager::Render(NiGeometry* Geo) {
 				}
 			}
 		}
-		TheRenderManager->PackGeometryBuffer(GeoData, ModelData, SkinInstance, ShaderDeclaration);
+		TheRenderManager->PackGeometryBuffer(GeoData, ModelData, NULL, ShaderDeclaration);
 		for (UInt32 i = 0; i < GeoData->StreamCount; i++) {
 			Device->SetStreamSource(i, GeoData->VBChip[i]->VB, 0, GeoData->VertexStride[i]);
 		}
@@ -332,8 +390,10 @@ void ShadowManager::RenderShadowMap(ShadowMapTypeEnum ShadowMapType, SettingsSha
 	ShaderConstants::ShadowMapStruct* ShadowMap = &TheShaderManager->ShaderConst.ShadowMap;
 	IDirect3DDevice9* Device = TheRenderManager->device;
 	NiDX9RenderState* RenderState = TheRenderManager->renderState;
+	GridCellArray* CellArray = Tes->gridCellArray;
 	float FarPlane = ShadowsExteriors->ShadowMapFarPlane;
 	float Radius = ShadowsExteriors->ShadowMapRadius[ShadowMapType];
+	float MinRadius = ShadowsExteriors->Forms[ShadowMapType].MinRadius;
 	D3DXVECTOR3 Up = D3DXVECTOR3(0.0f, 0.0f, 1.0f);
 	D3DXMATRIX View, Proj;
 	D3DXVECTOR3 Eye;
@@ -362,25 +422,22 @@ void ShadowManager::RenderShadowMap(ShadowMapTypeEnum ShadowMapType, SettingsSha
 		RenderState->SetVertexShader(ShadowMapVertexShader, false);
 		RenderState->SetPixelShader(ShadowMapPixelShader, false);
 		Device->BeginScene();
-
-		//NiNode* ObjectLODRoot = Tes->ObjectLODRoot;
-		//for (int i = 0; i < ObjectLODRoot->m_children.end; i++) {
-		//	NiAVObject* Object = ObjectLODRoot->m_children.data[i];
-		//	if (memcmp(Object->m_pcName, "WaterRoot", 9)) RenderObject(Object, 0.0f);
-		//}
-
-		for (UInt32 x = 0; x < *SettingGridsToLoad; x++) {
-			for (UInt32 y = 0; y < *SettingGridsToLoad; y++) {
-				if (TESObjectCELL* Cell = Tes->gridCellArray->GetCell(x, y)) {
-					TList<TESObjectREFR>::Entry* Entry = &Cell->objectList.First;
-					while (Entry) {
-						if (TESObjectREFR* Ref = GetRef(Entry->item, &ShadowsExteriors->Forms[ShadowMapType], &ShadowsExteriors->ExcludedForms)) {
-							NiNode* RefNode = Ref->GetNode();
-							if (InFrustum(ShadowMapType, RefNode)) RenderObject(RefNode, ShadowsExteriors->Forms[ShadowMapType].MinRadius);
-						}
-						Entry = Entry->next;
-					}
+		for (UInt32 i = 0; i < CellArray->size * CellArray->size; i++) {
+			TESObjectCELL* Cell = CellArray->grid[i].cell;
+			if (ShadowsExteriors->Forms[ShadowMapType].Terrain) {
+				NiNode* CellNode = Cell->niNode;
+				for (int i = 2; i < 6; i++) {
+					NiNode* TerrainNode = (NiNode*)CellNode->m_children.data[i];
+					if (TerrainNode->m_children.end) RenderTerrain(TerrainNode->m_children.data[0], ShadowMapType);
 				}
+			}
+			TList<TESObjectREFR>::Entry* Entry = &Cell->objectList.First;
+			while (Entry) {
+				if (TESObjectREFR* Ref = GetRef(Entry->item, &ShadowsExteriors->Forms[ShadowMapType], &ShadowsExteriors->ExcludedForms)) {
+					NiNode* RefNode = Ref->GetNode();
+					if (InFrustum(ShadowMapType, RefNode)) RenderExterior(RefNode, MinRadius);
+				}
+				Entry = Entry->next;
 			}
 		}
 		Device->EndScene();
@@ -393,14 +450,17 @@ void ShadowManager::RenderShadowCubeMap(NiPointLight** Lights, int LightIndex, S
 	ShaderConstants::ShadowMapStruct* ShadowMap = &TheShaderManager->ShaderConst.ShadowMap;
 	IDirect3DDevice9* Device = TheRenderManager->device;
 	NiDX9RenderState* RenderState = TheRenderManager->renderState;
+	float Radius = 0.0f;
+	float MinRadius = ShadowsInteriors->Forms.MinRadius;
+	NiPoint3* LightPos = NULL;
 	D3DXMATRIX View, Proj;
 	D3DXVECTOR3 Eye, At, Up;
 
 	Device->SetDepthStencilSurface(ShadowCubeMapDepthSurface);
 	for (int L = 0; L <= LightIndex; L++) {
-		NiPoint3* LightPos = &Lights[L]->m_worldTransform.pos;
-		float Radius = Lights[L]->Spec.r; // Light radius is stored in Spec.r, Spec.g and Spec.b for NiPointLight
-		if (Lights[L]->CanCarry) Radius = 256.0f; // Set torch shadow to a fixed value to obtain a better effect
+		LightPos = &Lights[L]->m_worldTransform.pos;
+		Radius = Lights[L]->Spec.r;
+		if (Lights[L]->CanCarry) Radius = 256.0f;
 		Eye.x = LightPos->x - TheRenderManager->CameraPosition.x;
 		Eye.y = LightPos->y - TheRenderManager->CameraPosition.y;
 		Eye.z = LightPos->z - TheRenderManager->CameraPosition.z;
@@ -457,7 +517,7 @@ void ShadowManager::RenderShadowCubeMap(NiPointLight** Lights, int LightIndex, S
 				while (Entry) {
 					if (TESObjectREFR* Ref = GetRef(Entry->item, &ShadowsInteriors->Forms, &ShadowsInteriors->ExcludedForms)) {
 						NiNode* RefNode = Ref->GetNode();
-						if (RefNode->GetDistance(LightPos) <= Radius * 1.2f) RenderObject(RefNode, ShadowsInteriors->Forms.MinRadius);
+						if (RefNode->GetDistance(LightPos) <= Radius * 1.2f) RenderInterior(RefNode, MinRadius);
 					}
 					Entry = Entry->next;
 				}

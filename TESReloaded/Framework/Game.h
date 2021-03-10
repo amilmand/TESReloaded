@@ -6420,6 +6420,7 @@ public:
 		kFlags0_HandChanged			= 1 << 6,
 		kFlags0_BehaveLikeExterior	= 1 << 7,
 	};
+
 	struct CellCoordinates {
 		SInt32	x;
 		SInt32	y;

@@ -84,13 +84,16 @@ struct SettingsMainStruct {
 		bool	MemoryManagement;
 		bool	FPSOverlay;
 		bool	ReplaceIntro;
-		UInt8	ScreenshotType;
 		UInt8	AnisotropicFilter;
 		UInt16	ScreenshotKey;
 		int		WaterReflectionMapSize;
 		float	FarPlaneDistance;
 	};
 	
+	struct OcclusionCullingStruct {
+		bool	Enabled;
+	};
+
 	struct CameraModeStruct {
 		bool		Enabled;
 		bool		ChasingFirst;
@@ -209,7 +212,6 @@ struct SettingsMainStruct {
 		char	TextFont[40];
 		char	TextFontStatus[40];
 		char	ValueFormat[5];
-		bool	InfoEnabled;
 		UInt8	TextColorNormal[3];
 		UInt8	TextShadowColorNormal[3];
 		UInt8	TextColorSelected[3];
@@ -285,6 +287,7 @@ struct SettingsMainStruct {
 	};
 
 	MainStruct					Main;
+	OcclusionCullingStruct		OcclusionCulling;
 	CameraModeStruct			CameraMode;
 	EquipmentModeStruct			EquipmentMode;
 	FrameRateStruct				FrameRate;
@@ -317,6 +320,7 @@ struct SettingsShadowStruct {
 		bool				Furniture;
 		bool				Misc;
 		bool				Statics;
+		bool				Terrain;
 		bool				Trees;
 		float				MinRadius;
 	};

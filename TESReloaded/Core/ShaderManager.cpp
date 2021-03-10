@@ -2103,12 +2103,9 @@ void ShaderManager::RenderEffects(IDirect3DSurface9* RenderTarget) {
 		strcat(Filename, ScreenshotFilenamePrefix);
 		strftime(Name, 80, "%Y%m%d %H.%M.%S", localtime(&CurrentTime));
 		strcat(Filename, Name);
-		if (TheSettingManager->SettingsMain.Main.ScreenshotType == 0)
-			strcat(Filename, ".bmp");
-		else
-			strcat(Filename, ".jpg");
+		strcat(Filename, ".jpg");
 		if (GetFileAttributesA(TheSettingManager->SettingsMain.Main.ScreenshotPath) == INVALID_FILE_ATTRIBUTES) CreateDirectoryA(TheSettingManager->SettingsMain.Main.ScreenshotPath, NULL);
-		D3DXSaveSurfaceToFileA(Filename, (D3DXIMAGE_FILEFORMAT)TheSettingManager->SettingsMain.Main.ScreenshotType, RenderTarget, NULL, NULL);
+		D3DXSaveSurfaceToFileA(Filename, D3DXIFF_JPG, RenderTarget, NULL, NULL);
 		MenuManager->ShowMessage("Screenshot taken!");
 	}
 

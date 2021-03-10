@@ -5,7 +5,6 @@ public:
 	OcclusionManager();
 
 	bool					InFrustum(NiNode* Node);
-	void					RenderObject(NiAVObject* Object, bool Query);
 	void					RenderTerrain(NiAVObject* Object);
 	void					RenderWater(NiAVObject* Object);
 	void					Render(NiGeometry* Geo);

@@ -266,12 +266,14 @@ void (__thiscall RenderHook::* Render)(BSRenderedTexture*);
 void (__thiscall RenderHook::* TrackRender)(BSRenderedTexture*);
 void RenderHook::TrackRender(BSRenderedTexture* RenderedTexture) {
 	
+	SettingsMainStruct* SettingsMain = &TheSettingManager->SettingsMain;
+	
 	TheRenderManager->SetSceneGraph();
 	TheShaderManager->UpdateConstants();
-	TheOcclusionManager->PerformOcclusionCulling();
+	if (SettingsMain->OcclusionCulling.Enabled) TheOcclusionManager->PerformOcclusionCulling();
 	if (TheRenderManager->BackBuffer) TheRenderManager->defaultRTGroup->RenderTargets[0]->data->Surface = TheRenderManager->defaultRTGroup->RenderTargets[1]->data->Surface;
-	if (TheSettingManager->SettingsMain.Develop.TraceShaders && MenuManager->IsActive(Menu::MenuType::kMenuType_None) && TheKeyboardManager->OnKeyDown(TheSettingManager->SettingsMain.Develop.TraceShaders) && DWNode::Get() == NULL) DWNode::Create();
-	if (TheSettingManager->SettingsMain.Develop.LogShaders && MenuManager->IsActive(Menu::MenuType::kMenuType_None) && TheKeyboardManager->OnKeyDown(TheSettingManager->SettingsMain.Develop.LogShaders)) Logger::Log("START FRAME LOG");
+	if (SettingsMain->Develop.TraceShaders && MenuManager->IsActive(Menu::MenuType::kMenuType_None) && TheKeyboardManager->OnKeyDown(SettingsMain->Develop.TraceShaders) && DWNode::Get() == NULL) DWNode::Create();
+	if (SettingsMain->Develop.LogShaders && MenuManager->IsActive(Menu::MenuType::kMenuType_None) && TheKeyboardManager->OnKeyDown(SettingsMain->Develop.LogShaders)) Logger::Log("START FRAME LOG");
 	(this->*Render)(RenderedTexture);
 
 }
@@ -417,7 +419,6 @@ void __cdecl TrackSetShaderPackage(int Arg1, int Arg2, UInt8 Force1XShaders, int
 	UInt32* ShaderPackageMax = (UInt32*)0x00B42D74;
 
 	SetShaderPackage(Arg1, Arg2, Force1XShaders, Arg4, GraphicsName, Arg6);
-	
 	*ShaderPackage = 7;
 	*ShaderPackageMax = 7;
 

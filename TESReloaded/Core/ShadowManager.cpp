@@ -435,6 +435,12 @@ void ShadowManager::RenderShadowMap(ShadowMapTypeEnum ShadowMapType, SettingsSha
 			while (Entry) {
 				if (TESObjectREFR* Ref = GetRef(Entry->item, &ShadowsExteriors->Forms[ShadowMapType], &ShadowsExteriors->ExcludedForms)) {
 					NiNode* RefNode = Ref->GetNode();
+					
+					if (RefNode->m_pcName && strstr(RefNode->m_pcName, "CastleGate03")) {
+						hkRigidBody* RigidBody = (hkRigidBody*)RefNode->m_spCollision->bRigidBody->hkObject;
+						int b = 1;
+					}
+
 					if (InFrustum(ShadowMapType, RefNode)) RenderExterior(RefNode, MinRadius);
 				}
 				Entry = Entry->next;

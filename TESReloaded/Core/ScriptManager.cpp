@@ -111,15 +111,15 @@ GravityScript::GravityScript() { }
 
 void GravityScript::Run() {
 
-	bhkWorld* HavokWorld = NULL;
+	bhkRefObject* HavokWorld = NULL;
 	TESObjectCELL* CurrentCell = Player->parentCell;
 
 	if (CurrentCell) {
 		ExtraHavok* extraHavok = CurrentCell->GetExtraHavok();
 		if (extraHavok) HavokWorld = extraHavok->world;
 	}
-	if (!HavokWorld) HavokWorld = *((bhkWorld**)HavokWorldM);
-	HavokWorld->GetWorld()->gravity.z = -17.0f * TheSettingManager->SettingsMain.Gravity.Value;
+	if (!HavokWorld) HavokWorld = *((bhkRefObject**)HavokWorldM);
+	((hkWorld*)HavokWorld->hkObject)->gravity.z = -17.0f * TheSettingManager->SettingsMain.Gravity.Value;
 
 }
 

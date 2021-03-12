@@ -5291,7 +5291,7 @@ assert(sizeof(InventoryChanges) == 0x10);
 
 class ExtraHavok : public BSExtraData {
 public:
-	bhkWorld*		world;	// 00C
+	bhkRefObject*	world;	// 00C bhkWorld
 	UInt32			unk10;	// 010
 };
 assert(sizeof(ExtraHavok) == 0x014);

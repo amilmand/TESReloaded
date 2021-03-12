@@ -60,6 +60,8 @@ class TESObjectREFR;
 
 class BSFixedString;
 
+class bhkCollisionObject;
+
 struct NiRTTI {
 	const char* name;
 	NiRTTI*		parent;
@@ -1953,7 +1955,7 @@ public:
 	NiTransform				m_localTransform;		// 030
 	NiTransform				m_worldTransform;		// 064
 	NiTList<NiProperty>		m_propertyList;			// 098
-	NiObject*				m_spCollisionObject;	// 0A8
+	bhkCollisionObject*		m_spCollision;			// 0A8
 };
 assert(sizeof(NiAVObject) == 0x0AC);
 

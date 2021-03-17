@@ -8,6 +8,7 @@ static const UInt32 kObjectCullHook = 0x007073D6;
 static const UInt32 kObjectCullReturn1 = 0x007073DC;
 static const UInt32 kObjectCullReturn2 = 0x007073E7;
 static const void* VFTNiNode = (void*)0x00A7E38C;
+static const void* VFTBSFadeNode = (void*)0x00A3F944;
 static const void* VFTNiTriShape = (void*)0x00A7ED5C;
 static const void* VFTNiTriStrips = (void*)0x00A7F27C;
 #endif
@@ -58,6 +59,31 @@ bool OcclusionManager::InFrustum(NiNode* Node) {
 		Process->Planes.ActivePlanes = ActivePlanes;
 	}
 	return Result;
+
+}
+
+void OcclusionManager::RenderStatic(NiAVObject* Object, float MinRadius) {
+
+	if (Object) {
+		float Radius = Object->GetWorldBoundRadius();
+
+		if (!(Object->m_flags & NiAVObject::kFlag_AppCulled) && Radius >= MinRadius && Object->m_worldTransform.pos.z + Radius > TheShaderManager->ShaderConst.Water.waterSettings.x) {
+			void* VFT = *(void**)Object;
+			if (VFT == VFTNiNode || VFT == VFTBSFadeNode) {
+				if (VFT == VFTBSFadeNode && ((BSFadeNode*)Object)->FadeAlpha < 0.9f) return;
+				NiNode* Node = (NiNode*)Object;
+				if (InFrustum(Node)) {
+					for (int i = 0; i < Node->m_children.end; i++) {
+						RenderStatic(Node->m_children.data[i], MinRadius);
+					}
+				}
+			}
+			else if (VFT == VFTNiTriShape || VFT == VFTNiTriStrips) {
+				NiGeometry* Geo = (NiGeometry*)Object;
+				if (Geo->geomData->BuffData) Render(Geo);
+			}
+		}
+	}
 
 }
 
@@ -124,7 +150,8 @@ void OcclusionManager::Render(NiGeometry* Geo) {
 	int StartIndex = 0;
 	int PrimitiveCount = 0;
 	int StartRegister = 9;
-	NiGeometryBufferData* GeoData = Geo->geomData->BuffData;
+	NiGeometryData* ModelData = Geo->geomData;
+	NiGeometryBufferData* GeoData = ModelData->BuffData;
 	D3DXMATRIX WorldMatrix;
 
 	TheRenderManager->CreateD3DMatrix(&WorldMatrix, &Geo->m_worldTransform);
@@ -152,6 +179,7 @@ void OcclusionManager::Render(NiGeometry* Geo) {
 	else {
 		return;
 	}
+	//TheRenderManager->PackGeometryBuffer(GeoData, ModelData, NULL, ShaderDeclaration);
 	for (UInt32 i = 0; i < GeoData->StreamCount; i++) {
 		Device->SetStreamSource(i, GeoData->VBChip[i]->VB, 0, GeoData->VertexStride[i]);
 	}
@@ -195,9 +223,28 @@ void OcclusionManager::RenderOcclusionMap() {
 	for (UInt32 i = 0; i < CellArray->size * CellArray->size; i++) {
 		NiNode* CellNode = CellArray->grid[i].cell->niNode;
 		for (int i = 2; i < 6; i++) {
-			NiNode* TerrainNode = (NiNode*)CellNode->m_children.data[i];
-			if (TerrainNode->m_children.end) RenderTerrain(TerrainNode->m_children.data[0]);
+			NiNode* ChildNode = (NiNode*)CellNode->m_children.data[i];
+			if (ChildNode->m_children.end) {
+				RenderTerrain(ChildNode->m_children.data[0]);
+				RenderStatic(ChildNode->m_children.data[2], 100.0f);
+			}
 		}
+			//TList<TESObjectREFR>::Entry* Entry = &Cell->objectList.First;
+			//while (Entry) {
+			//	if (TESObjectREFR* Ref = GetRef(Entry->item, &ShadowsExteriors->Forms[ShadowMapType], &ShadowsExteriors->ExcludedForms)) {
+			//		NiNode* RefNode = Ref->GetNode();
+			//		
+			//		if (RefNode->m_pcName && strstr(RefNode->m_pcName, "CastleGate03")) {
+			//			hkRigidBody* RigidBody = (hkRigidBody*)RefNode->m_spCollision->bRigidBody->hkObject;
+			//			bhkPackedNiTriStripsShape* bPackedNiTriStripsShape = (bhkPackedNiTriStripsShape*)RigidBody->Shape->PackedNiTriStripsShape->bRefObject;
+
+			//			int b = 1;
+			//		}
+
+			//		if (InFrustum(ShadowMapType, RefNode)) RenderExterior(RefNode, MinRadius);
+			//	}
+			//	Entry = Entry->next;
+			//}
 	}
 	RenderState->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE, RenderStateArgs);
 	WaterOccluded = true;
@@ -239,6 +286,11 @@ static __declspec(naked) void ObjectCullHook() {
 }
 
 void CreateOcclusionCullingHook() {
+	
+	UInt32 bhkCollisionObjectExSize = sizeof(bhkCollisionObjectEx);
+	SafeWrite8(0x00564523, bhkCollisionObjectExSize);
+	SafeWrite8(0x0089E983, bhkCollisionObjectExSize);
+	SafeWrite8(0x0089EA16, bhkCollisionObjectExSize);
 
 	WriteRelJump(kObjectCullHook, (UInt32)ObjectCullHook);
 

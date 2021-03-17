@@ -34,6 +34,13 @@ public:
 };
 assert(sizeof(bhkRefObject) == 0x010);
 
+class bhkPackedNiTriStripsShape : public bhkRefObject {
+public:
+	UInt32			unk010;		// 010
+	UInt32			unk014;		// 014
+};
+assert(sizeof(bhkPackedNiTriStripsShape) == 0x18);
+
 class bhkRigidBody : public bhkRefObject {
 public:
 	UInt32			unk010;		// 010
@@ -51,10 +58,10 @@ class hkPackedNiTriStripsData : public NiObject {
 public:
 	UInt32		NumTriangles;	// 008
 	UInt32		NumVertexes;	// 00C
-	NiObject*	Shape1;			// 010
-	NiObject*	Shape2;			// 014
-	NiObject*	Shape3;			// 018
-	NiObject*	Shape4;			// 01C
+	UInt32		unk010;			// 010
+	UInt32		unk014;			// 014
+	UInt32		unk018;			// 018
+	UInt32		unk01C;			// 01C
 };
 assert(sizeof(hkPackedNiTriStripsData) == 0x20);
 
@@ -94,22 +101,48 @@ assert(sizeof(hkShape) == 0x10);
 
 class hkPackedNiTriStripsShape : public hkShape {
 public:
-	hkPackedNiTriStripsData*	PackedNiTriStripsData;		// 010
+	hkPackedNiTriStripsData*	PackedNiTriStripsData;	// 010
 };
 assert(sizeof(hkPackedNiTriStripsShape) == 0x14);
 
-class hkMoppBvTreeShape : public hkShape {
-public:
-	hkMoppCode*					MoppCode;				// 010
-};
-assert(sizeof(hkMoppBvTreeShape) == 0x14);
-
 class hkRigidBody : public hkRefObject {
 public:
-	hkWorld*			World;				// 008
-	bhkRigidBody*		bRigidBody;			// 00C
-	UInt32				unk010;				// 010
-	hkMoppBvTreeShape*	Shape;				// 014 always a hkMoppBvTreeShape?
-	// More...
+	hkWorld*			World;			// 008
+	bhkRigidBody*		bRigidBody;		// 00C
+	UInt32				unk010;			// 010
+	hkShape*			Shape;			// 014 always a hkMoppBvTreeShape?
+	UInt32				unk018;
+	hkBaseObject*		unk01C;
+	UInt32				unk020;
+	UInt32				unk024;
+	UInt32				unk028;
+	UInt32				unk02C;
+	UInt32				unk030;
+	UInt32				unk034;
+	UInt32				unk038;
+	UInt32				unk03C;
+	UInt32				unk040;
+	UInt32				unk044;
+	UInt32				unk048;
+	UInt32				unk04C;
+	hkBaseObject*		unk050;
+	UInt32				unk054;
+	UInt8				unk058;			// 058
+	UInt8				pad058[3];
+	UInt32				unk05C;			// 05C
+	UInt32				unk060;			// 060
+	UInt32				unk064;
+	UInt32				unk068;
+	UInt32				unk06C;
+	UInt32				unk070;
+	UInt32				unk074;
+	UInt32				unk078;
+	UInt32				unk07C;
+	UInt32				unk080;
+	UInt32				unk084;
+	UInt32				unk088;
+	UInt16				unk08C;
+	UInt16				unk08E;			// 08E
+	UInt32				unk090;
 };
-assert(sizeof(hkRigidBody) == 0x18);
+assert(sizeof(hkRigidBody) == 0x94);

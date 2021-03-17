@@ -79,6 +79,9 @@ public:
 	HRESULT TrackSetSamplerState(UInt32, D3DSAMPLERSTATETYPE, UInt32, UInt8);
 	void	TrackRenderReflections(NiCamera*, ShadowSceneNode*);
 	void	TrackWaterCullingProcess(NiAVObject*);
+
+	UInt32	TrackPrepareGeometryForRendering(NiGeometry*, NiSkinPartition::Partition*, NiGeometryBufferData*, UInt32);
+
 #elif defined(SKYRIM)
 	void	TrackRender(BSRenderedTexture*, int, int);
 	void	TrackRenderWorldSceneGraph(Sun*, UInt8, UInt8);
@@ -125,7 +128,6 @@ void RenderHook::TrackRender(BSRenderedTexture* RenderedTexture, int Arg2, int A
 	TheRenderManager->SetSceneGraph();
 	TheShaderManager->UpdateConstants();
 	if (TheSettingManager->SettingsMain.Develop.TraceShaders && MenuManager->IsActive(Menu::MenuType::kMenuType_None) && TheKeyboardManager->OnKeyDown(TheSettingManager->SettingsMain.Develop.TraceShaders) && DWNode::Get() == NULL) DWNode::Create();
-	if (TheSettingManager->SettingsMain.Develop.LogShaders && MenuManager->IsActive(Menu::MenuType::kMenuType_None) && TheKeyboardManager->OnKeyDown(TheSettingManager->SettingsMain.Develop.LogShaders)) Logger::Log("START FRAME LOG");
 	(this->*Render)(RenderedTexture, Arg2, Arg3);
 
 }
@@ -150,7 +152,6 @@ void __cdecl TrackSetupRenderingPass(UInt32 PassIndex, NiD3DShader* Shader) {
 			if (!PixelShader->ShaderProg) strcat(Name, " - Pixel: vanilla");
 			DWNode::AddNode(Name, Geometry->m_parent, Geometry);
 		}
-		if (TheSettingManager->SettingsMain.Develop.LogShaders && TheKeyboardManager->OnKeyDown(TheSettingManager->SettingsMain.Develop.LogShaders)) Logger::Log("Pass %s (%s %s)", Geometry->m_pcName, VertexShader->ShaderName, PixelShader->ShaderName);
 	}
 
 }
@@ -273,7 +274,6 @@ void RenderHook::TrackRender(BSRenderedTexture* RenderedTexture) {
 	if (SettingsMain->OcclusionCulling.Enabled) TheOcclusionManager->PerformOcclusionCulling();
 	if (TheRenderManager->BackBuffer) TheRenderManager->defaultRTGroup->RenderTargets[0]->data->Surface = TheRenderManager->defaultRTGroup->RenderTargets[1]->data->Surface;
 	if (SettingsMain->Develop.TraceShaders && MenuManager->IsActive(Menu::MenuType::kMenuType_None) && TheKeyboardManager->OnKeyDown(SettingsMain->Develop.TraceShaders) && DWNode::Get() == NULL) DWNode::Create();
-	if (SettingsMain->Develop.LogShaders && MenuManager->IsActive(Menu::MenuType::kMenuType_None) && TheKeyboardManager->OnKeyDown(SettingsMain->Develop.LogShaders)) Logger::Log("START FRAME LOG");
 	(this->*Render)(RenderedTexture);
 
 }
@@ -339,7 +339,6 @@ UInt32 RenderHook::TrackSetupShaderPrograms(NiGeometry* Geometry, NiSkinInstance
 			if (!PixelShader->ShaderProg) strcat(Name, " - Pixel: vanilla");
 			DWNode::AddNode(Name, Geometry->m_parent, Geometry);
 		}
-		if (TheSettingManager->SettingsMain.Develop.LogShaders && TheKeyboardManager->OnKeyDown(TheSettingManager->SettingsMain.Develop.LogShaders)) Logger::Log("Pass %s (%s %s)", Geometry->m_pcName, VertexShader->ShaderName, PixelShader->ShaderName);
 	}
 	return (this->*SetupShaderPrograms)(Geometry, SkinInstance, SkinPartition, GeometryBufferData, PropertyState, EffectState, WorldTransform, WorldBound);
 	
@@ -400,6 +399,19 @@ void RenderHook::TrackWaterCullingProcess(NiAVObject* Object) {
 
 }
 
+UInt32 (__thiscall RenderHook::* PrepareGeometryForRendering)(NiGeometry*, NiSkinPartition::Partition*, NiGeometryBufferData*, UInt32);
+UInt32 (__thiscall RenderHook::* TrackPrepareGeometryForRendering)(NiGeometry*, NiSkinPartition::Partition*, NiGeometryBufferData*, UInt32);
+UInt32 RenderHook::TrackPrepareGeometryForRendering(NiGeometry* Geo, NiSkinPartition::Partition* Partition, NiGeometryBufferData* BufferData, UInt32 Arg4) {
+	
+	NiShader* Shader = (NiShader*)this;
+	if (Geo->m_pcName && strstr(Geo->m_pcName, "bhkPackedNiTriStripsShape")) {
+		int b = 1;
+	}
+
+	UInt32 a = (this->*PrepareGeometryForRendering)(Geo, Partition, BufferData, Arg4);
+	return a;
+}
+
 NiPixelData* (__cdecl * SaveGameScreenshot)(int*, int*) = (NiPixelData* (__cdecl *)(int*, int*))0x00411B70;
 NiPixelData* __cdecl TrackSaveGameScreenshot(int* pWidth, int* pHeight) {
 	
@@ -449,7 +461,6 @@ void RenderHook::TrackRender(BSRenderedTexture* RenderedTexture, int Arg2, int A
 	TheRenderManager->SetSceneGraph();
 	TheShaderManager->UpdateConstants();
 	if (TheSettingManager->SettingsMain.Develop.TraceShaders && TheKeyboardManager->OnKeyDown(TheSettingManager->SettingsMain.Develop.TraceShaders)) Logger::Log("START FRAME LOG");
-	if (TheSettingManager->SettingsMain.Develop.LogShaders && TheKeyboardManager->OnKeyDown(TheSettingManager->SettingsMain.Develop.LogShaders)) Logger::Log("START FRAME LOG");
 	(this->*Render)(RenderedTexture, Arg2, Arg3);
 
 }
@@ -465,7 +476,6 @@ bool __cdecl TrackSetupRenderingPass(UInt32 PassIndex, BSShader* Shader) {
 	if (VertexShader && PixelShader) {
 		if (VertexShader->ShaderProg) VertexShader->ShaderProg->SetCT();
 		if (PixelShader->ShaderProg) PixelShader->ShaderProg->SetCT();
-		if (TheSettingManager->SettingsMain.Develop.LogShaders && TheKeyboardManager->OnKeyDown(TheSettingManager->SettingsMain.Develop.LogShaders)) Logger::Log("Pass %s (%s %s)", Geometry->m_pcName, VertexShader->ShaderName, PixelShader->ShaderName);
 	}
 	return r;
 
@@ -712,6 +722,11 @@ void CreateRenderHook() {
 	TrackRenderReflections					= &RenderHook::TrackRenderReflections;
 	*((int*)&WaterCullingProcess)			= 0x0049CBF0;
 	TrackWaterCullingProcess				= &RenderHook::TrackWaterCullingProcess;
+
+	*((int*)&PrepareGeometryForRendering)			= 0x0077A310;
+	TrackPrepareGeometryForRendering				= &RenderHook::TrackPrepareGeometryForRendering;
+
+
 #elif defined(SKYRIM)
 	*((int*)&RenderWorldSceneGraph)			= 0x00692290;
 	TrackRenderWorldSceneGraph				= &RenderHook::TrackRenderWorldSceneGraph;
@@ -746,6 +761,10 @@ void CreateRenderHook() {
 	DetourAttach(&(PVOID&)SaveGameScreenshot,					  &TrackSaveGameScreenshot);
 	DetourAttach(&(PVOID&)SetShaderPackage,						  &TrackSetShaderPackage);
 	DetourAttach(&(PVOID&)RenderObject,							  &TrackRenderObject);
+
+	DetourAttach(&(PVOID&)PrepareGeometryForRendering, *((PVOID*)&TrackPrepareGeometryForRendering));
+
+
 #elif defined(SKYRIM)
 	DetourAttach(&(PVOID&)RenderWorldSceneGraph,		*((PVOID*)&TrackRenderWorldSceneGraph));
 	DetourAttach(&(PVOID&)RenderFirstPerson,			*((PVOID*)&TrackRenderFirstPerson));

@@ -1,4 +1,5 @@
 #define WaitForDebugger 0
+#define HookDevice 0
 
 #include "RenderHook.h"
 #include "ShaderIOHook.h"
@@ -28,9 +29,15 @@ extern "C" {
 
 	bool OBSEPlugin_Load(const PluginInterface* Interface) {
 
-#if WaitForDebugger
-		while (!IsDebuggerPresent()) Sleep(10);
+#if _DEBUG
+	#if WaitForDebugger
+			while (!IsDebuggerPresent()) Sleep(10);
+	#endif
+	#if HookDevice
+			CreateD3D9Hook();
+	#endif
 #endif
+
 		Logger::CreateLog("OblivionReloaded.log");
 		new CommandManager();
 		TheCommandManager->AddCommands(Interface);
@@ -60,7 +67,6 @@ extern "C" {
 			if (TheSettingManager->SettingsMain.Dodge.Enabled) CreateDodgeHook();
 			if (TheSettingManager->SettingsMain.FlyCam.Enabled) CreateFlyCamHook();
 			if (TheSettingManager->SettingsMain.WeatherMode.Enabled) CreateWeatherModeHook();
-			if (TheSettingManager->SettingsMain.Develop.LogShaders) CreateD3D9Hook();
 
 			WriteRelJump(0x0049849A, 0x004984A0); // Skips antialiasing deactivation if HDR is enabled on the D3DDevice
 			WriteRelJump(0x004984BD, 0x004984CD); // Skips antialiasing deactivation if AllowScreenshot is enabled

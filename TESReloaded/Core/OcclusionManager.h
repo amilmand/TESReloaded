@@ -1,10 +1,17 @@
 #pragma once
 
+class bhkCollisionObjectEx : public bhkCollisionObject {
+public:
+	NiGeometry*		Geometry;		// 014
+};
+assert(sizeof(bhkCollisionObjectEx) == 0x18);
+
 class OcclusionManager { // Never disposed
 public:
 	OcclusionManager();
 
 	bool					InFrustum(NiNode* Node);
+	void					RenderStatic(NiAVObject* Object, float MinRadius);
 	void					RenderTerrain(NiAVObject* Object);
 	void					RenderWater(NiAVObject* Object);
 	void					Render(NiGeometry* Geo);

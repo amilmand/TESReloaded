@@ -388,16 +388,14 @@ STDMETHODIMP TESRDirect3DDevice9::GetVertexShader(IDirect3DVertexShader9 **ppSha
 }
 
 STDMETHODIMP TESRDirect3DDevice9::SetVertexShaderConstantF(UINT StartRegister, CONST float *pConstantData, UINT Vector4fCount) {
-	if (TheSettingManager->SettingsMain.Develop.LogShaders && TheKeyboardManager->OnKeyDown(TheSettingManager->SettingsMain.Develop.LogShaders)) {
-		Logger::Log("Vertex register: %i", StartRegister);
-		Logger::Log("Count: %i", Vector4fCount);
-		for (UInt32 i = 0; i < Vector4fCount; i++) {
-			Logger::Log("%f", pConstantData[0 + 4 * i]);
-			Logger::Log("%f", pConstantData[1 + 4 * i]);
-			Logger::Log("%f", pConstantData[2 + 4 * i]);
-			Logger::Log("%f", pConstantData[3 + 4 * i]);
-		}
-	}
+	//Logger::Log("Vertex register: %i", StartRegister);
+	//Logger::Log("Count: %i", Vector4fCount);
+	//for (UInt32 i = 0; i < Vector4fCount; i++) {
+	//	Logger::Log("%f", pConstantData[0 + 4 * i]);
+	//	Logger::Log("%f", pConstantData[1 + 4 * i]);
+	//	Logger::Log("%f", pConstantData[2 + 4 * i]);
+	//	Logger::Log("%f", pConstantData[3 + 4 * i]);
+	//}
 	return D3DDevice->SetVertexShaderConstantF(StartRegister, pConstantData, Vector4fCount);
 }
 
@@ -458,16 +456,14 @@ STDMETHODIMP TESRDirect3DDevice9::GetPixelShader(IDirect3DPixelShader9 **ppShade
 }
 
 STDMETHODIMP TESRDirect3DDevice9::SetPixelShaderConstantF(UINT StartRegister, CONST float *pConstantData, UINT Vector4fCount) {
-	if (TheSettingManager->SettingsMain.Develop.LogShaders && TheKeyboardManager->OnKeyDown(TheSettingManager->SettingsMain.Develop.LogShaders)) {
-		Logger::Log("Pixel register: %i", StartRegister);
-		Logger::Log("Count: %i", Vector4fCount);
-		for (UInt32 i = 0; i < Vector4fCount; i++) {
-			Logger::Log("%f", pConstantData[0 + 4 * i]);
-			Logger::Log("%f", pConstantData[1 + 4 * i]);
-			Logger::Log("%f", pConstantData[2 + 4 * i]);
-			Logger::Log("%f", pConstantData[3 + 4 * i]);
-		}
-	}
+	//Logger::Log("Pixel register: %i", StartRegister);
+	//Logger::Log("Count: %i", Vector4fCount);
+	//for (UInt32 i = 0; i < Vector4fCount; i++) {
+	//	Logger::Log("%f", pConstantData[0 + 4 * i]);
+	//	Logger::Log("%f", pConstantData[1 + 4 * i]);
+	//	Logger::Log("%f", pConstantData[2 + 4 * i]);
+	//	Logger::Log("%f", pConstantData[3 + 4 * i]);
+	//}
 	return D3DDevice->SetPixelShaderConstantF(StartRegister, pConstantData, Vector4fCount);
 }
 

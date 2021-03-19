@@ -1,7 +1,6 @@
 #pragma once
 
-class hkMoppCode;
-class hkPackedNiTriStripsShape;
+class hkPackedNiTriStripsData;
 
 class bhkCharacterProxy;
 
@@ -29,41 +28,104 @@ assert(sizeof(hkRefObject) == 0x008);
 
 class bhkRefObject : public NiObject {
 public:
-	hkRefObject*		hkObject;	// 008
-	void*				hkData;		// 00C
-};
-assert(sizeof(bhkRefObject) == 0x010);
+	virtual void	SetObject(hkRefObject* hkObject);
+	virtual void	Unk_14();
 
-class bhkPackedNiTriStripsShape : public bhkRefObject {
+	hkRefObject*	hkObject;	// 008
+};
+assert(sizeof(bhkRefObject) == 0x00C);
+
+class bhkSerializable : public bhkRefObject {
+public:
+	virtual void	Unk_15();
+	virtual void	Unk_16();
+	virtual void	Unk_17();
+	virtual void	Unk_18();
+	virtual void	Unk_19();
+	virtual void	Unk_1A();
+	virtual void	Unk_1B();
+	virtual void	Unk_1C();
+	virtual void	Unk_1D();
+	virtual void	Unk_1E();
+	virtual void	Unk_1F();
+
+	void*			hkData;		// 00C
+};
+assert(sizeof(bhkSerializable) == 0x010);
+
+class bhkWorldObject : public bhkSerializable {
+public:
+	virtual void	Unk_20();
+	virtual void	Unk_21();
+	virtual void	Unk_22();
+};
+assert(sizeof(bhkWorldObject) == 0x010);
+
+class bhkRigidBody : public bhkWorldObject {
 public:
 	UInt32			unk010;		// 010
 	UInt32			unk014;		// 014
+	UInt32			unk018;		// 018
 };
-assert(sizeof(bhkPackedNiTriStripsShape) == 0x18);
+assert(sizeof(bhkRigidBody) == 0x1C);
 
-class bhkRigidBody : public bhkRefObject {
+class bhkShape : public bhkSerializable {
 public:
-	UInt32			unk010;		// 010
-	UInt32			unk014;		// 014
+	virtual void	Unk_20();
+	virtual void	Unk_21();
+	virtual void	Unk_22();
+	virtual void	Unk_23();
+	virtual void	CreateNiGeometry(NiNode* Node);
+	virtual void	Unk_25();
+	virtual void	AddMaterialProperty(NiAVObject* Node);
+
+	enum {
+		kMaterial_Stone = 0,
+		kMaterial_Cloth,
+		kMaterial_Dirt,
+		kMaterial_Glass,
+		kMaterial_Grass,
+		kMaterial_Metal,
+		kMaterial_Organic,
+		kMaterial_Skin,
+		kMaterial_Water,
+		kMaterial_Wood,
+		kMaterial_HeavyStone,
+		kMaterial_HeavyMetal,
+		kMaterial_HeavyWood,
+		kMaterial_Chain,
+		kMaterial_Snow,
+		kMaterial_StoneStairs,
+		kMaterial_ClothStairs,
+		kMaterial_DirtStairs,
+		kMaterial_GlassStairs,
+		kMaterial_GrassStairs,
+		kMaterial_MetalStairs,
+		kMaterial_OrganicStairs,
+		kMaterial_SkinStairs,
+		kMaterial_WaterStairs,
+		kMaterial_WoodStairs,
+		kMaterial_HeavyStoneStairs,
+		kMaterial_HeavyMetalStairs,
+		kMaterial_HeavyWoodStairs,
+		kMaterial_ChainStairs,
+		kMaterial_SnowStairs,
+		kMaterial_Elevator,
+		kMaterial_Default,
+	};
+
+	UInt32			material;	// 010
 };
-assert(sizeof(bhkRigidBody) == 0x18);
+assert(sizeof(bhkShape) == 0x14);
+
+class bhkPackedNiTriStripsShape : public bhkShape {};
+assert(sizeof(bhkPackedNiTriStripsShape) == 0x14);
 
 class NiCollisionObject : public NiObject {
 public:
 	NiAVObject*		SceneObject;	// 008
 };
 assert(sizeof(NiCollisionObject) == 0x0C);
-
-class hkPackedNiTriStripsData : public NiObject {
-public:
-	UInt32		NumTriangles;	// 008
-	UInt32		NumVertexes;	// 00C
-	UInt32		unk010;			// 010
-	UInt32		unk014;			// 014
-	UInt32		unk018;			// 018
-	UInt32		unk01C;			// 01C
-};
-assert(sizeof(hkPackedNiTriStripsData) == 0x20);
 
 class bhkCollisionObject : public NiCollisionObject {
 public:
@@ -94,23 +156,29 @@ assert(sizeof(hkWorld) == 0x030);
 
 class hkShape : public hkRefObject {
 public:
-	bhkRefObject*				bRefObject;				// 008
-	hkPackedNiTriStripsShape*	PackedNiTriStripsShape;	// 00C
+	bhkRefObject*		bRefObject;		// 008
 };
-assert(sizeof(hkShape) == 0x10);
+assert(sizeof(hkShape) == 0x00C);
 
 class hkPackedNiTriStripsShape : public hkShape {
 public:
+	UInt32						unk0C;					// 00C
 	hkPackedNiTriStripsData*	PackedNiTriStripsData;	// 010
 };
 assert(sizeof(hkPackedNiTriStripsShape) == 0x14);
+
+class hkScaledMoppBvTreeShape : public hkShape {
+public:
+	hkPackedNiTriStripsShape*	PackedNiTriStripsShape;		// 00C
+};
+assert(sizeof(hkScaledMoppBvTreeShape) == 0x010);
 
 class hkRigidBody : public hkRefObject {
 public:
 	hkWorld*			World;			// 008
 	bhkRigidBody*		bRigidBody;		// 00C
 	UInt32				unk010;			// 010
-	hkShape*			Shape;			// 014 always a hkMoppBvTreeShape?
+	hkShape*			Shape;			// 014
 	UInt32				unk018;
 	hkBaseObject*		unk01C;
 	UInt32				unk020;

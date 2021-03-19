@@ -1029,8 +1029,7 @@ void CreateEquipmentHook() {
 	DetourAttach(&(PVOID&)HideEquipment,			*((PVOID *)&TrackHideEquipment));
 	DetourAttach(&(PVOID&)SaveGame,					*((PVOID *)&TrackSaveGame));
 	DetourTransactionCommit();
-	
-	// Extends the HighProcess allocation (for each constructor call) to store additional data
+
 	UInt32 HighProcessExSize = sizeof(HighProcessEx);
 	SafeWrite32(0x005FA47C, HighProcessExSize);
 	SafeWrite32(0x00607582, HighProcessExSize);

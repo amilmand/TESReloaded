@@ -2,7 +2,7 @@
 
 class bhkCollisionObjectEx : public bhkCollisionObject {
 public:
-	NiGeometry*		Geometry;		// 014
+	NiNode*		GeoNode;		// 014
 };
 assert(sizeof(bhkCollisionObjectEx) == 0x18);
 

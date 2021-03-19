@@ -4,6 +4,12 @@
 #define RenderStateArgs 0, 0
 #elif defined(OBLIVION)
 #define RenderStateArgs 0
+static const UInt32 kNew1CollisionObjectHook = 0x00564529;
+static const UInt32 kNew1CollisionObjectReturn = 0x0056452E;
+static const UInt32 kNew2CollisionObjectHook = 0x0089E989;
+static const UInt32 kNew2CollisionObjectReturn = 0x0089E98E;
+static const UInt32 kNew3CollisionObjectHook = 0x0089EA1C;
+static const UInt32 kNew3CollisionObjectReturn = 0x0089EA21;
 static const UInt32 kObjectCullHook = 0x007073D6;
 static const UInt32 kObjectCullReturn1 = 0x007073DC;
 static const UInt32 kObjectCullReturn2 = 0x007073E7;
@@ -11,6 +17,7 @@ static const void* VFTNiNode = (void*)0x00A7E38C;
 static const void* VFTBSFadeNode = (void*)0x00A3F944;
 static const void* VFTNiTriShape = (void*)0x00A7ED5C;
 static const void* VFTNiTriStrips = (void*)0x00A7F27C;
+static const void* VFTbhkCollisionObject = (void*)0x00A55FCC;
 #endif
 
 OcclusionManager::OcclusionManager() {
@@ -66,21 +73,40 @@ void OcclusionManager::RenderStatic(NiAVObject* Object, float MinRadius) {
 
 	if (Object) {
 		float Radius = Object->GetWorldBoundRadius();
-
+		
 		if (!(Object->m_flags & NiAVObject::kFlag_AppCulled) && Radius >= MinRadius && Object->m_worldTransform.pos.z + Radius > TheShaderManager->ShaderConst.Water.waterSettings.x) {
 			void* VFT = *(void**)Object;
 			if (VFT == VFTNiNode || VFT == VFTBSFadeNode) {
 				if (VFT == VFTBSFadeNode && ((BSFadeNode*)Object)->FadeAlpha < 0.9f) return;
 				NiNode* Node = (NiNode*)Object;
 				if (InFrustum(Node)) {
-					for (int i = 0; i < Node->m_children.end; i++) {
-						RenderStatic(Node->m_children.data[i], MinRadius);
+					if (bhkCollisionObjectEx* bCollisionObject = (bhkCollisionObjectEx*)Node->m_spCollision) {
+						VFT = *(void**)bCollisionObject;
+						if (VFT == VFTbhkCollisionObject) {
+							if (!bCollisionObject->GeoNode) {
+								if (bhkRigidBody* bRigidBody = bCollisionObject->bRigidBody) {
+									if (hkRigidBody* RigidBody = (hkRigidBody*)bRigidBody->hkObject) {
+										if (bhkShape* bShape = (bhkShape*)RigidBody->Shape->bRefObject) {
+											bCollisionObject->GeoNode = (NiNode*)MemoryAlloc(sizeof(NiNode));
+											bCollisionObject->GeoNode->New(1);
+											bShape->CreateNiGeometry(bCollisionObject->GeoNode);
+										}
+									}
+								}
+							}
+							//if (bCollisionObject->GeoNode) {
+							//	for (int i = 0; i < bCollisionObject->GeoNode->m_children.end; i++) {
+							//		Render((NiGeometry*)bCollisionObject->GeoNode->m_children.data[i]);
+							//	}
+							//}
+						}
+					}
+					else {
+						for (int i = 0; i < Node->m_children.end; i++) {
+							RenderStatic(Node->m_children.data[i], MinRadius);
+						}
 					}
 				}
-			}
-			else if (VFT == VFTNiTriShape || VFT == VFTNiTriStrips) {
-				NiGeometry* Geo = (NiGeometry*)Object;
-				if (Geo->geomData->BuffData) Render(Geo);
 			}
 		}
 	}
@@ -229,22 +255,6 @@ void OcclusionManager::RenderOcclusionMap() {
 				RenderStatic(ChildNode->m_children.data[2], 100.0f);
 			}
 		}
-			//TList<TESObjectREFR>::Entry* Entry = &Cell->objectList.First;
-			//while (Entry) {
-			//	if (TESObjectREFR* Ref = GetRef(Entry->item, &ShadowsExteriors->Forms[ShadowMapType], &ShadowsExteriors->ExcludedForms)) {
-			//		NiNode* RefNode = Ref->GetNode();
-			//		
-			//		if (RefNode->m_pcName && strstr(RefNode->m_pcName, "CastleGate03")) {
-			//			hkRigidBody* RigidBody = (hkRigidBody*)RefNode->m_spCollision->bRigidBody->hkObject;
-			//			bhkPackedNiTriStripsShape* bPackedNiTriStripsShape = (bhkPackedNiTriStripsShape*)RigidBody->Shape->PackedNiTriStripsShape->bRefObject;
-
-			//			int b = 1;
-			//		}
-
-			//		if (InFrustum(ShadowMapType, RefNode)) RenderExterior(RefNode, MinRadius);
-			//	}
-			//	Entry = Entry->next;
-			//}
 	}
 	RenderState->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE, RenderStateArgs);
 	WaterOccluded = true;
@@ -271,6 +281,39 @@ void OcclusionManager::PerformOcclusionCulling() {
 
 }
 
+static __declspec(naked) void New1CollisionObjectHook() {
+
+	__asm {
+		mov     edi, eax
+		add     esp, 4
+		mov		[edi + bhkCollisionObjectEx::GeoNode], 0 
+		jmp		kNew1CollisionObjectReturn
+	}
+
+}
+
+static __declspec(naked) void New2CollisionObjectHook() {
+
+	__asm {
+		mov     esi, eax
+		add     esp, 4
+		mov		[edi + bhkCollisionObjectEx::GeoNode], 0 
+		jmp		kNew2CollisionObjectReturn
+	}
+
+}
+
+static __declspec(naked) void New3CollisionObjectHook() {
+
+	__asm {
+		mov     esi, eax
+		add     esp, 4
+		mov		[edi + bhkCollisionObjectEx::GeoNode], 0 
+		jmp		kNew3CollisionObjectReturn
+	}
+
+}
+
 static __declspec(naked) void ObjectCullHook() {
 
 	__asm {
@@ -286,12 +329,15 @@ static __declspec(naked) void ObjectCullHook() {
 }
 
 void CreateOcclusionCullingHook() {
-	
+
 	UInt32 bhkCollisionObjectExSize = sizeof(bhkCollisionObjectEx);
 	SafeWrite8(0x00564523, bhkCollisionObjectExSize);
 	SafeWrite8(0x0089E983, bhkCollisionObjectExSize);
 	SafeWrite8(0x0089EA16, bhkCollisionObjectExSize);
 
-	WriteRelJump(kObjectCullHook, (UInt32)ObjectCullHook);
-
+	WriteRelJump(kNew1CollisionObjectHook,	(UInt32)New1CollisionObjectHook);
+	WriteRelJump(kNew2CollisionObjectHook,	(UInt32)New2CollisionObjectHook);
+	WriteRelJump(kNew3CollisionObjectHook,	(UInt32)New3CollisionObjectHook);
+	WriteRelJump(kObjectCullHook,			(UInt32)ObjectCullHook);
+	
 }

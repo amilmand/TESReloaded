@@ -309,7 +309,7 @@ void ShadowManager::Render(NiGeometry* Geo) {
 		}
 		else {
 			BSShaderProperty* ShaderProperty = (BSShaderProperty*)Geo->GetProperty(NiProperty::PropertyType::kType_Shade);
-			if (!ShaderProperty->IsLightingProperty()) return;
+			if (!ShaderProperty || !ShaderProperty->IsLightingProperty()) return;
 			if (AlphaEnabled) {
 				NiAlphaProperty* AProp = (NiAlphaProperty*)Geo->GetProperty(NiProperty::PropertyType::kType_Alpha);
 				if (AProp->flags & NiAlphaProperty::AlphaFlags::ALPHA_BLEND_MASK || AProp->flags & NiAlphaProperty::AlphaFlags::TEST_ENABLE_MASK) {

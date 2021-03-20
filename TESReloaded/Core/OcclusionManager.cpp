@@ -89,16 +89,16 @@ void OcclusionManager::RenderStatic(NiAVObject* Object, float MinRadius) {
 										if (bhkShape* bShape = (bhkShape*)RigidBody->Shape->bRefObject) {
 											bCollisionObject->GeoNode = (NiNode*)MemoryAlloc(sizeof(NiNode));
 											bCollisionObject->GeoNode->New(1);
-											bShape->CreateNiGeometry(bCollisionObject->GeoNode);
+											bShape->CreateStaticGeometry(TheRenderManager->unsharedGeometryGroup, bCollisionObject->GeoNode, Node);
 										}
 									}
 								}
 							}
-							//if (bCollisionObject->GeoNode) {
-							//	for (int i = 0; i < bCollisionObject->GeoNode->m_children.end; i++) {
-							//		Render((NiGeometry*)bCollisionObject->GeoNode->m_children.data[i]);
-							//	}
-							//}
+							if (bCollisionObject->GeoNode) {
+								for (int i = 0; i < bCollisionObject->GeoNode->m_children.end; i++) {
+									Render((NiGeometry*)bCollisionObject->GeoNode->m_children.data[i]);
+								}
+							}
 						}
 					}
 					else {
@@ -178,34 +178,37 @@ void OcclusionManager::Render(NiGeometry* Geo) {
 	int StartRegister = 9;
 	NiGeometryData* ModelData = Geo->geomData;
 	NiGeometryBufferData* GeoData = ModelData->BuffData;
+	NiD3DShaderDeclaration* ShaderDeclaration = (Geo->shader ? Geo->shader->ShaderDeclaration : NULL);
 	D3DXMATRIX WorldMatrix;
 
 	TheRenderManager->CreateD3DMatrix(&WorldMatrix, &Geo->m_worldTransform);
 	D3DXMatrixMultiplyTranspose(&TheShaderManager->ShaderConst.OcclusionMap.OcclusionWorldViewProj, &WorldMatrix, &TheRenderManager->ViewProjMatrix);
 	BSShaderProperty* ShaderProperty = (BSShaderProperty*)Geo->GetProperty(NiProperty::PropertyType::kType_Shade);
-	if (ShaderProperty->IsLightingProperty()) {
-		if (NiTexture* Texture = *((BSShaderPPLightingProperty*)ShaderProperty)->textures[0]) { // Only for testing, remove the diffuse, we do not need it.
-			RenderState->SetTexture(0, Texture->rendererData->dTexture);
+	if (ShaderProperty) {
+		if (ShaderProperty->IsLightingProperty()) {
+			if (NiTexture* Texture = *((BSShaderPPLightingProperty*)ShaderProperty)->textures[0]) { // Only for testing, remove the diffuse, we do not need it.
+				RenderState->SetTexture(0, Texture->rendererData->dTexture);
+				RenderState->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP, false);
+				RenderState->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP, false);
+				RenderState->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT, false);
+				RenderState->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT, false);
+				RenderState->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_POINT, false);
+			}
+		}
+		else if (ShaderProperty->IsWaterProperty()) {
+			if (!Tex) D3DXCreateTextureFromFileA(TheRenderManager->device, "C:\\Bethesda Softworks\\Oblivion\\Data\\Textures\\Water\\water00.dds", &Tex); // Only for testing, remove the diffuse, we do not need it.
+			RenderState->SetTexture(0, Tex);
 			RenderState->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP, false);
 			RenderState->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP, false);
 			RenderState->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT, false);
 			RenderState->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT, false);
 			RenderState->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_POINT, false);
 		}
+		else {
+			return;
+		}
 	}
-	else if (ShaderProperty->IsWaterProperty()) {
-		if (!Tex) D3DXCreateTextureFromFileA(TheRenderManager->device, "C:\\Bethesda Softworks\\Oblivion\\Data\\Textures\\Water\\water00.dds", &Tex); // Only for testing, remove the diffuse, we do not need it.
-		RenderState->SetTexture(0, Tex);
-		RenderState->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP, false);
-		RenderState->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP, false);
-		RenderState->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT, false);
-		RenderState->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT, false);
-		RenderState->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_POINT, false);
-	}
-	else {
-		return;
-	}
-	//TheRenderManager->PackGeometryBuffer(GeoData, ModelData, NULL, ShaderDeclaration);
+	TheRenderManager->PackGeometryBuffer(GeoData, ModelData, NULL, ShaderDeclaration);
 	for (UInt32 i = 0; i < GeoData->StreamCount; i++) {
 		Device->SetStreamSource(i, GeoData->VBChip[i]->VB, 0, GeoData->VertexStride[i]);
 	}
@@ -297,7 +300,7 @@ static __declspec(naked) void New2CollisionObjectHook() {
 	__asm {
 		mov     esi, eax
 		add     esp, 4
-		mov		[edi + bhkCollisionObjectEx::GeoNode], 0 
+		mov		[esi + bhkCollisionObjectEx::GeoNode], 0 
 		jmp		kNew2CollisionObjectReturn
 	}
 
@@ -308,7 +311,7 @@ static __declspec(naked) void New3CollisionObjectHook() {
 	__asm {
 		mov     esi, eax
 		add     esp, 4
-		mov		[edi + bhkCollisionObjectEx::GeoNode], 0 
+		mov		[esi + bhkCollisionObjectEx::GeoNode], 0 
 		jmp		kNew3CollisionObjectReturn
 	}
 
@@ -338,6 +341,9 @@ void CreateOcclusionCullingHook() {
 	WriteRelJump(kNew1CollisionObjectHook,	(UInt32)New1CollisionObjectHook);
 	WriteRelJump(kNew2CollisionObjectHook,	(UInt32)New2CollisionObjectHook);
 	WriteRelJump(kNew3CollisionObjectHook,	(UInt32)New3CollisionObjectHook);
+
+	hook the bhkCollisionObject destructor to destroy the geo node
+
 	WriteRelJump(kObjectCullHook,			(UInt32)ObjectCullHook);
 	
 }

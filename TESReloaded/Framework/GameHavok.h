@@ -79,6 +79,17 @@ public:
 	virtual void	Unk_25();
 	virtual void	AddMaterialProperty(NiAVObject* Node);
 
+	void			CreateStaticGeometry(NiGeometryGroup* GeometryGroup, NiNode* Node, NiNode* BaseNode) {
+		NiGeometry* Geo = NULL;
+
+		CreateNiGeometry(Node);
+		for (int i = 0; i < Node->m_children.end; i++) {
+			Geo = (NiGeometry*)Node->m_children.data[i];
+			memcpy(&Geo->m_worldTransform, &BaseNode->m_worldTransform, sizeof(NiTransform));
+			GeometryGroup->AddObject(Geo->geomData, NULL, NULL);
+		}
+	}
+
 	enum {
 		kMaterial_Stone = 0,
 		kMaterial_Cloth,

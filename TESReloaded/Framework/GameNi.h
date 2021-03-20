@@ -2133,7 +2133,8 @@ public:
 	NiGeometryGroup*				GeometryGroup;			// 04
 	UInt32							FVF;					// 08
 	IDirect3DVertexDeclaration9*	VertexDeclaration;		// 0C
-	UInt32							unk10;					// 10
+	UInt8							SoftwareVP;				// 10
+	UInt8							pad10[3];
 	UInt32							VertCount;				// 14
 	UInt32							MaxVertCount;			// 18
 	UInt32							StreamCount;			// 1C
@@ -2249,7 +2250,7 @@ public:
 	virtual void	Unk_24();
 	virtual void	Unk_25(NiRenderer* arg);
 	
-	NiProperty*				GetProperty(NiProperty::PropertyType Type) { return propertyState->prop[Type]; }
+	NiProperty*				GetProperty(NiProperty::PropertyType Type) { return (propertyState ? propertyState->prop[Type] : NULL); }
 
 	NiPropertyState*		propertyState;		// 0AC
 	NiDynamicEffectState*	dynamicEffectState;	// 0B0
@@ -2726,6 +2727,24 @@ public:
 };
 assert(sizeof(NiRenderTargetGroup) == 0x024);
 
+class NiGeometryGroup {
+public:
+	virtual void		Destructor(bool freeThis);
+	virtual void		Unk_01();
+	virtual void		AddObject(NiGeometryData* GeometryData, NiSkinInstance* SkinInstance, NiSkinPartition::Partition* Partition);
+	virtual void		Unk_03();
+	virtual void		RemoveObject(NiSkinPartition::Partition* Partition);
+	virtual void		RemoveObject(NiGeometryData* GeometryData);
+	virtual NiVBChip*	CreateChip(NiGeometryBufferData* BufferData, UInt32 Stream);
+	virtual void		ReleaseChip(NiGeometryBufferData* BufferData, UInt32 Stream);
+	virtual bool		IsDynamic();
+	virtual void		Unk_09();
+
+	UInt32				m_uiRefCount;	// 04
+	IDirect3DDevice9*	device;			// 08
+};
+assert(sizeof(NiGeometryGroup) == 0x00C);
+
 class NiDX9RenderState : public NiRefObject {
 public:
 	virtual void						 UpdateRenderState(const NiPropertyState* pkNew);							// 01
@@ -3123,8 +3142,8 @@ public:
 	UInt8								pad899[3];						// 899
 	NiObject*							unk89C;							// 89C - NiPropertyState (0x30)
 	NiGeometryGroupManager*				geometryGroupMgr;				// 8A0
-	NiGeometryGroup*					unk8A4;							// 8A4 - NiUnsharedGeometryGroup
-	NiGeometryGroup*					unk8A8;							// 8A8 - NiDynamicGeometryGroup
+	NiGeometryGroup*					unsharedGeometryGroup;			// 8A4 - NiUnsharedGeometryGroup
+	NiGeometryGroup*					dynamicGeometryGroup;			// 8A8 - NiDynamicGeometryGroup
 	NiDX9RenderState*					renderState;					// 8AC
 	NiDX9VertexBufferManager*			vertexBufferMgr;				// 8B0
 	NiDX9IndexBufferManager*			indexBufferMgr;					// 8B4

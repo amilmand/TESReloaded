@@ -10,6 +10,8 @@ static const UInt32 kNew2CollisionObjectHook = 0x0089E989;
 static const UInt32 kNew2CollisionObjectReturn = 0x0089E98E;
 static const UInt32 kNew3CollisionObjectHook = 0x0089EA1C;
 static const UInt32 kNew3CollisionObjectReturn = 0x0089EA21;
+static const UInt32 kDisposeCollisionObjectHook = 0x00532DD1;
+static const UInt32 kDisposeCollisionObjectReturn = 0x00532DD8;
 static const UInt32 kObjectCullHook = 0x007073D6;
 static const UInt32 kObjectCullReturn1 = 0x007073DC;
 static const UInt32 kObjectCullReturn2 = 0x007073E7;
@@ -289,7 +291,7 @@ static __declspec(naked) void New1CollisionObjectHook() {
 	__asm {
 		mov     edi, eax
 		add     esp, 4
-		mov		[edi + bhkCollisionObjectEx::GeoNode], 0 
+		mov		dword ptr [edi + bhkCollisionObjectEx::GeoNode], 0
 		jmp		kNew1CollisionObjectReturn
 	}
 
@@ -300,7 +302,7 @@ static __declspec(naked) void New2CollisionObjectHook() {
 	__asm {
 		mov     esi, eax
 		add     esp, 4
-		mov		[esi + bhkCollisionObjectEx::GeoNode], 0 
+		mov		dword ptr [esi + bhkCollisionObjectEx::GeoNode], 0
 		jmp		kNew2CollisionObjectReturn
 	}
 
@@ -311,8 +313,37 @@ static __declspec(naked) void New3CollisionObjectHook() {
 	__asm {
 		mov     esi, eax
 		add     esp, 4
-		mov		[esi + bhkCollisionObjectEx::GeoNode], 0 
+		mov		dword ptr [esi + bhkCollisionObjectEx::GeoNode], 0
 		jmp		kNew3CollisionObjectReturn
+	}
+
+}
+
+void DisposeCollisionObject(bhkCollisionObjectEx* bCollisionObject) {
+	
+	void* VFT = *(void**)bCollisionObject;
+	
+	if (VFT == VFTbhkCollisionObject) {
+		if (NiNode* GeoNode = bCollisionObject->GeoNode) {
+			GeoNode->Destructor(1);
+			bCollisionObject->GeoNode = NULL;
+		}
+	}
+
+}
+
+static __declspec(naked) void DisposeCollisionObjectHook() {
+
+	__asm {
+		pushad
+		push	ecx
+		call	DisposeCollisionObject
+		pop		ecx
+		popad
+		mov     esi, ecx
+		mov		eax, 0x00897B00
+		call	eax
+		jmp		kDisposeCollisionObjectReturn
 	}
 
 }
@@ -338,12 +369,10 @@ void CreateOcclusionCullingHook() {
 	SafeWrite8(0x0089E983, bhkCollisionObjectExSize);
 	SafeWrite8(0x0089EA16, bhkCollisionObjectExSize);
 
-	WriteRelJump(kNew1CollisionObjectHook,	(UInt32)New1CollisionObjectHook);
-	WriteRelJump(kNew2CollisionObjectHook,	(UInt32)New2CollisionObjectHook);
-	WriteRelJump(kNew3CollisionObjectHook,	(UInt32)New3CollisionObjectHook);
-
-	hook the bhkCollisionObject destructor to destroy the geo node
-
-	WriteRelJump(kObjectCullHook,			(UInt32)ObjectCullHook);
+	WriteRelJump(kNew1CollisionObjectHook,		(UInt32)New1CollisionObjectHook);
+	WriteRelJump(kNew2CollisionObjectHook,		(UInt32)New2CollisionObjectHook);
+	WriteRelJump(kNew3CollisionObjectHook,		(UInt32)New3CollisionObjectHook);
+	WriteRelJump(kDisposeCollisionObjectHook,	(UInt32)DisposeCollisionObjectHook);
+	WriteRelJump(kObjectCullHook,				(UInt32)ObjectCullHook);
 	
 }

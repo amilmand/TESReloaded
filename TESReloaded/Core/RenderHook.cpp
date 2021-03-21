@@ -401,14 +401,14 @@ void RenderHook::TrackWaterCullingProcess(NiAVObject* Object) {
 
 UInt32 (__thiscall RenderHook::* PrepareGeometryForRendering)(NiGeometry*, NiSkinPartition::Partition*, NiGeometryBufferData*, UInt32);
 UInt32 (__thiscall RenderHook::* TrackPrepareGeometryForRendering)(NiGeometry*, NiSkinPartition::Partition*, NiGeometryBufferData*, UInt32);
-UInt32 RenderHook::TrackPrepareGeometryForRendering(NiGeometry* Geo, NiSkinPartition::Partition* Partition, NiGeometryBufferData* BufferData, UInt32 Arg4) {
+UInt32 RenderHook::TrackPrepareGeometryForRendering(NiGeometry* Geox, NiSkinPartition::Partition* Partition, NiGeometryBufferData* BufferData, UInt32 Arg4) {
 	
 	NiShader* Shader = (NiShader*)this;
-	if (Geo->m_pcName && strstr(Geo->m_pcName, "bhkPackedNiTriStripsShape")) {
+	if (Geox->m_pcName && strstr(Geox->m_pcName, "bhkPackedNiTriStripsShape")) {
 		int b = 1;
 	}
 
-	UInt32 a = (this->*PrepareGeometryForRendering)(Geo, Partition, BufferData, Arg4);
+	UInt32 a = (this->*PrepareGeometryForRendering)(Geox, Partition, BufferData, Arg4);
 	return a;
 }
 

@@ -4,6 +4,7 @@
 #define RenderStateArgs 0, 0
 #elif defined(OBLIVION)
 #define RenderStateArgs 0
+#define kFormType_MoveableStatic kFormType_Stat
 static const UInt32 kNew1CollisionObjectHook = 0x00564529;
 static const UInt32 kNew1CollisionObjectReturn = 0x0056452E;
 static const UInt32 kNew2CollisionObjectHook = 0x0089E989;
@@ -71,6 +72,29 @@ bool OcclusionManager::InFrustum(NiNode* Node) {
 
 }
 
+TESObjectREFR* OcclusionManager::GetRef(TESObjectREFR* Ref) {
+	
+	TESObjectREFR* R = NULL;
+
+	if (Ref && Ref->GetNode()) {
+		TESForm* Form = Ref->baseForm;
+		UInt8 TypeID = Form->formType;
+		if ((TypeID == TESForm::FormType::kFormType_Activator && 0) ||
+			(TypeID == TESForm::FormType::kFormType_Apparatus && 0) ||
+			(TypeID == TESForm::FormType::kFormType_Book && 0) ||
+			(TypeID == TESForm::FormType::kFormType_Container && 0) ||
+			(TypeID == TESForm::FormType::kFormType_Door && 0) ||
+			(TypeID == TESForm::FormType::kFormType_Misc && 0) ||
+			(TypeID >= TESForm::FormType::kFormType_Stat && TypeID <= TESForm::FormType::kFormType_MoveableStatic && 1) ||
+			(TypeID == TESForm::FormType::kFormType_Tree && 0) ||
+			(TypeID == TESForm::FormType::kFormType_Furniture && 0) ||
+			(TypeID >= TESForm::FormType::kFormType_NPC && TypeID <= TESForm::FormType::kFormType_LeveledCreature && 0))
+			R = Ref;
+	}
+	return R;
+
+}
+
 void OcclusionManager::RenderStatic(NiAVObject* Object, float MinRadius) {
 
 	if (Object) {
@@ -81,32 +105,85 @@ void OcclusionManager::RenderStatic(NiAVObject* Object, float MinRadius) {
 			if (VFT == VFTNiNode || VFT == VFTBSFadeNode) {
 				if (VFT == VFTBSFadeNode && ((BSFadeNode*)Object)->FadeAlpha < 0.9f) return;
 				NiNode* Node = (NiNode*)Object;
-				if (InFrustum(Node)) {
-					if (bhkCollisionObjectEx* bCollisionObject = (bhkCollisionObjectEx*)Node->m_spCollision) {
-						VFT = *(void**)bCollisionObject;
-						if (VFT == VFTbhkCollisionObject) {
-							if (!bCollisionObject->GeoNode) {
-								if (bhkRigidBody* bRigidBody = bCollisionObject->bRigidBody) {
-									if (hkRigidBody* RigidBody = (hkRigidBody*)bRigidBody->hkObject) {
-										if (bhkShape* bShape = (bhkShape*)RigidBody->Shape->bRefObject) {
-											bCollisionObject->GeoNode = (NiNode*)MemoryAlloc(sizeof(NiNode));
-											bCollisionObject->GeoNode->New(1);
-											bShape->CreateStaticGeometry(TheRenderManager->unsharedGeometryGroup, bCollisionObject->GeoNode, Node);
-										}
+				if (bhkCollisionObjectEx* bCollisionObject = (bhkCollisionObjectEx*)Node->m_spCollision) {
+					VFT = *(void**)bCollisionObject;
+					if (VFT == VFTbhkCollisionObject) {
+						if (!bCollisionObject->GeoNode) {
+							if (Node->m_pcName && strstr(Node->m_pcName, "CastleWallBend")) {
+								//ThisCall(0x00897C20, bCollisionObject, 1);
+								
+								if (bhkRigidBodyT* bRigidBody = (bhkRigidBodyT*)bCollisionObject->bRigidBody) {
+									bCollisionObject->GeoNode = (NiNode*)MemoryAlloc(sizeof(NiNode));
+									bCollisionObject->GeoNode->New(1);
+									bCollisionObject->GeoNode->SetName("bhkColDisp");
+									Node->AddObject(bCollisionObject->GeoNode, 1);
+									//bCollisionObject->GeoNode->UpdateWorldData();
+									//bCollisionObject->GeoNode->UpdateWorldBound();
+									ThisCall(0x00707370, bCollisionObject->GeoNode, 0.0f, 0);
+									NiNode* bb = bRigidBody->CreateNiGeometry(bCollisionObject->GeoNode);
+									//bb->UpdateWorldData();
+									//bb->UpdateWorldBound();
+									ThisCall(0x00707370, bb, 0.0f, 0);
+									int a = 1;
+								}
+
+								for (int i = 0; i < Node->m_children.end; i++) {
+									NiNode* t = (NiNode*)Node->m_children.data[i];
+									if (strstr(t->m_pcName, "bhkColDisp")) {
+										Node->RemoveObject((NiAVObject**)&bCollisionObject->GeoNode, t);
+										break;
 									}
 								}
-							}
-							if (bCollisionObject->GeoNode) {
-								for (int i = 0; i < bCollisionObject->GeoNode->m_children.end; i++) {
-									Render((NiGeometry*)bCollisionObject->GeoNode->m_children.data[i]);
-								}
+
+							
+
+								//if (bhkRigidBody* bRigidBody = bCollisionObject->bRigidBody) {
+								//	if (hkRigidBody* RigidBody = (hkRigidBody*)bRigidBody->hkObject) {
+								//		if (bhkShape* bShape = (bhkShape*)RigidBody->Shape->bRefObject) {
+								//			bCollisionObject->GeoNode = (NiNode*)MemoryAlloc(sizeof(NiNode));
+								//			bCollisionObject->GeoNode->New(1);
+								//			bShape->CreateStaticGeometry(TheRenderManager->unsharedGeometryGroup, bCollisionObject->GeoNode, Node);
+								//		}
+								//	}
+								//}
+
 							}
 						}
+
+						//if (bCollisionObject->GeoNode) {
+						//	NiNode* t = (NiNode*)bCollisionObject->GeoNode->m_children.data[0];
+						//	if (strstr(t->m_pcName, "bhkRigidBodyT")) t = (NiNode*)t->m_children.data[0];
+						//	NiGeometry* g = (NiGeometry*)t;
+						//	if (!g->geomData->BuffData) {
+						//		memcpy(&g->m_worldTransform, &Object->m_worldTransform, sizeof(NiTransform));
+						//		TheRenderManager->unsharedGeometryGroup->AddObject(g->geomData, NULL, NULL);
+						//	}
+						//	Render(g);
+						//}
+
+						if (bCollisionObject->GeoNode) {
+							NiNode* t = (NiNode*)bCollisionObject->GeoNode->m_children.data[0];
+							if (strstr(t->m_pcName, "bhkRigidBodyT")) t = (NiNode*)t->m_children.data[0];
+							NiGeometry* g = (NiGeometry*)t;
+							if (!g->geomData->BuffData) TheRenderManager->unsharedGeometryGroup->AddObject(g->geomData, NULL, NULL);
+							Render(g);
+						}
+
+
+
+						//if (bCollisionObject->GeoNode) {
+						//	for (int i = 0; i < bCollisionObject->GeoNode->m_children.end; i++) {
+						//		Render((NiGeometry*)bCollisionObject->GeoNode->m_children.data[i]);
+						//	}
+						//}
+
+
+
 					}
-					else {
-						for (int i = 0; i < Node->m_children.end; i++) {
-							RenderStatic(Node->m_children.data[i], MinRadius);
-						}
+				}
+				else {
+					for (int i = 0; i < Node->m_children.end; i++) {
+						RenderStatic(Node->m_children.data[i], MinRadius);
 					}
 				}
 			}
@@ -171,6 +248,42 @@ void OcclusionManager::RenderWater(NiAVObject* Object) {
 
 }
 
+void OcclusionManager::RenderExterior(NiAVObject* Object, float MinRadius) {
+	
+	if (Object) {
+		float Radius = Object->GetWorldBoundRadius();
+
+		if (!(Object->m_flags & NiAVObject::kFlag_AppCulled) && Radius >= MinRadius && Object->m_worldTransform.pos.z + Radius > TheShaderManager->ShaderConst.Water.waterSettings.x) {
+			void* VFT = *(void**)Object;
+			if (VFT == VFTNiNode || VFT == VFTBSFadeNode) {
+				if (VFT == VFTBSFadeNode && ((BSFadeNode*)Object)->FadeAlpha < 0.75f) return;
+				NiNode* Node = (NiNode*)Object;
+				if (InFrustum(Node)) {
+					for (int i = 0; i < Node->m_children.end; i++) {
+						RenderExterior(Node->m_children.data[i], MinRadius);
+					}
+				}
+			}
+			else if (VFT == VFTNiTriShape || VFT == VFTNiTriStrips) {
+				NiGeometry* Geo = (NiGeometry*)Object;
+				NiGeometryBufferData* GeoData = NULL;
+
+				if (Geo->shader) {
+					GeoData = Geo->geomData->BuffData;
+					if (GeoData) {
+						Render(Geo);
+					}
+					else if (Geo->skinInstance && Geo->skinInstance->SkinPartition && Geo->skinInstance->SkinPartition->Partitions) {
+						GeoData = Geo->skinInstance->SkinPartition->Partitions[0].BuffData;
+						if (GeoData) Render(Geo);
+					}
+				}
+			}
+		}
+	}
+
+}
+
 void OcclusionManager::Render(NiGeometry* Geo) {
 
 	IDirect3DDevice9* Device = TheRenderManager->device;
@@ -206,9 +319,9 @@ void OcclusionManager::Render(NiGeometry* Geo) {
 			RenderState->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT, false);
 			RenderState->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_POINT, false);
 		}
-		else {
-			return;
-		}
+		//else {
+		//	return;
+		//}
 	}
 	TheRenderManager->PackGeometryBuffer(GeoData, ModelData, NULL, ShaderDeclaration);
 	for (UInt32 i = 0; i < GeoData->StreamCount; i++) {
@@ -252,13 +365,23 @@ void OcclusionManager::RenderOcclusionMap() {
 	Device->BeginScene();
 	//RenderState->SetRenderState(D3DRS_COLORWRITEENABLE, D3DZB_FALSE, RenderStateArgs);
 	for (UInt32 i = 0; i < CellArray->size * CellArray->size; i++) {
-		NiNode* CellNode = CellArray->grid[i].cell->niNode;
+		TESObjectCELL* Cell = CellArray->grid[i].cell;
+		NiNode* CellNode = Cell->niNode;
 		for (int i = 2; i < 6; i++) {
 			NiNode* ChildNode = (NiNode*)CellNode->m_children.data[i];
 			if (ChildNode->m_children.end) {
 				RenderTerrain(ChildNode->m_children.data[0]);
-				RenderStatic(ChildNode->m_children.data[2], 100.0f);
+				//RenderStatic(ChildNode->m_children.data[2], 100.0f);
+				//RenderExterior(ChildNode->m_children.data[2], 100.0f);
 			}
+		}
+		TList<TESObjectREFR>::Entry* Entry = &Cell->objectList.First;
+		while (Entry) {
+			if (TESObjectREFR* Ref = GetRef(Entry->item)) {
+				NiNode* RefNode = Ref->GetNode();
+				if (InFrustum(RefNode)) RenderStatic(RefNode, 100.0f);
+			}
+			Entry = Entry->next;
 		}
 	}
 	RenderState->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE, RenderStateArgs);

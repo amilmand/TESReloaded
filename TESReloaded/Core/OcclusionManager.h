@@ -11,9 +11,11 @@ public:
 	OcclusionManager();
 
 	bool					InFrustum(NiNode* Node);
+	TESObjectREFR*			GetRef(TESObjectREFR* Ref);
 	void					RenderStatic(NiAVObject* Object, float MinRadius);
 	void					RenderTerrain(NiAVObject* Object);
 	void					RenderWater(NiAVObject* Object);
+	void					RenderExterior(NiAVObject* Object, float MinRadius);
 	void					Render(NiGeometry* Geo);
 	void					RenderOcclusionMap();
 	void					PerformOcclusionCulling();

@@ -192,17 +192,7 @@ void ShadowManager::RenderExterior(NiAVObject* Object, float MinRadius) {
 				}
 			}
 			else if (VFT == VFTNiTriShape || VFT == VFTNiTriStrips) {
-				NiGeometry* Geo = (NiGeometry*)Object;
-				if (Geo->shader) {
-					NiGeometryBufferData* GeoData = Geo->geomData->BuffData;
-					if (GeoData) {
-						Render(Geo);
-					}
-					else if (Geo->skinInstance && Geo->skinInstance->SkinPartition && Geo->skinInstance->SkinPartition->Partitions) {
-						GeoData = Geo->skinInstance->SkinPartition->Partitions[0].BuffData;
-						if (GeoData) Render(Geo);
-					}
-				}
+				RenderGeometry((NiGeometry*)Object);
 			}
 		}
 	}
@@ -223,7 +213,7 @@ void ShadowManager::RenderInterior(NiAVObject* Object, float MinRadius) {
 				}
 			}
 			else if (VFT == VFTNiTriShape || VFT == VFTNiTriStrips) {
-				RenderGeo((NiGeometry*)Object);
+				RenderGeometry((NiGeometry*)Object);
 			}
 		}
 	}
@@ -243,14 +233,13 @@ void ShadowManager::RenderTerrain(NiAVObject* Object, ShadowMapTypeEnum ShadowMa
 			}
 		}
 		else if (VFT == VFTNiTriShape || VFT == VFTNiTriStrips) {
-			NiGeometry* Geo = (NiGeometry*)Object;
-			RenderGeo((NiGeometry*)Object);
+			RenderGeometry((NiGeometry*)Object);
 		}
 	}
 
 }
 
-void ShadowManager::RenderGeo(NiGeometry* Geo) {
+void ShadowManager::RenderGeometry(NiGeometry* Geo) {
 
 	NiGeometryBufferData* GeoData = NULL;
 
@@ -277,7 +266,7 @@ void ShadowManager::Render(NiGeometry* Geo) {
 	NiGeometryData* ModelData = Geo->geomData;
 	NiGeometryBufferData* GeoData = ModelData->BuffData;
 	NiSkinInstance* SkinInstance = Geo->skinInstance;
-	NiD3DShaderDeclaration* ShaderDeclaration = Geo->shader->ShaderDeclaration;
+	NiD3DShaderDeclaration* ShaderDeclaration = (Geo->shader ? Geo->shader->ShaderDeclaration : NULL);
 
 	if (Geo->m_pcName && !memcmp(Geo->m_pcName, "Torch", 5)) return; // No torch geo, it is too near the light and a bad square is rendered.
 	

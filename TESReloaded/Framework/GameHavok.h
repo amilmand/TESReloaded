@@ -6,12 +6,18 @@ class bhkCharacterProxy;
 
 class hkVector4 {
 public:
-	float	x;
+	__declspec(align(16)) float	x;
 	float	y;
 	float	z;
 	float	w;
 };
 assert(sizeof(hkVector4) == 0x010);
+
+class hkQuaternion {
+public:
+	hkVector4	vec;
+};
+assert(sizeof(hkQuaternion) == 0x010);
 
 class hkBaseObject {
 public:
@@ -57,7 +63,7 @@ class bhkWorldObject : public bhkSerializable {
 public:
 	virtual void	Unk_20();
 	virtual void	Unk_21();
-	virtual void	Unk_22();
+	virtual NiNode*	CreateNiGeometry(NiNode* Node);
 };
 assert(sizeof(bhkWorldObject) == 0x010);
 
@@ -69,6 +75,18 @@ public:
 };
 assert(sizeof(bhkRigidBody) == 0x1C);
 
+class bhkRigidBodyT : public bhkRigidBody {
+public:
+	UInt32			pad01C;		// 01C
+	hkQuaternion	localRot;	// 020
+	hkVector4		localPos;	// 030
+	UInt32			unk040;		// 040
+	UInt32			unk044;		// 044
+	UInt32			unk048;		// 048
+	UInt32			unk04C;		// 04C
+};
+assert(sizeof(bhkRigidBodyT) == 0x50);
+
 class bhkShape : public bhkSerializable {
 public:
 	virtual void	Unk_20();
@@ -77,7 +95,7 @@ public:
 	virtual void	Unk_23();
 	virtual void	CreateNiGeometry(NiNode* Node);
 	virtual void	Unk_25();
-	virtual void	AddMaterialProperty(NiAVObject* Node);
+	virtual void	AddMaterialProperty(NiAVObject* Object);
 
 	void			CreateStaticGeometry(NiGeometryGroup* GeometryGroup, NiNode* Node, NiNode* BaseNode) {
 		NiGeometry* Geo = NULL;

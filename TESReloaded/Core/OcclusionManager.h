@@ -12,10 +12,9 @@ public:
 
 	bool					InFrustum(NiNode* Node);
 	TESObjectREFR*			GetRef(TESObjectREFR* Ref);
-	void					RenderStatic(NiAVObject* Object, float MinRadius);
+	void					RenderStatic(NiAVObject* Object, float MinRadius, float MaxRadius, bool PerformOcclusion);
 	void					RenderTerrain(NiAVObject* Object);
 	void					RenderWater(NiAVObject* Object);
-	void					RenderExterior(NiAVObject* Object, float MinRadius);
 	void					Render(NiGeometry* Geo);
 	void					RenderOcclusionMap();
 	void					PerformOcclusionCulling();

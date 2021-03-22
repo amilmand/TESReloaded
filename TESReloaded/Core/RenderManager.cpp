@@ -289,9 +289,8 @@ void RenderManager::ResolveDepthBuffer() {
 
 void DWNode::Create() { 
 	
-	DWNode* Node = (DWNode*)MemoryAlloc(sizeof(DWNode));
+	DWNode* Node = (DWNode*)MemoryAlloc(sizeof(DWNode)); Node->New(2048);
 
-	Node->New(2048);
 	Node->SetName("Passes...");
 	*(DWNode**)kDetectorWindowNode = Node;
 
@@ -305,9 +304,8 @@ DWNode* DWNode::Get() {
 
 void DWNode::AddNode(char* Name, NiAVObject* Child0, NiAVObject* Child1) {
 
-	NiNode* Node = (NiNode*)MemoryAlloc(sizeof(NiNode));
-	
-	Node->New(2);
+	NiNode* Node = (NiNode*)MemoryAlloc(sizeof(NiNode)); Node->New(2);
+
 	Node->SetName(Name);
 	Node->m_children.Add(&Child0); // We do not use the AddObject to avoid to alter the original object
 	Node->m_children.Add(&Child1); // Same as above

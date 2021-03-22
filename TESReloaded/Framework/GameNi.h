@@ -1969,6 +1969,7 @@ public:
 	virtual bool				Unk_26();
 	
 	void						New(UInt16 Children) { ThisCall(0x0070B780, this, Children); };
+	void						Update() { ThisCall(0x00707370, this, 0.0f, 0); };
 	TESObjectREFR*				GetRef() { return ((TESObjectExtraData*)ThisCall(0x006FF9C0, this, "REF"))->refr; }
 
 	NiTArray<NiAVObject*>		m_children;			// 0AC

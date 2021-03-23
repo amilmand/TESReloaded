@@ -13,6 +13,12 @@ static const UInt32 kNew3CollisionObjectHook = 0x0089EA1C;
 static const UInt32 kNew3CollisionObjectReturn = 0x0089EA21;
 static const UInt32 kDisposeCollisionObjectHook = 0x00532DD1;
 static const UInt32 kDisposeCollisionObjectReturn = 0x00532DD8;
+static const UInt32 kMaterialPropertyHook = 0x0089F7C6;
+static const UInt32 kMaterialPropertyReturn1 = 0x0089F7CE;
+static const UInt32 kMaterialPropertyReturn2 = 0x0089F8A0;
+static const UInt32 kCoordinateJackHook = 0x008A3101;
+static const UInt32 kCoordinateJackReturn1 = 0x008A3107;
+static const UInt32 kCoordinateJackReturn2 = 0x008A3165;
 static const UInt32 kObjectCullHook = 0x007073D6;
 static const UInt32 kObjectCullReturn1 = 0x007073DC;
 static const UInt32 kObjectCullReturn2 = 0x007073E7;
@@ -32,8 +38,8 @@ OcclusionManager::OcclusionManager() {
 	WaterOccluded = false;
 
 	IDirect3DDevice9* Device = TheRenderManager->device;
-	UINT OcclusionMapSizeX = TheRenderManager->width / 4.0f;
-	UINT OcclusionMapSizeY = TheRenderManager->height / 4.0f;
+	UINT OcclusionMapSizeX = TheRenderManager->width / TheSettingManager->SettingsMain.OcclusionCulling.OcclusionMapRatio;
+	UINT OcclusionMapSizeY = TheRenderManager->height / TheSettingManager->SettingsMain.OcclusionCulling.OcclusionMapRatio;
 
 	OcclusionMapVertex = new ShaderRecord();
 	if (OcclusionMapVertex->LoadShader("OcclusionMap.vso")) Device->CreateVertexShader((const DWORD*)OcclusionMapVertex->Function, &OcclusionMapVertexShader);
@@ -113,7 +119,7 @@ void OcclusionManager::RenderStatic(NiAVObject* Object, float MinRadius, float M
 					if (VFT == VFTbhkCollisionObject) {
 						if (!CollisionObject->GeoNode) {
 							if (bhkRigidBody* RigidBody = CollisionObject->bRigidBody) {
-								NiNode* GeoNode = (NiNode*)MemoryAlloc(sizeof(NiNode)); GeoNode->New(1);
+								NiNode* GeoNode = (NiNode*)MemoryAlloc(sizeof(NiNode)); GeoNode->New(1); GeoNode->m_flags |= NiAVObject::kFlag_IsOCNode;
 								Node->AddObject(GeoNode, 1);
 								GeoNode->Update();
 								RigidBody->CreateNiGeometry(GeoNode);
@@ -122,18 +128,20 @@ void OcclusionManager::RenderStatic(NiAVObject* Object, float MinRadius, float M
 								CollisionObject->GeoNode = GeoNode;
 							}
 						}
-						if (CollisionObject->GeoNode) {
-							NiGeometry* Geo = (NiGeometry*)CollisionObject->GeoNode->m_children.data[0];
-							if (!Geo->geomData->BuffData) TheRenderManager->unsharedGeometryGroup->AddObject(Geo->geomData, NULL, NULL);
-							if (PerformOcclusion) OcclusionQuery->Issue(D3DISSUE_BEGIN);
-							Render(Geo);
-							if (PerformOcclusion) {
-								OcclusionQuery->Issue(D3DISSUE_END);
-								while (OcclusionQuery->GetData((void*)&Pixels, sizeof(DWORD), D3DGETDATA_FLUSH) == S_FALSE);
-								if (Pixels <= 10)
-									Geo->m_flags |= NiAVObject::kFlag_IsOccluded;
-								else
-									Geo->m_flags &= ~NiAVObject::kFlag_IsOccluded;
+						if (NiNode* GeoNode = CollisionObject->GeoNode) {
+							for (int i = 0; i < GeoNode->m_children.end; i++) {
+								NiGeometry* Geo = (NiGeometry*)GeoNode->m_children.data[i];
+								if (!Geo->geomData->BuffData) TheRenderManager->unsharedGeometryGroup->AddObject(Geo->geomData, NULL, NULL);
+								if (PerformOcclusion) OcclusionQuery->Issue(D3DISSUE_BEGIN);
+								Render(Geo);
+								if (PerformOcclusion) {
+									OcclusionQuery->Issue(D3DISSUE_END);
+									while (OcclusionQuery->GetData((void*)&Pixels, sizeof(DWORD), D3DGETDATA_FLUSH) == S_FALSE);
+									if (Pixels <= 10)
+										Geo->m_flags |= NiAVObject::kFlag_IsOccluded;
+									else
+										Geo->m_flags &= ~NiAVObject::kFlag_IsOccluded;
+								}
 							}
 						}
 					}
@@ -220,30 +228,30 @@ void OcclusionManager::Render(NiGeometry* Geo) {
 	TheRenderManager->CreateD3DMatrix(&WorldMatrix, &Geo->m_worldTransform);
 	D3DXMatrixMultiplyTranspose(&TheShaderManager->ShaderConst.OcclusionMap.OcclusionWorldViewProj, &WorldMatrix, &TheRenderManager->ViewProjMatrix);
 	BSShaderProperty* ShaderProperty = (BSShaderProperty*)Geo->GetProperty(NiProperty::PropertyType::kType_Shade);
-	//if (ShaderProperty) {
-	//	if (ShaderProperty->IsLightingProperty()) {
-	//		if (NiTexture* Texture = *((BSShaderPPLightingProperty*)ShaderProperty)->textures[0]) { // Only for testing, remove the diffuse, we do not need it.
-	//			RenderState->SetTexture(0, Texture->rendererData->dTexture);
-	//			RenderState->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP, false);
-	//			RenderState->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP, false);
-	//			RenderState->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT, false);
-	//			RenderState->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT, false);
-	//			RenderState->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_POINT, false);
-	//		}
-	//	}
-	//	else if (ShaderProperty->IsWaterProperty()) {
-	//		if (!Tex) D3DXCreateTextureFromFileA(TheRenderManager->device, "C:\\Bethesda Softworks\\Oblivion\\Data\\Textures\\Water\\water00.dds", &Tex); // Only for testing, remove the diffuse, we do not need it.
-	//		RenderState->SetTexture(0, Tex);
-	//		RenderState->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP, false);
-	//		RenderState->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP, false);
-	//		RenderState->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT, false);
-	//		RenderState->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT, false);
-	//		RenderState->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_POINT, false);
-	//	}
-	//	else {
-	//		return;
-	//	}
-	//}
+	if (ShaderProperty) {
+		if (ShaderProperty->IsLightingProperty()) {
+			if (NiTexture* Texture = *((BSShaderPPLightingProperty*)ShaderProperty)->textures[0]) { // Only for testing, remove the diffuse, we do not need it.
+				RenderState->SetTexture(0, Texture->rendererData->dTexture);
+				RenderState->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP, false);
+				RenderState->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP, false);
+				RenderState->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT, false);
+				RenderState->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT, false);
+				RenderState->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_POINT, false);
+			}
+		}
+		else if (ShaderProperty->IsWaterProperty()) {
+			if (!Tex) D3DXCreateTextureFromFileA(TheRenderManager->device, "C:\\Bethesda Softworks\\Oblivion\\Data\\Textures\\Water\\water00.dds", &Tex); // Only for testing, remove the diffuse, we do not need it.
+			RenderState->SetTexture(0, Tex);
+			RenderState->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP, false);
+			RenderState->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP, false);
+			RenderState->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT, false);
+			RenderState->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT, false);
+			RenderState->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_POINT, false);
+		}
+		else {
+			return;
+		}
+	}
 	TheRenderManager->PackGeometryBuffer(GeoData, ModelData, NULL, ShaderDeclaration);
 	for (UInt32 i = 0; i < GeoData->StreamCount; i++) {
 		Device->SetStreamSource(i, GeoData->VBChip[i]->VB, 0, GeoData->VertexStride[i]);
@@ -272,6 +280,9 @@ void OcclusionManager::RenderOcclusionMap() {
 	IDirect3DDevice9* Device = TheRenderManager->device;
 	NiDX9RenderState* RenderState = TheRenderManager->renderState;
 	GridCellArray* CellArray = Tes->gridCellArray;
+	SettingsMainStruct::OcclusionCullingStruct* OcclusionCulling = &TheSettingManager->SettingsMain.OcclusionCulling;
+	float OccludedStaticMinRadius = OcclusionCulling->OccludedStaticMinRadius;
+	float OccludedStaticMaxRadius = OcclusionCulling->OccludedStaticMaxRadius;
 
 	Device->SetRenderTarget(0, OcclusionMapSurface);
 	Device->SetDepthStencilSurface(OcclusionMapDepthSurface);
@@ -284,7 +295,7 @@ void OcclusionManager::RenderOcclusionMap() {
 	RenderState->SetVertexShader(OcclusionMapVertexShader, false);
 	RenderState->SetPixelShader(OcclusionMapPixelShader, false);
 	Device->BeginScene();
-	RenderState->SetRenderState(D3DRS_COLORWRITEENABLE, D3DZB_FALSE, RenderStateArgs);
+	//RenderState->SetRenderState(D3DRS_COLORWRITEENABLE, D3DZB_FALSE, RenderStateArgs);
 	for (UInt32 i = 0; i < CellArray->size * CellArray->size; i++) {
 		TESObjectCELL* Cell = CellArray->grid[i].cell;
 		NiNode* CellNode = Cell->niNode;
@@ -294,31 +305,33 @@ void OcclusionManager::RenderOcclusionMap() {
 				RenderTerrain(ChildNode->m_children.data[0]);
 			}
 		}
-		TList<TESObjectREFR>::Entry* Entry = &Cell->objectList.First;
-		while (Entry) {
-			if (TESObjectREFR* Ref = GetRef(Entry->item)) {
-				NiNode* RefNode = Ref->GetNode();
-				if (InFrustum(RefNode)) RenderStatic(RefNode, 500.0f, FLT_MAX, false);
+		if (OcclusionCulling->OccludingStatic) {
+			TList<TESObjectREFR>::Entry* Entry = &Cell->objectList.First;
+			while (Entry) {
+				if (TESObjectREFR* Ref = GetRef(Entry->item)) {
+					NiNode* RefNode = Ref->GetNode();
+					if (InFrustum(RefNode)) RenderStatic(RefNode, OcclusionCulling->OccludingStaticMinRadius, OcclusionCulling->OccludingStaticMaxRadius, false);
+				}
+				Entry = Entry->next;
 			}
-			Entry = Entry->next;
 		}
 	}
 	RenderState->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE, RenderStateArgs);
 	WaterOccluded = true;
 	RenderWater(WaterRoot);
-
-	for (UInt32 i = 0; i < CellArray->size * CellArray->size; i++) {
-		TESObjectCELL* Cell = CellArray->grid[i].cell;
-		TList<TESObjectREFR>::Entry* Entry = &Cell->objectList.First;
-		while (Entry) {
-			if (TESObjectREFR* Ref = GetRef(Entry->item)) {
-				NiNode* RefNode = Ref->GetNode();
-				if (InFrustum(RefNode)) RenderStatic(RefNode, 100.0f, 1000.0f, true);
+	if (OcclusionCulling->OccludedStatic) {
+		for (UInt32 i = 0; i < CellArray->size * CellArray->size; i++) {
+			TESObjectCELL* Cell = CellArray->grid[i].cell;
+			TList<TESObjectREFR>::Entry* Entry = &Cell->objectList.First;
+			while (Entry) {
+				if (TESObjectREFR* Ref = GetRef(Entry->item)) {
+					NiNode* RefNode = Ref->GetNode();
+					if (InFrustum(RefNode)) RenderStatic(RefNode, OcclusionCulling->OccludedStaticMinRadius, OcclusionCulling->OccludedStaticMaxRadius, true);
+				}
+				Entry = Entry->next;
 			}
-			Entry = Entry->next;
 		}
 	}
-
 	Device->EndScene();
 
 }
@@ -403,6 +416,34 @@ static __declspec(naked) void DisposeCollisionObjectHook() {
 
 }
 
+static __declspec(naked) void MaterialPropertyHook() {
+
+	__asm {
+		test    word ptr [esi + 0x18], 0x400
+		jnz     short loc_return
+		test    edi, edi
+		fldz
+		fst		[esp + 0x18]
+		jmp		kMaterialPropertyReturn1
+	loc_return:
+		jmp		kMaterialPropertyReturn2
+	}
+
+}
+
+static __declspec(naked) void CoordinateJackHook() {
+
+	__asm {
+		test    word ptr [eax + 0x18], 0x400
+		jnz     short loc_return
+		mov     esi, eax
+		jmp		kCoordinateJackReturn1
+	loc_return:
+		jmp		kCoordinateJackReturn2
+	}
+
+}
+
 static __declspec(naked) void ObjectCullHook() {
 
 	__asm {
@@ -428,8 +469,8 @@ void CreateOcclusionCullingHook() {
 	WriteRelJump(kNew2CollisionObjectHook,		(UInt32)New2CollisionObjectHook);
 	WriteRelJump(kNew3CollisionObjectHook,		(UInt32)New3CollisionObjectHook);
 	WriteRelJump(kDisposeCollisionObjectHook,	(UInt32)DisposeCollisionObjectHook);
+	WriteRelJump(kMaterialPropertyHook,			(UInt32)MaterialPropertyHook);
+	WriteRelJump(kCoordinateJackHook,			(UInt32)CoordinateJackHook);
 	WriteRelJump(kObjectCullHook,				(UInt32)ObjectCullHook);
 	
-	WriteRelJump(0x008A3101, 0x008A3165);
-
 }

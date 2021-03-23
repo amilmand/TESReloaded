@@ -92,6 +92,13 @@ struct SettingsMainStruct {
 	
 	struct OcclusionCullingStruct {
 		bool	Enabled;
+		bool	OccludingStatic;
+		bool	OccludedStatic;
+		int		OcclusionMapRatio;
+		float	OccludingStaticMinRadius;
+		float	OccludingStaticMaxRadius;
+		float	OccludedStaticMinRadius;
+		float	OccludedStaticMaxRadius;
 	};
 
 	struct CameraModeStruct {

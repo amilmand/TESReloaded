@@ -95,10 +95,10 @@ struct SettingsMainStruct {
 		bool	OccludingStatic;
 		bool	OccludedStatic;
 		int		OcclusionMapRatio;
-		float	OccludingStaticMinRadius;
-		float	OccludingStaticMaxRadius;
-		float	OccludedStaticMinRadius;
-		float	OccludedStaticMaxRadius;
+		float	OccludingStaticMin;
+		float	OccludingStaticMax;
+		float	OccludedStaticMin;
+		float	OccludedStaticMax;
 	};
 
 	struct CameraModeStruct {

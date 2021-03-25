@@ -92,7 +92,6 @@ TESObjectREFR* OcclusionManager::GetRef(TESObjectREFR* Ref) {
 			(TypeID == TESForm::FormType::kFormType_Door && 0) ||
 			(TypeID == TESForm::FormType::kFormType_Misc && 0) ||
 			(TypeID >= TESForm::FormType::kFormType_Stat && TypeID <= TESForm::FormType::kFormType_MoveableStatic && 1) ||
-			(TypeID == TESForm::FormType::kFormType_Tree && 0) ||
 			(TypeID == TESForm::FormType::kFormType_Furniture && 0) ||
 			(TypeID >= TESForm::FormType::kFormType_NPC && TypeID <= TESForm::FormType::kFormType_LeveledCreature && 0))
 			R = Ref;
@@ -101,15 +100,18 @@ TESObjectREFR* OcclusionManager::GetRef(TESObjectREFR* Ref) {
 
 }
 
-void OcclusionManager::RenderStatic(NiAVObject* Object, float MinRadius, float MaxRadius, bool PerformOcclusion) {
+void OcclusionManager::RenderStatic(NiAVObject* Object, float MinBoundSize, float MaxBoundSize, bool PerformOcclusion) {
 	
 	DWORD Pixels = 0;
+	NiPoint2 BoundSize;
+	NiBound* Bound = NULL;
+	float BoundBox = 0.0f;
 
 	if (Object) {
-		float Radius = Object->GetWorldBoundRadius();
-		
-		//if (!(Object->m_flags & NiAVObject::kFlag_AppCulled) && Radius >= MinRadius && Radius <= MaxRadius && Object->m_worldTransform.pos.z + Radius > TheShaderManager->ShaderConst.Water.waterSettings.x) {
-		if (!(Object->m_flags & NiAVObject::kFlag_AppCulled) && Radius >= MinRadius && Radius <= MaxRadius) {
+		Bound = Object->GetWorldBound();
+		TheRenderManager->GetScreenSpaceBoundSize(&BoundSize, Bound);
+		BoundBox = (BoundSize.x * 100.f) * (BoundSize.y * 100.0f);
+		if (!(Object->m_flags & NiAVObject::kFlag_AppCulled) && BoundBox >= MinBoundSize && BoundBox <= MaxBoundSize && Object->m_worldTransform.pos.z + Bound->Radius > TheShaderManager->ShaderConst.Water.waterSettings.x) {
 			void* VFT = *(void**)Object;
 			if (VFT == VFTNiNode || VFT == VFTBSFadeNode) {
 				if (VFT == VFTBSFadeNode && ((BSFadeNode*)Object)->FadeAlpha < 0.9f) return;
@@ -148,7 +150,7 @@ void OcclusionManager::RenderStatic(NiAVObject* Object, float MinRadius, float M
 				}
 				else {
 					for (int i = 0; i < Node->m_children.end; i++) {
-						RenderStatic(Node->m_children.data[i], MinRadius, MaxRadius, PerformOcclusion);
+						RenderStatic(Node->m_children.data[i], MinBoundSize, MaxBoundSize, PerformOcclusion);
 					}
 				}
 			}
@@ -281,8 +283,10 @@ void OcclusionManager::RenderOcclusionMap() {
 	NiDX9RenderState* RenderState = TheRenderManager->renderState;
 	GridCellArray* CellArray = Tes->gridCellArray;
 	SettingsMainStruct::OcclusionCullingStruct* OcclusionCulling = &TheSettingManager->SettingsMain.OcclusionCulling;
-	float OccludedStaticMinRadius = OcclusionCulling->OccludedStaticMinRadius;
-	float OccludedStaticMaxRadius = OcclusionCulling->OccludedStaticMaxRadius;
+	float OccludingStaticMin = OcclusionCulling->OccludingStaticMin;
+	float OccludingStaticMax = OcclusionCulling->OccludingStaticMax;
+	float OccludedStaticMin = OcclusionCulling->OccludedStaticMin;
+	float OccludedStaticMax = OcclusionCulling->OccludedStaticMax;
 
 	Device->SetRenderTarget(0, OcclusionMapSurface);
 	Device->SetDepthStencilSurface(OcclusionMapDepthSurface);
@@ -310,7 +314,7 @@ void OcclusionManager::RenderOcclusionMap() {
 			while (Entry) {
 				if (TESObjectREFR* Ref = GetRef(Entry->item)) {
 					NiNode* RefNode = Ref->GetNode();
-					if (InFrustum(RefNode)) RenderStatic(RefNode, OcclusionCulling->OccludingStaticMinRadius, OcclusionCulling->OccludingStaticMaxRadius, false);
+					if (InFrustum(RefNode)) RenderStatic(RefNode, OccludingStaticMin, OccludingStaticMax, false);
 				}
 				Entry = Entry->next;
 			}
@@ -326,7 +330,7 @@ void OcclusionManager::RenderOcclusionMap() {
 			while (Entry) {
 				if (TESObjectREFR* Ref = GetRef(Entry->item)) {
 					NiNode* RefNode = Ref->GetNode();
-					if (InFrustum(RefNode)) RenderStatic(RefNode, OcclusionCulling->OccludedStaticMinRadius, OcclusionCulling->OccludedStaticMaxRadius, true);
+					if (InFrustum(RefNode)) RenderStatic(RefNode, OccludedStaticMin, OccludedStaticMax, true);
 				}
 				Entry = Entry->next;
 			}

@@ -708,7 +708,7 @@ void ShaderManager::UpdateConstants() {
 	ShaderConst.Tick.y = (double)PerformanceCount.QuadPart * 1000.0 / (double)PerformanceFrequency;
 	TheFrameRateManager->SetFrameTime(Tick);
 	IsThirdPersonView = Player->IsThirdPersonView(TheSettingManager->SettingsMain.CameraMode.Enabled, TheRenderManager->FirstPersonView);
-	TheRenderManager->GetSceneCameraData();
+	TheRenderManager->UpdateSceneCameraData();
 	
 	if (currentCell) {
 		ShaderConst.SunTiming.x = currentClimate->sunriseBegin / 6.0f - 1.0f;

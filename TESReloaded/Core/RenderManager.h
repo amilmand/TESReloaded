@@ -27,7 +27,8 @@ public:
 	void				Initialize();
 	void				ResolveDepthBuffer();
 	void				CreateD3DMatrix(D3DMATRIX* Matrix, NiTransform* Transform);
-	void				GetSceneCameraData();
+	void				GetScreenSpaceBoundSize(NiPoint2* BoundSize, NiBound* Bound, float ZeroTolerance = 1e-5f);
+	void				UpdateSceneCameraData();
 	void				SetupSceneCamera();
 	void				SetSceneGraph();
 

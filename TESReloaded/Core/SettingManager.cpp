@@ -103,14 +103,15 @@ SettingManager::SettingManager() {
 	SettingsMain.OcclusionCulling.OccludingStatic = GetPrivateProfileIntA("OcclusionCulling", "OccludingStatic", 1, Filename);
 	SettingsMain.OcclusionCulling.OccludedStatic = GetPrivateProfileIntA("OcclusionCulling", "OccludedStatic", 1, Filename);
 	SettingsMain.OcclusionCulling.OcclusionMapRatio = GetPrivateProfileIntA("OcclusionCulling", "OcclusionMapRatio", 1, Filename);
-	GetPrivateProfileStringA("OcclusionCulling", "OccludingStaticMinRadius", "500.0f", value, SettingStringBuffer, Filename);
-	SettingsMain.OcclusionCulling.OccludingStaticMinRadius = atof(value);
-	GetPrivateProfileStringA("OcclusionCulling", "OccludingStaticMaxRadius", "100000.0f", value, SettingStringBuffer, Filename);
-	SettingsMain.OcclusionCulling.OccludingStaticMaxRadius = atof(value);
-	GetPrivateProfileStringA("OcclusionCulling", "OccludedStaticMinRadius", "100.0f", value, SettingStringBuffer, Filename);
-	SettingsMain.OcclusionCulling.OccludedStaticMinRadius = atof(value);
-	GetPrivateProfileStringA("OcclusionCulling", "OccludedStaticMaxRadius", "500.0f", value, SettingStringBuffer, Filename);
-	SettingsMain.OcclusionCulling.OccludedStaticMaxRadius = atof(value);
+	GetPrivateProfileStringA("OcclusionCulling", "OccludingStaticMin", "1000.0", value, SettingStringBuffer, Filename);
+	SettingsMain.OcclusionCulling.OccludingStaticMin = atof(value);
+	GetPrivateProfileStringA("OcclusionCulling", "OccludingStaticMax", "-1.0", value, SettingStringBuffer, Filename);
+	SettingsMain.OcclusionCulling.OccludingStaticMax = atof(value);
+	if (SettingsMain.OcclusionCulling.OccludingStaticMax == -1.0f) SettingsMain.OcclusionCulling.OccludingStaticMax = FLT_MAX;
+	GetPrivateProfileStringA("OcclusionCulling", "OccludedStaticMin", "0.05", value, SettingStringBuffer, Filename);
+	SettingsMain.OcclusionCulling.OccludedStaticMin = atof(value);
+	GetPrivateProfileStringA("OcclusionCulling", "OccludedStaticMax", "0.25", value, SettingStringBuffer, Filename);
+	SettingsMain.OcclusionCulling.OccludedStaticMax = atof(value);
 
 	SettingsMain.FrameRate.Enabled = GetPrivateProfileIntA("FrameRate", "Enabled", 0, Filename);
 	SettingsMain.FrameRate.Average = GetPrivateProfileIntA("FrameRate", "Average", 33, Filename);

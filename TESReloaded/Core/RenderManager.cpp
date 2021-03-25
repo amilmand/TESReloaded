@@ -32,7 +32,31 @@ void RenderManager::CreateD3DMatrix(D3DMATRIX* Matrix, NiTransform* Transform) {
 
 }
 
-void RenderManager::GetSceneCameraData() {
+void RenderManager::GetScreenSpaceBoundSize(NiPoint2* BoundSize, NiBound* Bound, float ZeroTolerance) {
+		
+	NiCamera* Camera = WorldSceneGraph->camera;
+	NiMatrix33* WorldRotate = &Camera->m_worldTransform.rot;
+	NiPoint3 BoundPos = { Bound->Center.x - Camera->m_worldTransform.pos.x, Bound->Center.y - Camera->m_worldTransform.pos.y, Bound->Center.y - Camera->m_worldTransform.pos.y };
+	NiPoint3 CameraDirection = { WorldRotate->data[0][0], WorldRotate->data[1][0], WorldRotate->data[2][0] };
+	float BoundViewDist = BoundPos * CameraDirection;
+	float Ratio = Bound->Radius;
+
+	if (BoundViewDist < ZeroTolerance) {
+		if (BoundViewDist > -ZeroTolerance) {
+			BoundSize->x = FLT_MAX;
+			BoundSize->y = FLT_MAX;
+			return;
+		}
+		BoundViewDist = -BoundViewDist;
+	}
+
+	if (!Camera->Frustum.Ortho) Ratio /= BoundViewDist;
+	BoundSize->x = Ratio * 2.0f / (Camera->Frustum.Right - Camera->Frustum.Left);
+	BoundSize->y = Ratio * 2.0f / (Camera->Frustum.Top - Camera->Frustum.Bottom);
+
+}
+
+void RenderManager::UpdateSceneCameraData() {
 
 	NiCamera* Camera = WorldSceneGraph->camera;
 

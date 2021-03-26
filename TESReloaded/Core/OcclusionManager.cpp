@@ -104,53 +104,54 @@ void OcclusionManager::RenderStatic(NiAVObject* Object, float MinBoundSize, floa
 	
 	DWORD Pixels = 0;
 	NiPoint2 BoundSize;
-	NiBound* Bound = NULL;
 	float BoundBox = 0.0f;
 
 	if (Object) {
-		Bound = Object->GetWorldBound();
-		TheRenderManager->GetScreenSpaceBoundSize(&BoundSize, Bound);
-		BoundBox = (BoundSize.x * 100.f) * (BoundSize.y * 100.0f);
-		if (!(Object->m_flags & NiAVObject::kFlag_AppCulled) && BoundBox >= MinBoundSize && BoundBox <= MaxBoundSize && Object->m_worldTransform.pos.z + Bound->Radius > TheShaderManager->ShaderConst.Water.waterSettings.x) {
-			void* VFT = *(void**)Object;
-			if (VFT == VFTNiNode || VFT == VFTBSFadeNode) {
-				if (VFT == VFTBSFadeNode && ((BSFadeNode*)Object)->FadeAlpha < 0.9f) return;
-				NiNode* Node = (NiNode*)Object;
-				if (bhkCollisionObjectEx* CollisionObject = (bhkCollisionObjectEx*)Node->m_spCollision) {
-					VFT = *(void**)CollisionObject;
-					if (VFT == VFTbhkCollisionObject) {
-						if (!CollisionObject->GeoNode) {
-							if (bhkRigidBody* RigidBody = CollisionObject->bRigidBody) {
-								NiNode* GeoNode = (NiNode*)MemoryAlloc(sizeof(NiNode)); GeoNode->New(1); GeoNode->m_flags |= NiAVObject::kFlag_IsOCNode;
-								Node->AddObject(GeoNode, 1);
-								GeoNode->Update();
-								RigidBody->CreateNiGeometry(GeoNode);
-								GeoNode->Update();
-								Node->RemoveObject((NiAVObject**)&GeoNode, GeoNode);
-								CollisionObject->GeoNode = GeoNode;
+		NiBound* Bound = Object->GetWorldBound();
+		if (!(Object->m_flags & NiAVObject::kFlag_AppCulled) && Object->m_worldTransform.pos.z + Bound->Radius > TheShaderManager->ShaderConst.Water.waterSettings.x) {
+			TheRenderManager->GetScreenSpaceBoundSize(&BoundSize, Bound);
+			BoundBox = (BoundSize.x * 100.f) * (BoundSize.y * 100.0f);
+			if (BoundBox >= MinBoundSize && BoundBox <= MaxBoundSize) {
+				void* VFT = *(void**)Object;
+				if (VFT == VFTNiNode || VFT == VFTBSFadeNode) {
+					if (VFT == VFTBSFadeNode && ((BSFadeNode*)Object)->FadeAlpha < 0.9f) return;
+					NiNode* Node = (NiNode*)Object;
+					if (bhkCollisionObjectEx* CollisionObject = (bhkCollisionObjectEx*)Node->m_spCollision) {
+						VFT = *(void**)CollisionObject;
+						if (VFT == VFTbhkCollisionObject) {
+							if (!CollisionObject->GeoNode) {
+								if (bhkRigidBody* RigidBody = CollisionObject->bRigidBody) {
+									NiNode* GeoNode = (NiNode*)MemoryAlloc(sizeof(NiNode)); GeoNode->New(1); GeoNode->m_flags |= NiAVObject::kFlag_IsOCNode;
+									Node->AddObject(GeoNode, 1);
+									GeoNode->Update();
+									RigidBody->CreateNiGeometry(GeoNode);
+									GeoNode->Update();
+									Node->RemoveObject((NiAVObject**)&GeoNode, GeoNode);
+									CollisionObject->GeoNode = GeoNode;
+								}
 							}
-						}
-						if (NiNode* GeoNode = CollisionObject->GeoNode) {
-							for (int i = 0; i < GeoNode->m_children.end; i++) {
-								NiGeometry* Geo = (NiGeometry*)GeoNode->m_children.data[i];
-								if (!Geo->geomData->BuffData) TheRenderManager->unsharedGeometryGroup->AddObject(Geo->geomData, NULL, NULL);
-								if (PerformOcclusion) OcclusionQuery->Issue(D3DISSUE_BEGIN);
-								Render(Geo);
-								if (PerformOcclusion) {
-									OcclusionQuery->Issue(D3DISSUE_END);
-									while (OcclusionQuery->GetData((void*)&Pixels, sizeof(DWORD), D3DGETDATA_FLUSH) == S_FALSE);
-									if (Pixels <= 10)
-										Geo->m_flags |= NiAVObject::kFlag_IsOccluded;
-									else
-										Geo->m_flags &= ~NiAVObject::kFlag_IsOccluded;
+							if (NiNode* GeoNode = CollisionObject->GeoNode) {
+								for (int i = 0; i < GeoNode->m_children.end; i++) {
+									NiGeometry* Geo = (NiGeometry*)GeoNode->m_children.data[i];
+									if (!Geo->geomData->BuffData) TheRenderManager->unsharedGeometryGroup->AddObject(Geo->geomData, NULL, NULL);
+									if (PerformOcclusion) OcclusionQuery->Issue(D3DISSUE_BEGIN);
+									Render(Geo);
+									if (PerformOcclusion) {
+										OcclusionQuery->Issue(D3DISSUE_END);
+										while (OcclusionQuery->GetData((void*)&Pixels, sizeof(DWORD), D3DGETDATA_FLUSH) == S_FALSE);
+										if (Pixels <= 10)
+											Geo->m_flags |= NiAVObject::kFlag_IsOccluded;
+										else
+											Geo->m_flags &= ~NiAVObject::kFlag_IsOccluded;
+									}
 								}
 							}
 						}
 					}
-				}
-				else {
-					for (int i = 0; i < Node->m_children.end; i++) {
-						RenderStatic(Node->m_children.data[i], MinBoundSize, MaxBoundSize, PerformOcclusion);
+					else {
+						for (int i = 0; i < Node->m_children.end; i++) {
+							RenderStatic(Node->m_children.data[i], MinBoundSize, MaxBoundSize, PerformOcclusion);
+						}
 					}
 				}
 			}
@@ -336,6 +337,13 @@ void OcclusionManager::RenderOcclusionMap() {
 			}
 		}
 	}
+
+	//NiNode* DistantRefLOD = *(NiNode**)0x00B34424;
+	//for (int i = 0; i < DistantRefLOD->m_children.end; i++) {
+	//	NiNode* ChildNode = (NiNode*)DistantRefLOD->m_children.data[i];
+	//	int a = 1;
+	//}
+	
 	Device->EndScene();
 
 }

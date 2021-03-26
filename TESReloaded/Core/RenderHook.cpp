@@ -79,9 +79,6 @@ public:
 	HRESULT TrackSetSamplerState(UInt32, D3DSAMPLERSTATETYPE, UInt32, UInt8);
 	void	TrackRenderReflections(NiCamera*, ShadowSceneNode*);
 	void	TrackWaterCullingProcess(NiAVObject*);
-
-	UInt32	TrackPrepareGeometryForRendering(NiGeometry*, NiSkinPartition::Partition*, NiGeometryBufferData*, UInt32);
-
 #elif defined(SKYRIM)
 	void	TrackRender(BSRenderedTexture*, int, int);
 	void	TrackRenderWorldSceneGraph(Sun*, UInt8, UInt8);
@@ -399,19 +396,6 @@ void RenderHook::TrackWaterCullingProcess(NiAVObject* Object) {
 
 }
 
-UInt32 (__thiscall RenderHook::* PrepareGeometryForRendering)(NiGeometry*, NiSkinPartition::Partition*, NiGeometryBufferData*, UInt32);
-UInt32 (__thiscall RenderHook::* TrackPrepareGeometryForRendering)(NiGeometry*, NiSkinPartition::Partition*, NiGeometryBufferData*, UInt32);
-UInt32 RenderHook::TrackPrepareGeometryForRendering(NiGeometry* Geox, NiSkinPartition::Partition* Partition, NiGeometryBufferData* BufferData, UInt32 Arg4) {
-	
-	NiShader* Shader = (NiShader*)this;
-	if (Geox->m_pcName && strstr(Geox->m_pcName, "bhkPackedNiTriStripsShape")) {
-		int b = 1;
-	}
-
-	UInt32 a = (this->*PrepareGeometryForRendering)(Geox, Partition, BufferData, Arg4);
-	return a;
-}
-
 NiPixelData* (__cdecl * SaveGameScreenshot)(int*, int*) = (NiPixelData* (__cdecl *)(int*, int*))0x00411B70;
 NiPixelData* __cdecl TrackSaveGameScreenshot(int* pWidth, int* pHeight) {
 	
@@ -722,11 +706,6 @@ void CreateRenderHook() {
 	TrackRenderReflections					= &RenderHook::TrackRenderReflections;
 	*((int*)&WaterCullingProcess)			= 0x0049CBF0;
 	TrackWaterCullingProcess				= &RenderHook::TrackWaterCullingProcess;
-
-	*((int*)&PrepareGeometryForRendering)			= 0x0077A310;
-	TrackPrepareGeometryForRendering				= &RenderHook::TrackPrepareGeometryForRendering;
-
-
 #elif defined(SKYRIM)
 	*((int*)&RenderWorldSceneGraph)			= 0x00692290;
 	TrackRenderWorldSceneGraph				= &RenderHook::TrackRenderWorldSceneGraph;
@@ -761,10 +740,6 @@ void CreateRenderHook() {
 	DetourAttach(&(PVOID&)SaveGameScreenshot,					  &TrackSaveGameScreenshot);
 	DetourAttach(&(PVOID&)SetShaderPackage,						  &TrackSetShaderPackage);
 	DetourAttach(&(PVOID&)RenderObject,							  &TrackRenderObject);
-
-	DetourAttach(&(PVOID&)PrepareGeometryForRendering, *((PVOID*)&TrackPrepareGeometryForRendering));
-
-
 #elif defined(SKYRIM)
 	DetourAttach(&(PVOID&)RenderWorldSceneGraph,		*((PVOID*)&TrackRenderWorldSceneGraph));
 	DetourAttach(&(PVOID&)RenderFirstPerson,			*((PVOID*)&TrackRenderFirstPerson));

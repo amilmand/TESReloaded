@@ -181,7 +181,6 @@ void ShadowManager::RenderExterior(NiAVObject* Object, float MinRadius) {
 	
 	if (Object) {
 		float Radius = Object->GetWorldBoundRadius();
-
 		if (!(Object->m_flags & NiAVObject::kFlag_AppCulled) && Radius >= MinRadius && Object->m_worldTransform.pos.z + Radius > TheShaderManager->ShaderConst.Water.waterSettings.x) {
 			void* VFT = *(void**)Object;
 			if (VFT == VFTNiNode || VFT == VFTBSFadeNode || VFT == VFTBSFaceGenNiNode || VFT == VFTBSTreeNode) {
@@ -203,7 +202,6 @@ void ShadowManager::RenderInterior(NiAVObject* Object, float MinRadius) {
 	
 	if (Object) {
 		float Radius = Object->GetWorldBoundRadius();
-
 		if (!(Object->m_flags & NiAVObject::kFlag_AppCulled) && Radius >= MinRadius) {
 			void* VFT = *(void**)Object;
 			if (VFT == VFTNiNode || VFT == VFTBSFaceGenNiNode) {

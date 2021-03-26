@@ -8197,7 +8197,7 @@ public:
 	GridDistantArray*	gridDistantArray;		// 04
 	GridCellArray*		gridCellArray;			// 08
 	NiNode*				ObjectLODRoot;			// 0C
-	NiNode*				LODRoot;				// 10
+	NiNode*				LandLOD;				// 10
 	BSTempNodeManager*	tempNodeManager;		// 14
 	NiDirectionalLight* niDirectionalLight;		// 18
 	BSFogProperty*		fogProperty;			// 1C

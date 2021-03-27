@@ -160,6 +160,26 @@ void OcclusionManager::RenderStatic(NiAVObject* Object, float MinBoundSize, floa
 
 }
 
+void OcclusionManager::RenderDistantStatic(NiAVObject* Object) {
+
+	if (Object && !(Object->m_flags & NiAVObject::kFlag_AppCulled)) {
+		void* VFT = *(void**)Object;
+		if (VFT == VFTNiNode || VFT == VFTBSFadeNode) {
+			NiNode* Node = (NiNode*)Object;
+			if (InFrustum(Node)) {
+				for (int i = 0; i < Node->m_children.end; i++) {
+					RenderDistantStatic(Node->m_children.data[i]);
+				}
+			}
+		}
+		else if (VFT == VFTNiTriShape || VFT == VFTNiTriStrips) {
+			NiGeometry* Geo = (NiGeometry*)Object;
+			if (Geo->geomData->BuffData) Render(Geo);
+		}
+	}
+
+}
+
 void OcclusionManager::RenderTerrain(NiAVObject* Object) {
 
 	if (Object && !(Object->m_flags & NiAVObject::kFlag_AppCulled)) {
@@ -184,31 +204,29 @@ void OcclusionManager::RenderWater(NiAVObject* Object) {
 	
 	DWORD Pixels = 0;
 
-	if (Object) {
-		if (!(Object->m_flags & NiAVObject::kFlag_AppCulled)) {
-			void* VFT = *(void**)Object;
-			if (VFT == VFTNiNode) {
-				NiNode* Node = (NiNode*)Object;
-				if (InFrustum(Node)) {
-					for (int i = 0; i < Node->m_children.end; i++) {
-						RenderWater(Node->m_children.data[i]);
-					}
+	if (Object && !(Object->m_flags & NiAVObject::kFlag_AppCulled)) {
+		void* VFT = *(void**)Object;
+		if (VFT == VFTNiNode) {
+			NiNode* Node = (NiNode*)Object;
+			if (InFrustum(Node)) {
+				for (int i = 0; i < Node->m_children.end; i++) {
+					RenderWater(Node->m_children.data[i]);
 				}
 			}
-			else if (VFT == VFTNiTriShape || VFT == VFTNiTriStrips) {
-				NiGeometry* Geo = (NiGeometry*)Object;
-				if (Geo->geomData->BuffData) {
-					OcclusionQuery->Issue(D3DISSUE_BEGIN);
-					Render(Geo);
-					OcclusionQuery->Issue(D3DISSUE_END);
-					while (OcclusionQuery->GetData((void*)&Pixels, sizeof(DWORD), D3DGETDATA_FLUSH) == S_FALSE);
-					if (Pixels <= 10) {
-						Geo->m_flags |= NiAVObject::kFlag_IsOccluded;
-					}
-					else {
-						WaterOccluded = false;
-						Geo->m_flags &= ~NiAVObject::kFlag_IsOccluded;
-					}
+		}
+		else if (VFT == VFTNiTriShape || VFT == VFTNiTriStrips) {
+			NiGeometry* Geo = (NiGeometry*)Object;
+			if (Geo->geomData->BuffData) {
+				OcclusionQuery->Issue(D3DISSUE_BEGIN);
+				Render(Geo);
+				OcclusionQuery->Issue(D3DISSUE_END);
+				while (OcclusionQuery->GetData((void*)&Pixels, sizeof(DWORD), D3DGETDATA_FLUSH) == S_FALSE);
+				if (Pixels <= 10) {
+					Geo->m_flags |= NiAVObject::kFlag_IsOccluded;
+				}
+				else {
+					WaterOccluded = false;
+					Geo->m_flags &= ~NiAVObject::kFlag_IsOccluded;
 				}
 			}
 		}
@@ -283,6 +301,7 @@ void OcclusionManager::RenderOcclusionMap() {
 	IDirect3DDevice9* Device = TheRenderManager->device;
 	NiDX9RenderState* RenderState = TheRenderManager->renderState;
 	GridCellArray* CellArray = Tes->gridCellArray;
+	UInt32 CellArraySize = CellArray->size * CellArray->size;
 	SettingsMainStruct::OcclusionCullingStruct* OcclusionCulling = &TheSettingManager->SettingsMain.OcclusionCulling;
 	float OccludingStaticMin = OcclusionCulling->OccludingStaticMin;
 	float OccludingStaticMax = OcclusionCulling->OccludingStaticMax;
@@ -301,16 +320,14 @@ void OcclusionManager::RenderOcclusionMap() {
 	RenderState->SetPixelShader(OcclusionMapPixelShader, false);
 	Device->BeginScene();
 	//RenderState->SetRenderState(D3DRS_COLORWRITEENABLE, D3DZB_FALSE, RenderStateArgs);
-	for (UInt32 i = 0; i < CellArray->size * CellArray->size; i++) {
+	for (UInt32 i = 0; i < CellArraySize; i++) {
 		TESObjectCELL* Cell = CellArray->grid[i].cell;
 		NiNode* CellNode = Cell->niNode;
 		for (int i = 2; i < 6; i++) {
 			NiNode* ChildNode = (NiNode*)CellNode->m_children.data[i];
-			if (ChildNode->m_children.end) {
-				RenderTerrain(ChildNode->m_children.data[0]);
-			}
+			if (ChildNode->m_children.end) RenderTerrain(ChildNode->m_children.data[0]);
 		}
-		if (OcclusionCulling->OccludingStatic) {
+		if (OcclusionCulling->OccludingStatic && InFrustum(CellNode)) {
 			TList<TESObjectREFR>::Entry* Entry = &Cell->objectList.First;
 			while (Entry) {
 				if (TESObjectREFR* Ref = GetRef(Entry->item)) {
@@ -325,23 +342,26 @@ void OcclusionManager::RenderOcclusionMap() {
 	WaterOccluded = true;
 	RenderWater(WaterRoot);
 	if (OcclusionCulling->OccludedStatic) {
-		for (UInt32 i = 0; i < CellArray->size * CellArray->size; i++) {
+		for (UInt32 i = 0; i < CellArraySize; i++) {
 			TESObjectCELL* Cell = CellArray->grid[i].cell;
-			TList<TESObjectREFR>::Entry* Entry = &Cell->objectList.First;
-			while (Entry) {
-				if (TESObjectREFR* Ref = GetRef(Entry->item)) {
-					NiNode* RefNode = Ref->GetNode();
-					if (InFrustum(RefNode)) RenderStatic(RefNode, OccludedStaticMin, OccludedStaticMax, true);
+			NiNode* CellNode = Cell->niNode;
+			if (InFrustum(CellNode)) {
+				TList<TESObjectREFR>::Entry* Entry = &Cell->objectList.First;
+				while (Entry) {
+					if (TESObjectREFR* Ref = GetRef(Entry->item)) {
+						NiNode* RefNode = Ref->GetNode();
+						if (InFrustum(RefNode)) RenderStatic(RefNode, OccludedStaticMin, OccludedStaticMax, true);
+					}
+					Entry = Entry->next;
 				}
-				Entry = Entry->next;
 			}
 		}
 	}
 
 	//NiNode* DistantRefLOD = *(NiNode**)0x00B34424;
-	//for (int i = 0; i < DistantRefLOD->m_children.end; i++) {
+	//for (int i = 1; i < DistantRefLOD->m_children.end; i++) {
 	//	NiNode* ChildNode = (NiNode*)DistantRefLOD->m_children.data[i];
-	//	int a = 1;
+	//	RenderDistantStatic(ChildNode);
 	//}
 	
 	Device->EndScene();

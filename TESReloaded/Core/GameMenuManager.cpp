@@ -366,12 +366,12 @@ void GameMenuManager::Render() {
 				Setting++;
 			}
 		}
-		if (TheSettingManager->SettingsMain.Main.FPSOverlay && TheFrameRateManager->FrameRate > 0) {
+		if (TheSettingManager->SettingsMain.Main.FPSOverlay && TheFrameRateManager->CurrentFrameRate > 0) {
 			char Text[4];
 			time_t CurrentTime = time(NULL);
 
 			if (difftime(CurrentTime, LastFrameRateTextTime) >= 1.0) {
-				FrameRateText = TheFrameRateManager->FrameRate;
+				FrameRateText = TheFrameRateManager->CurrentFrameRate;
 				LastFrameRateTextTime = CurrentTime;
 			}
 			sprintf(Text, "%d", FrameRateText);

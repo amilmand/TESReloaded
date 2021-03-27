@@ -378,6 +378,7 @@ void ShadowManager::RenderShadowMap(ShadowMapTypeEnum ShadowMapType, SettingsSha
 	IDirect3DDevice9* Device = TheRenderManager->device;
 	NiDX9RenderState* RenderState = TheRenderManager->renderState;
 	GridCellArray* CellArray = Tes->gridCellArray;
+	UInt32 CellArraySize = CellArray->size * CellArray->size;
 	float FarPlane = ShadowsExteriors->ShadowMapFarPlane;
 	float Radius = ShadowsExteriors->ShadowMapRadius[ShadowMapType];
 	float MinRadius = ShadowsExteriors->Forms[ShadowMapType].MinRadius;
@@ -409,7 +410,7 @@ void ShadowManager::RenderShadowMap(ShadowMapTypeEnum ShadowMapType, SettingsSha
 		RenderState->SetVertexShader(ShadowMapVertexShader, false);
 		RenderState->SetPixelShader(ShadowMapPixelShader, false);
 		Device->BeginScene();
-		for (UInt32 i = 0; i < CellArray->size * CellArray->size; i++) {
+		for (UInt32 i = 0; i < CellArraySize; i++) {
 			TESObjectCELL* Cell = CellArray->grid[i].cell;
 			if (ShadowsExteriors->Forms[ShadowMapType].Terrain) {
 				NiNode* CellNode = Cell->niNode;

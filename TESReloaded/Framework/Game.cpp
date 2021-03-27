@@ -69,11 +69,11 @@ NiDX9Renderer* GameInitialization::TrackInitializeRenderer() { TheRenderManager 
 #if defined(OBLIVION)
 TES* (__thiscall GameInitialization::* NewTES)(char*, NiNode*, NiNode*, Sky*);
 TES* (__thiscall GameInitialization::* TrackNewTES)(char*, NiNode*, NiNode*, Sky*);
-TES* GameInitialization::TrackNewTES(char* RootData, NiNode* ObjectLODRoot, NiNode* LODRoot, Sky* Sky) { Tes = (TES*)(this->*NewTES)(RootData, ObjectLODRoot, LODRoot, Sky); SceneNode = *(ShadowSceneNode**)kShadowSceneNode; return Tes; }
+TES* GameInitialization::TrackNewTES(char* RootData, NiNode* ObjectLODRoot, NiNode* LandLOD, Sky* Sky) { Tes = (TES*)(this->*NewTES)(RootData, ObjectLODRoot, LandLOD, Sky); SceneNode = *(ShadowSceneNode**)kShadowSceneNode; return Tes; }
 #elif defined(NEWVEGAS) || defined(SKYRIM)
 TES* (__thiscall GameInitialization::* NewTES)(char*, NiNode*, NiNode*, Sky*, NiNode*);
 TES* (__thiscall GameInitialization::* TrackNewTES)(char*, NiNode*, NiNode*, Sky*, NiNode*);
-TES* GameInitialization::TrackNewTES(char* RootData, NiNode* ObjectLODRoot, NiNode* LODRoot, Sky* Sky, NiNode* WaterLOD) { Tes = (TES*)(this->*NewTES)(RootData, ObjectLODRoot, LODRoot, Sky, WaterLOD); SceneNode = *(ShadowSceneNode**)kShadowSceneNode; return Tes; }
+TES* GameInitialization::TrackNewTES(char* RootData, NiNode* ObjectLODRoot, NiNode* LandLOD, Sky* Sky, NiNode* WaterLOD) { Tes = (TES*)(this->*NewTES)(RootData, ObjectLODRoot, LandLOD, Sky, WaterLOD); SceneNode = *(ShadowSceneNode**)kShadowSceneNode; return Tes; }
 #endif
 
 PlayerCharacter* (__thiscall GameInitialization::* NewPlayerCharacter)();

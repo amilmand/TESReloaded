@@ -13,6 +13,7 @@ public:
 	bool					InFrustum(NiNode* Node);
 	TESObjectREFR*			GetRef(TESObjectREFR* Ref);
 	void					RenderStatic(NiAVObject* Object, float MinBoundSize, float MaxBoundSize, bool PerformOcclusion);
+	void					RenderDistantStatic(NiAVObject* Object);
 	void					RenderTerrain(NiAVObject* Object);
 	void					RenderWater(NiAVObject* Object);
 	void					Render(NiGeometry* Geo);

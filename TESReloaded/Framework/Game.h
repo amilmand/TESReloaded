@@ -7108,71 +7108,71 @@ public:
 	BSAnimGroupSequence*	currentActionAnim;	// 1F8
 	UInt16					movementFlags;						// 1FC
 	UInt8					pad1FE[2];	// 1FE
-	UInt32				unk200;		// 200
-	float				unk204;		// 204
-	UInt16				unk208;		// 208
-	UInt8				pad20A[2];	// 20A
-	Unk20C				unk20C;		// 20C
-	UInt32				unk218;		// 218
-	float				unk21C;		// 21C
-	UInt32				unk220;		// 220
-	UInt32				lightSound; // 224 TESGameSound* (ITMTorchHeldLP sound). It is set/removed when equipping/unequipping torch.
-	UInt8				unk228;		// 228
-	UInt8				pad229[3];	// 229
-	float				unk22C;		// 22C
-	float				unk230;		// 230 - initialized to ((rand() % 5000) * .001) + 10
-	UInt32				unk234;		// 234 - not initialized
-	float			swimBreath;	// 238 - initialized to 0x41A00000
-	UInt8			unk23C;		// 23C
-	UInt8			unk23D[3];	// 23D
-	UInt32			unk240;		// 240
-	UInt8			unk244;		// 244
-	UInt8			unk245[3];	// 245
-	float			unk248;		// 248
-	UInt8			unk24C;		// 24C
-	UInt8			pad24D[3];	// 24D
-	UInt32			unk250;		// 250
-	UInt32			unk254;		// 254
-	UInt32			unk258;		// 258
-	UInt8			unk25C;		// 25C
-	UInt8			unk25D;		// 25D
-	UInt8			pad25E[2];	// 25E
-	float			unk260;		// 260
-	UInt32			unk264;		// 264
-	NiObject*		unk268;	// 268 - decref'able pointer
-	float			unk26C;		// 26C
-	UInt32			unk270;		// 270
-	UInt32			unk274;		// 274
-	UInt8			unk278;		// 278
-	UInt8			pad279[3];	// 279
-	Unk27C			unk27C;		// 27C
-	UInt32			unk288;		// 288
-	UInt32			unk28C;		// 28C
-	UInt8			unk290;		// 290
-	UInt8			pad291[3];	// 291
-	float			unk294;		// 294
-	UInt32			unk298;		// 298
-	UInt32			unk29C;		// 29C
-	UInt32			unk2A0;		// 2A0
-	UInt32			unk2A4;		// 2A4
-	UInt8			unk2A8;		// 2A8
-	UInt8			unk2A9;		// 2A9
-	UInt8			pad2AA[2];	// 2AA
-	float			unk2AC;		// 2AC
-	float			unk2B0;		// 2B0
-	UInt32			unk2B4;		// 2B4
-	UInt8			unk2B8;		// 2B8
-	UInt8			unk2B9;		// 2B9
-	UInt8			pad2BA[2];	// 2BA
-	UInt32			unk2BC;		// 2BC
-	float			unk2C0;		// 2C0
-	TESObjectREFR*	unk2C4;	// 2C4
-	TESObjectREFR*	actionTarget[kActionType_Max];	// 2C8
-	UInt8			actionActive[kActionType_Max];		// 2DC - true if the specified action is running
-	UInt8			pad2E1[3];	// 2E1
-	TESObjectREFR*	unk2E4;	// 2E4
-	UInt8			unk2E8;		// 2E8
-	UInt8			pad2E9[3];	// 2E9
+	UInt32					unk200;		// 200
+	float					unk204;		// 204
+	UInt16					unk208;		// 208
+	UInt8					pad20A[2];	// 20A
+	Unk20C					unk20C;		// 20C
+	UInt32					unk218;		// 218
+	float					unk21C;		// 21C
+	UInt32					unk220;		// 220
+	UInt32					lightSound; // 224 TESGameSound* (ITMTorchHeldLP sound). It is set/removed when equipping/unequipping torch.
+	UInt8					unk228;		// 228
+	UInt8					pad229[3];	// 229
+	float					unk22C;		// 22C
+	float					unk230;		// 230 - initialized to ((rand() % 5000) * .001) + 10
+	UInt32					unk234;		// 234 - not initialized
+	float					swimBreath;	// 238 - initialized to 0x41A00000
+	UInt8					unk23C;		// 23C
+	UInt8					unk23D[3];	// 23D
+	UInt32					unk240;		// 240
+	UInt8					unk244;		// 244
+	UInt8					unk245[3];	// 245
+	float					unk248;		// 248
+	UInt8					unk24C;		// 24C
+	UInt8					pad24D[3];	// 24D
+	UInt32					unk250;		// 250
+	UInt32					unk254;		// 254
+	UInt32					unk258;		// 258
+	UInt8					unk25C;		// 25C
+	UInt8					unk25D;		// 25D
+	UInt8					pad25E[2];	// 25E
+	float					unk260;		// 260
+	UInt32					unk264;		// 264
+	NiObject*				unk268;	// 268 - decref'able pointer
+	float					unk26C;		// 26C
+	UInt32					unk270;		// 270
+	UInt32					unk274;		// 274
+	UInt8					unk278;		// 278
+	UInt8					pad279[3];	// 279
+	Unk27C					unk27C;		// 27C
+	UInt32					unk288;		// 288
+	UInt32					unk28C;		// 28C
+	UInt8					unk290;		// 290
+	UInt8					pad291[3];	// 291
+	float					unk294;		// 294
+	UInt32					unk298;		// 298
+	UInt32					unk29C;		// 29C
+	UInt32					unk2A0;		// 2A0
+	UInt32					unk2A4;		// 2A4
+	UInt8					unk2A8;		// 2A8
+	UInt8					unk2A9;		// 2A9
+	UInt8					pad2AA[2];	// 2AA
+	float					unk2AC;		// 2AC
+	float					unk2B0;		// 2B0
+	UInt32					unk2B4;		// 2B4
+	UInt8					unk2B8;		// 2B8
+	UInt8					unk2B9;		// 2B9
+	UInt8					pad2BA[2];	// 2BA
+	UInt32					unk2BC;		// 2BC
+	float					unk2C0;		// 2C0
+	TESObjectREFR*			unk2C4;	// 2C4
+	TESObjectREFR*			actionTarget[kActionType_Max];	// 2C8
+	UInt8					actionActive[kActionType_Max];		// 2DC - true if the specified action is running
+	UInt8					pad2E1[3];	// 2E1
+	TESObjectREFR*			unk2E4;	// 2E4
+	UInt8					unk2E8;		// 2E8
+	UInt8					pad2E9[3];	// 2E9
 };
 assert(sizeof(HighProcess) == 0x2EC);
 
@@ -8145,9 +8145,9 @@ public:
 		UInt32			unk0C;
 	};
 
-	UInt32				worldX;		// 04
-	UInt32				worldY;		// 08
-	UInt32				size;		// 0C grid is size^2, size = uGridsToLoadValue + 2 * uGridDistantCount
+	UInt32				unk04;		// 04
+	UInt32				unk08;		// 08
+	UInt32				size;		// 0C grid is size^2, size = uGridsToLoad + 2 * uGridDistantCount
 	DistantGridEntry*	grid;		// 10 dynamically alloc'ed array of GridEntry[size^2]
 };
 assert(sizeof(GridDistantArray) == 0x014);
@@ -8169,8 +8169,8 @@ public:
 
 	TESObjectCELL*		GetCell(UInt32 x, UInt32 y) { return ((GridEntry*)ThisCall(0x00482150, this, x, y))->cell; }
 
-	UInt32				worldX;		// 04 worldspace x coordinate of cell at center of grid (player's cell)
-	UInt32				worldY;		// 08 worldspace y
+	UInt32				worldX;		// 04 worldspace x coordinate of that cell at that center of grid (player's cell)
+	UInt32				worldY;		// 08 worldspace y coordinate of that cell at that center of grid (player's cell)
 	UInt32				size;		// 0C grid is size^2, size = uGridsToLoad
 	GridEntry*			grid;		// 10 dynamically alloc'ed array of GridEntry[size^2]
 	float				posX;		// 14 4096*worldX (exterior cells are 4096 square units)
@@ -8902,7 +8902,7 @@ static UInt8*			LocalWaterHiRes					= (UInt8*)0x00B45FD0;
 static void* (__cdecl* MemoryAlloc)(size_t) = (void* (__cdecl*)(size_t))0x00401F00;
 static void  (__cdecl* MemoryDealloc)(void*) = (void (__cdecl*)(void*))0x00401F20;
 static bool  (__cdecl* ExtractArgs)(CommandParam*, void*, UInt32*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptEventList*, ...) = (bool (__cdecl*)(CommandParam*, void*, UInt32*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptEventList*, ...))0x004FAE80;
-static void  (__cdecl* DrawGrass)(TESObjectCELL*, NiNode*, float, float, float, float, float, int, float, float, float) = (void (__cdecl*)(TESObjectCELL*, NiNode*, float, float, float, float, float, int, float, float, float))0x004EB3F0;
+static void  (__cdecl* CreateGrass)(TESObjectCELL*, NiNode*, float, float, float, float, float, int, float, float, float) = (void (__cdecl*)(TESObjectCELL*, NiNode*, float, float, float, float, float, int, float, float, float))0x004EB3F0;
 static void  (* PrintToConsole)(const char*, ...) = (void (*)(const char*, ...))0x00579B60;
 static ShaderDefinition* (__cdecl* GetShaderDefinition)(UInt32) = (ShaderDefinition* (__cdecl*)(UInt32))0x007B4290;
 static char* (__cdecl* GetPassDescription)(UInt32) = (char* (__cdecl*)(UInt32))0x007B4920;

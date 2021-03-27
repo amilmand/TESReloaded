@@ -4,7 +4,7 @@ FrameRateManager::FrameRateManager() {
 	TheFrameRateManager = this;
 
 	FrameCounter = 0;
-	FrameRate = 0;
+	CurrentFrameRate = 0;
 	LastFrameTime = 0.0;
 	ElapsedTime = 0.0;
 	GridDistant = *SettingGridDistantCount;
@@ -12,84 +12,87 @@ FrameRateManager::FrameRateManager() {
 }
 
 void FrameRateManager::Set() {
+	
+	SettingsMainStruct::FrameRateStruct* FrameRate = &TheSettingManager->SettingsMain.FrameRate;
 
-	if (FrameRate > 0) {
-		if (FrameRate < TheSettingManager->SettingsMain.FrameRate.Critical) {
+	if (CurrentFrameRate > 0) {
+		if (CurrentFrameRate < FrameRate->Critical) {
 			FrameCounter++;
-			if (FrameCounter >= TheSettingManager->SettingsMain.FrameRate.Delay) {
+			if (FrameCounter >= FrameRate->Delay) {
 				FrameCounter = 0;
 				GridDistant = 1;
 				*SettingLODFadeOutMultItems = *SettingLODFadeOutMultObjects = 1;
 				*SettingLODFadeOutMultActors = 1;
-				RequestType = FrameRateRequestType_None;
+				RequestType = FrameRateRequestType::None;
 			}
 		}
-		else if (FrameRate < TheSettingManager->SettingsMain.FrameRate.Min) {
+		else if (CurrentFrameRate < FrameRate->Min) {
 			FrameCounter++;
-			if (FrameCounter >= TheSettingManager->SettingsMain.FrameRate.Delay) {
+			if (FrameCounter >= FrameRate->Delay) {
 				FrameCounter = 0;
-				GridDistant = TheSettingManager->SettingsMain.FrameRate.GridMin;
-				RequestType = FrameRateRequestType_TurnDown;
+				GridDistant = FrameRate->GridMin;
+				RequestType = FrameRateRequestType::Down;
 			}
 		}
-		else if (FrameRate < TheSettingManager->SettingsMain.FrameRate.Average - TheSettingManager->SettingsMain.FrameRate.Gap) {
+		else if (CurrentFrameRate < FrameRate->Average - FrameRate->Gap) {
 			FrameCounter++;
-			if (FrameCounter >= TheSettingManager->SettingsMain.FrameRate.Delay) {
+			if (FrameCounter >= FrameRate->Delay) {
 				FrameCounter = 0;
-				GridDistant -= TheSettingManager->SettingsMain.FrameRate.GridStep;
-				if (GridDistant < TheSettingManager->SettingsMain.FrameRate.GridMin) GridDistant = TheSettingManager->SettingsMain.FrameRate.GridMin;
-				RequestType = FrameRateRequestType_TurnDown;
+				GridDistant -= FrameRate->GridStep;
+				if (GridDistant < FrameRate->GridMin) GridDistant = FrameRate->GridMin;
+				RequestType = FrameRateRequestType::Down;
 			}
 		}
-		else if (FrameRate > TheSettingManager->SettingsMain.FrameRate.Average + TheSettingManager->SettingsMain.FrameRate.Gap) {
+		else if (CurrentFrameRate > FrameRate->Average + FrameRate->Gap) {
 			FrameCounter++;
-			if (FrameCounter >= TheSettingManager->SettingsMain.FrameRate.Delay) {
+			if (FrameCounter >= FrameRate->Delay) {
 				FrameCounter = 0;
 				if (*SettingLODFadeOutMultActors == 15.0f && *SettingLODFadeOutMultObjects == 15.0f) {
-					GridDistant += TheSettingManager->SettingsMain.FrameRate.GridStep;
+					GridDistant += FrameRate->GridStep;
 					if (GridDistant > *SettingGridDistantCount) GridDistant = *SettingGridDistantCount;
 				}
-				RequestType = FrameRateRequestType_TurnUp;
+				RequestType = FrameRateRequestType::Up;
 			}
 		}
 		else {
 			FrameCounter = 0;
-			RequestType = FrameRateRequestType_None;
+			RequestType = FrameRateRequestType::None;
 		}
-		if (RequestType == FrameRateRequestType_TurnDown) {
-			if (GridDistant == TheSettingManager->SettingsMain.FrameRate.GridMin) {
-				if (*SettingLODFadeOutMultObjects > TheSettingManager->SettingsMain.FrameRate.FadeMinObjects) {
-					*SettingLODFadeOutMultItems = *SettingLODFadeOutMultObjects = *SettingLODFadeOutMultObjects - TheSettingManager->SettingsMain.FrameRate.FadeStep;
-					if (*SettingLODFadeOutMultObjects < TheSettingManager->SettingsMain.FrameRate.FadeMinObjects)
-						*SettingLODFadeOutMultItems = *SettingLODFadeOutMultObjects = TheSettingManager->SettingsMain.FrameRate.FadeMinObjects;
+		if (RequestType == FrameRateRequestType::Down) {
+			if (GridDistant == FrameRate->GridMin) {
+				if (*SettingLODFadeOutMultObjects > FrameRate->FadeMinObjects) {
+					*SettingLODFadeOutMultItems = *SettingLODFadeOutMultObjects = *SettingLODFadeOutMultObjects - FrameRate->FadeStep;
+					if (*SettingLODFadeOutMultObjects < FrameRate->FadeMinObjects)
+						*SettingLODFadeOutMultItems = *SettingLODFadeOutMultObjects = FrameRate->FadeMinObjects;
 				}
-				else if (*SettingLODFadeOutMultActors > TheSettingManager->SettingsMain.FrameRate.FadeMinActors) {
-					*SettingLODFadeOutMultActors = *SettingLODFadeOutMultActors - TheSettingManager->SettingsMain.FrameRate.FadeStep;
-					if (*SettingLODFadeOutMultActors < TheSettingManager->SettingsMain.FrameRate.FadeMinActors)
-						*SettingLODFadeOutMultActors = TheSettingManager->SettingsMain.FrameRate.FadeMinActors;
+				else if (*SettingLODFadeOutMultActors > FrameRate->FadeMinActors) {
+					*SettingLODFadeOutMultActors = *SettingLODFadeOutMultActors - FrameRate->FadeStep;
+					if (*SettingLODFadeOutMultActors < FrameRate->FadeMinActors)
+						*SettingLODFadeOutMultActors = FrameRate->FadeMinActors;
 				}
 			}
 		}
-		else if (RequestType == FrameRateRequestType_TurnUp) {
+		else if (RequestType == FrameRateRequestType::Up) {
 			if (*SettingLODFadeOutMultActors < 15.0f) {
-				*SettingLODFadeOutMultActors = *SettingLODFadeOutMultActors + TheSettingManager->SettingsMain.FrameRate.FadeStep;
+				*SettingLODFadeOutMultActors = *SettingLODFadeOutMultActors + FrameRate->FadeStep;
 				if (*SettingLODFadeOutMultActors > 15.0f)
 					*SettingLODFadeOutMultActors = 15.0f;
 			}
 			else if (*SettingLODFadeOutMultObjects < 15.0f) {
-				*SettingLODFadeOutMultItems = *SettingLODFadeOutMultObjects = *SettingLODFadeOutMultObjects + TheSettingManager->SettingsMain.FrameRate.FadeStep;
+				*SettingLODFadeOutMultItems = *SettingLODFadeOutMultObjects = *SettingLODFadeOutMultObjects + FrameRate->FadeStep;
 				if (*SettingLODFadeOutMultObjects > 15.0f)
 					*SettingLODFadeOutMultItems = *SettingLODFadeOutMultObjects = 15.0f;
 			}
 		}
 	}
+
 }
 
 void FrameRateManager::SetFrameTime(double CurrentFrameTime) {
 	
 	ElapsedTime = CurrentFrameTime - LastFrameTime;
 	LastFrameTime = CurrentFrameTime;
-	FrameRate = 1.0 / ElapsedTime;
+	CurrentFrameRate = 1.0 / ElapsedTime;
 
 }
 

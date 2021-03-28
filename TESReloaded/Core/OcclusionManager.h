@@ -13,11 +13,12 @@ public:
 	bool					InFrustum(NiNode* Node);
 	TESObjectREFR*			GetRef(TESObjectREFR* Ref);
 	void					RenderStatic(NiAVObject* Object, float MinBoundSize, float MaxBoundSize, bool PerformOcclusion);
-	void					RenderDistantStatic(NiAVObject* Object);
 	void					RenderTerrain(NiAVObject* Object);
 	void					RenderWater(NiAVObject* Object);
 	void					Render(NiGeometry* Geo);
-	void					RenderOcclusionMap();
+	void					ManageDistantStatic(NiAVObject* Object, float MaxBoundSize);
+	void					RenderDistantStatic(NiAVObject* Object);
+	void					RenderOcclusionMap(SettingsMainStruct::OcclusionCullingStruct* OcclusionCulling);
 	void					PerformOcclusionCulling();
 	
 	ShaderRecord*			OcclusionMapVertex;

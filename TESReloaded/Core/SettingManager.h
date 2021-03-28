@@ -94,11 +94,13 @@ struct SettingsMainStruct {
 		bool	Enabled;
 		bool	OccludingStatic;
 		bool	OccludedStatic;
+		bool	OccludedDistantStatic;
+		bool	OccludedDistantStaticIC;
 		int		OcclusionMapRatio;
 		float	OccludingStaticMin;
-		float	OccludingStaticMax;
 		float	OccludedStaticMin;
 		float	OccludedStaticMax;
+		float	OccludedDistantStaticMax;
 	};
 
 	struct CameraModeStruct {

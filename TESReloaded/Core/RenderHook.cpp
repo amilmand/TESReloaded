@@ -74,7 +74,6 @@ public:
 	bool	TrackEndTargetGroup(NiCamera*, NiRenderTargetGroup*);
 	void	TrackHDRRender(NiScreenElements*, BSRenderedTexture**, BSRenderedTexture**, UInt8);
 	UInt32	TrackSetupShaderPrograms(NiGeometry*, NiSkinInstance*, NiSkinPartition::Partition*, NiGeometryBufferData*, NiPropertyState*, NiDynamicEffectState*, NiTransform*, UInt32);
-	void	TrackBSFadeNodeOnVisible(NiCullingProcess*);
 	float	TrackFarPlane();
 	HRESULT TrackSetSamplerState(UInt32, D3DSAMPLERSTATETYPE, UInt32, UInt8);
 	void	TrackRenderReflections(NiCamera*, ShadowSceneNode*);
@@ -290,19 +289,6 @@ void RenderHook::TrackHDRRender(NiScreenElements* ScreenElements, BSRenderedText
 	
 	TheRenderManager->clearColor = D3DCOLOR_ARGB(0, 0, 0, 0);
 	(this->*HDRRender)(ScreenElements, RenderedTexture1, RenderedTexture2, Arg4);
-
-}
-
-void (__thiscall RenderHook::* BSFadeNodeOnVisible)(NiCullingProcess*);
-void (__thiscall RenderHook::* TrackBSFadeNodeOnVisible)(NiCullingProcess*);
-void RenderHook::TrackBSFadeNodeOnVisible(NiCullingProcess* Process) {
-	
-	BSFadeNode* Node = (BSFadeNode*)this;
-
-	if (TheSettingManager->SettingsMain.FrameRate.Enabled && Player->GetWorldSpace()) {
-		if (Node->MultType == 6 && !strstr(Node->m_pcName, "ImperialCity") && TheFrameRateManager->IsOutGrid(Node)) return;
-	}
-	(this->*BSFadeNodeOnVisible)(Process);
 
 }
 
@@ -696,8 +682,6 @@ void CreateRenderHook() {
 	TrackEndTargetGroup						= &RenderHook::TrackEndTargetGroup;
 	*((int*)&HDRRender)						= 0x007BDFC0;
 	TrackHDRRender							= &RenderHook::TrackHDRRender;
-	*((int*)&BSFadeNodeOnVisible)			= 0x004A0920;
-	TrackBSFadeNodeOnVisible				= &RenderHook::TrackBSFadeNodeOnVisible;
 	*((int*)&FarPlane)						= 0x00410EE0;
 	TrackFarPlane							= &RenderHook::TrackFarPlane;
 	*((int*)&SetSamplerState)				= 0x0077B610;
@@ -732,7 +716,6 @@ void CreateRenderHook() {
 	DetourAttach(&(PVOID&)SetupShaderPrograms,			*((PVOID*)&TrackSetupShaderPrograms));
 	DetourAttach(&(PVOID&)EndTargetGroup,				*((PVOID*)&TrackEndTargetGroup));
 	DetourAttach(&(PVOID&)HDRRender,					*((PVOID*)&TrackHDRRender));
-	DetourAttach(&(PVOID&)BSFadeNodeOnVisible,			*((PVOID*)&TrackBSFadeNodeOnVisible));
 	DetourAttach(&(PVOID&)FarPlane,						*((PVOID*)&TrackFarPlane));
 	DetourAttach(&(PVOID&)SetSamplerState,				*((PVOID*)&TrackSetSamplerState));
 	DetourAttach(&(PVOID&)RenderReflections,			*((PVOID*)&TrackRenderReflections));

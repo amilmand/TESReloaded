@@ -411,21 +411,22 @@ void ShadowManager::RenderShadowMap(ShadowMapTypeEnum ShadowMapType, SettingsSha
 		RenderState->SetPixelShader(ShadowMapPixelShader, false);
 		Device->BeginScene();
 		for (UInt32 i = 0; i < CellArraySize; i++) {
-			TESObjectCELL* Cell = CellArray->grid[i].cell;
-			if (ShadowsExteriors->Forms[ShadowMapType].Terrain) {
-				NiNode* CellNode = Cell->niNode;
-				for (int i = 2; i < 6; i++) {
-					NiNode* TerrainNode = (NiNode*)CellNode->m_children.data[i];
-					if (TerrainNode->m_children.end) RenderTerrain(TerrainNode->m_children.data[0], ShadowMapType);
+			if (TESObjectCELL* Cell = CellArray->grid[i].cell) {
+				if (ShadowsExteriors->Forms[ShadowMapType].Terrain) {
+					NiNode* CellNode = Cell->niNode;
+					for (int i = 2; i < 6; i++) {
+						NiNode* TerrainNode = (NiNode*)CellNode->m_children.data[i];
+						if (TerrainNode->m_children.end) RenderTerrain(TerrainNode->m_children.data[0], ShadowMapType);
+					}
 				}
-			}
-			TList<TESObjectREFR>::Entry* Entry = &Cell->objectList.First;
-			while (Entry) {
-				if (TESObjectREFR* Ref = GetRef(Entry->item, &ShadowsExteriors->Forms[ShadowMapType], &ShadowsExteriors->ExcludedForms)) {
-					NiNode* RefNode = Ref->GetNode();
-					if (InFrustum(ShadowMapType, RefNode)) RenderExterior(RefNode, MinRadius);
+				TList<TESObjectREFR>::Entry* Entry = &Cell->objectList.First;
+				while (Entry) {
+					if (TESObjectREFR* Ref = GetRef(Entry->item, &ShadowsExteriors->Forms[ShadowMapType], &ShadowsExteriors->ExcludedForms)) {
+						NiNode* RefNode = Ref->GetNode();
+						if (InFrustum(ShadowMapType, RefNode)) RenderExterior(RefNode, MinRadius);
+					}
+					Entry = Entry->next;
 				}
-				Entry = Entry->next;
 			}
 		}
 		Device->EndScene();

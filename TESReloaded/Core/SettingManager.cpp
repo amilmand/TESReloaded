@@ -100,18 +100,19 @@ SettingManager::SettingManager() {
 	SettingsMain.Main.ReplaceIntro = GetPrivateProfileIntA("Main", "ReplaceIntro", 0, Filename);
 
 	SettingsMain.OcclusionCulling.Enabled = GetPrivateProfileIntA("OcclusionCulling", "Enabled", 0, Filename);
+	SettingsMain.OcclusionCulling.OcclusionMapRatio = GetPrivateProfileIntA("OcclusionCulling", "OcclusionMapRatio", 4, Filename);
 	SettingsMain.OcclusionCulling.OccludingStatic = GetPrivateProfileIntA("OcclusionCulling", "OccludingStatic", 1, Filename);
 	SettingsMain.OcclusionCulling.OccludedStatic = GetPrivateProfileIntA("OcclusionCulling", "OccludedStatic", 1, Filename);
-	SettingsMain.OcclusionCulling.OcclusionMapRatio = GetPrivateProfileIntA("OcclusionCulling", "OcclusionMapRatio", 1, Filename);
+	SettingsMain.OcclusionCulling.OccludedDistantStatic = GetPrivateProfileIntA("OcclusionCulling", "OccludedDistantStatic", 1, Filename);
+	SettingsMain.OcclusionCulling.OccludedDistantStaticIC = GetPrivateProfileIntA("OcclusionCulling", "OccludedDistantStaticIC", 0, Filename);
 	GetPrivateProfileStringA("OcclusionCulling", "OccludingStaticMin", "1000.0", value, SettingStringBuffer, Filename);
 	SettingsMain.OcclusionCulling.OccludingStaticMin = atof(value);
-	GetPrivateProfileStringA("OcclusionCulling", "OccludingStaticMax", "-1.0", value, SettingStringBuffer, Filename);
-	SettingsMain.OcclusionCulling.OccludingStaticMax = atof(value);
-	if (SettingsMain.OcclusionCulling.OccludingStaticMax == -1.0f) SettingsMain.OcclusionCulling.OccludingStaticMax = FLT_MAX;
-	GetPrivateProfileStringA("OcclusionCulling", "OccludedStaticMin", "0.05", value, SettingStringBuffer, Filename);
+	GetPrivateProfileStringA("OcclusionCulling", "OccludedStaticMin", "10.0", value, SettingStringBuffer, Filename);
 	SettingsMain.OcclusionCulling.OccludedStaticMin = atof(value);
-	GetPrivateProfileStringA("OcclusionCulling", "OccludedStaticMax", "0.25", value, SettingStringBuffer, Filename);
+	GetPrivateProfileStringA("OcclusionCulling", "OccludedStaticMax", "500.0", value, SettingStringBuffer, Filename);
 	SettingsMain.OcclusionCulling.OccludedStaticMax = atof(value);
+	GetPrivateProfileStringA("OcclusionCulling", "OccludedDistantStaticMax", "10.0", value, SettingStringBuffer, Filename);
+	SettingsMain.OcclusionCulling.OccludedDistantStaticMax = atof(value);
 
 	SettingsMain.FrameRate.Enabled = GetPrivateProfileIntA("FrameRate", "Enabled", 0, Filename);
 	SettingsMain.FrameRate.Average = GetPrivateProfileIntA("FrameRate", "Average", 33, Filename);

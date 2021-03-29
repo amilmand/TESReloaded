@@ -394,12 +394,9 @@ SettingManager::SettingManager() {
 	}
 	SettingsMain.Menu.PositionX = GetPrivateProfileIntA("Menu", "PositionX", 60, Filename);
 	SettingsMain.Menu.PositionY = GetPrivateProfileIntA("Menu", "PositionY", 120, Filename);
-	SettingsMain.Menu.InfoPositionX = GetPrivateProfileIntA("Menu", "InfoPositionX", 480, Filename);
-	SettingsMain.Menu.InfoPositionY = GetPrivateProfileIntA("Menu", "InfoPositionY", 800, Filename);
 	SettingsMain.Menu.TitleColumnSize = GetPrivateProfileIntA("Menu", "TitleColumnSize", 800, Filename);
 	SettingsMain.Menu.MainItemColumnSize = GetPrivateProfileIntA("Menu", "MainItemColumnSize", 100, Filename);
 	SettingsMain.Menu.ItemColumnSize = GetPrivateProfileIntA("Menu", "ItemColumnSize", 250, Filename);
-	SettingsMain.Menu.InfoColumnSize = GetPrivateProfileIntA("Menu", "InfoColumnSize", 960, Filename);
 	SettingsMain.Menu.RowSpace = GetPrivateProfileIntA("Menu", "RowSpace", 4, Filename);
 	SettingsMain.Menu.RowsPerPage = GetPrivateProfileIntA("Menu", "RowsPerPage", 30, Filename);
 	SettingsMain.Menu.KeyEnable = GetPrivateProfileIntA("Menu", "KeyEnable", 24, Filename);

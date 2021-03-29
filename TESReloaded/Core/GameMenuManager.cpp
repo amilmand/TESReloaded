@@ -1,4 +1,3 @@
-#include <ctime>
 #include <fstream>
 #include "PluginVersion.h"
 #include "WeatherMode.h"
@@ -23,12 +22,9 @@ static char* TitleMenu = "Skyrim Reloaded - Settings";
 #define TextSizeStatus MenuSettings->TextSizeStatus
 #define PositionX MenuSettings->PositionX
 #define PositionY MenuSettings->PositionY
-#define InfoPositionX MenuSettings->InfoPositionX
-#define InfoPositionY MenuSettings->InfoPositionY
 #define TitleColumnSize MenuSettings->TitleColumnSize
 #define MainItemColumnSize MenuSettings->MainItemColumnSize
 #define ItemColumnSize MenuSettings->ItemColumnSize
-#define InfoColumnSize MenuSettings->InfoColumnSize
 #define RowSpace MenuSettings->RowSpace
 #define RowsPerPage MenuSettings->RowsPerPage
 #define IntValues "ScreenshotKey GrassDensity LightShaftPasses CombatEquipmentKey TorchKey Average Min Critical Gap Delay FadeStep FadeMinObjects FadeMinActors GridStep GridMin TimeKey DayR DayG DayB NightR NightG NightB SunriseR SunriseG SunriseB SunsetR SunsetG SunsetB CloudSpeedLower CloudSpeedUpper SunGlare SunDamage TransDelta WindSpeed Mode Quality"
@@ -46,12 +42,9 @@ GameMenuManager::GameMenuManager() {
 	SelectedPage[0] = SelectedPage[1] = SelectedPage[2] = SelectedPage[3] = 0;
 	Enabled = false;
 	EditingMode = false;
-	FrameRateText = 0;
-	LastFrameRateTextTime = 0;
+	FrameRate = 0;
+	FrameCounter = 0;
 	SelectedSetting[0] = '\0';
-	InfoText[0] = '\0';
-	SetRect(&RectInfo, InfoPositionX, InfoPositionY, InfoPositionX + InfoColumnSize, InfoPositionY + RowSpace + TextSize * 2);
-	SetRect(&RectInfoShadow, RectInfo.left + 1, RectInfo.top + 1, RectInfo.right + 1, RectInfo.bottom + 1);
 	D3DXCreateFontA(TheRenderManager->device, TextSize, 0, FW_NORMAL, 1, false, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY, FF_DONTCARE, TextFont, &FontNormal);
 	D3DXCreateFontA(TheRenderManager->device, TextSize, 0, FW_BOLD, 1, false, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY, FF_DONTCARE, TextFont, &FontSelected);
 	D3DXCreateFontA(TheRenderManager->device, TextSizeStatus, 0, FW_NORMAL, 1, false, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY, FF_DONTCARE, TextFontStatus, &FontStatus);
@@ -342,14 +335,10 @@ void GameMenuManager::Render() {
 								Text = T.c_str();
 								FontSelected->DrawTextA(NULL, Text, -1, &RectShadow, DT_LEFT, TextShadowColorEditing);
 								FontSelected->DrawTextA(NULL, Text, -1, &Rect, DT_LEFT, TextColorEditing);
-								FontNormal->DrawTextA(NULL, InfoText, -1, &RectInfoShadow, DT_CENTER | DT_WORDBREAK, TextShadowColorNormal);
-								FontNormal->DrawTextA(NULL, InfoText, -1, &RectInfo, DT_CENTER | DT_WORDBREAK, TextColorNormal);
 							}
 							else {
 								FontSelected->DrawTextA(NULL, Text, -1, &RectShadow, DT_LEFT, TextShadowColorSelected);
 								FontSelected->DrawTextA(NULL, Text, -1, &Rect, DT_LEFT, TextColorSelected);
-								FontNormal->DrawTextA(NULL, InfoText, -1, &RectInfoShadow, DT_CENTER | DT_WORDBREAK, TextShadowColorNormal);
-								FontNormal->DrawTextA(NULL, InfoText, -1, &RectInfo, DT_CENTER | DT_WORDBREAK, TextColorNormal);
 							}
 						}
 						else {
@@ -366,15 +355,15 @@ void GameMenuManager::Render() {
 				Setting++;
 			}
 		}
-		if (TheSettingManager->SettingsMain.Main.FPSOverlay && TheFrameRateManager->CurrentFrameRate > 0) {
+		if (TheSettingManager->SettingsMain.Main.FPSOverlay) {
 			char Text[4];
-			time_t CurrentTime = time(NULL);
-
-			if (difftime(CurrentTime, LastFrameRateTextTime) >= 1.0) {
-				FrameRateText = TheFrameRateManager->CurrentFrameRate;
-				LastFrameRateTextTime = CurrentTime;
+			
+			FrameCounter++;
+			if (FrameCounter == 10) {
+				FrameCounter = 0;
+				FrameRate = 1.0 / TheShaderManager->ElapsedTime;
 			}
-			sprintf(Text, "%d", FrameRateText);
+			sprintf(Text, "%d", FrameRate);
 			SetRect(&Rect, 9, 6, 109, 6 + TextSize);
 			SetRect(&RectShadow, Rect.left + 1, Rect.top + 1, Rect.right + 1, Rect.bottom + 1);
 			FontSelected->DrawTextA(NULL, Text, -1, &RectShadow, DT_LEFT, TextShadowColorSelected);

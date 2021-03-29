@@ -1,5 +1,4 @@
 #include <fstream>
-#include <ctime>
 #define FrameFVF D3DFVF_XYZ | D3DFVF_TEX1
 
 #if defined(NEWVEGAS)
@@ -577,7 +576,9 @@ ShaderManager::ShaderManager() {
 	TheShaderManager = this;
 
 	LARGE_INTEGER Frequency;
-
+	
+	ElapsedTime = 0.0;
+	LastTick = 0.0;
 	SourceTexture = NULL;
 	SourceSurface = NULL;
 	RenderedTexture = NULL;
@@ -704,12 +705,14 @@ void ShaderManager::UpdateConstants() {
 
 	QueryPerformanceCounter(&PerformanceCount);
 	Tick = (double)PerformanceCount.QuadPart / (double)PerformanceFrequency;
+	ElapsedTime = Tick - LastTick;
+	LastTick = Tick;
 	ShaderConst.Tick.x = Tick;
 	ShaderConst.Tick.y = (double)PerformanceCount.QuadPart * 1000.0 / (double)PerformanceFrequency;
-	TheFrameRateManager->SetFrameTime(Tick);
+
 	IsThirdPersonView = Player->IsThirdPersonView(TheSettingManager->SettingsMain.CameraMode.Enabled, TheRenderManager->FirstPersonView);
 	TheRenderManager->UpdateSceneCameraData();
-	
+
 	if (currentCell) {
 		ShaderConst.SunTiming.x = currentClimate->sunriseBegin / 6.0f - 1.0f;
 		ShaderConst.SunTiming.y = currentClimate->sunriseEnd / 6.0f;
@@ -1414,9 +1417,8 @@ void ShaderManager::UpdateConstants() {
 			ShaderConst.VolumetricFog.Data.w = 1.0f;
 			if (weatherPercent == 1.0f && ShaderConst.fogData.y > TheSettingManager->SettingsVolumetricFog.MaxDistance) ShaderConst.VolumetricFog.Data.w = 0.0f;
 		}
-
-		if (TheSettingManager->SettingsMain.FrameRate.Enabled) TheFrameRateManager->Set();
 	}
+
 }
 
 void ShaderManager::BeginScene() {

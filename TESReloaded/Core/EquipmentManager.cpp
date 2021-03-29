@@ -502,7 +502,7 @@ UInt8 Equipment::TrackProcessControlAttack() {
 			if (TheEquipmentManager->LeftTime == -1.0f)
 				TheEquipmentManager->LeftTime = 0.0f;
 			else
-				TheEquipmentManager->LeftTime += TheFrameRateManager->ElapsedTime;
+				TheEquipmentManager->LeftTime += TheShaderManager->ElapsedTime;
 			if (TheEquipmentManager->LeftTime < TheSettingManager->SettingsMain.EquipmentMode.DualBlockDelay) TheKeyboardManager->SetControlState(6, 0, 0);
 		}
 		else if (TheEquipmentManager->LeftTime >= 0.0f) {

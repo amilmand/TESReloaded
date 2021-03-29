@@ -278,6 +278,8 @@ public:
 	struct					FrameVS { float x, y, z, u, v; };
 
 	LONGLONG				PerformanceFrequency;
+	double					ElapsedTime;
+	double					LastTick;
 	ShaderConstants			ShaderConst;
 	CustomConstants			CustomConst;
 	IDirect3DTexture9*		SourceTexture;

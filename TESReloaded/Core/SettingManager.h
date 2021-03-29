@@ -242,12 +242,9 @@ struct SettingsMainStruct {
 		UInt8	KeyEditing;
 		int		PositionX;
 		int		PositionY;
-		int		InfoPositionX;
-		int		InfoPositionY;
 		int		TitleColumnSize;
 		int		MainItemColumnSize;
 		int		ItemColumnSize;
-		int		InfoColumnSize;
 		int		RowSpace;
 		int		RowsPerPage;
 		float	StepValue;

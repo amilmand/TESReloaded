@@ -23,7 +23,6 @@ private:
 	char			SelectedDefinition[40];
 	char			SelectedSection[40];
 	char			SelectedSetting[40];
-	char			InfoText[256];
 	float			SelectedValue;
 	UInt32			SelectedSectionKey;
 	ID3DXFont*		FontSelected;
@@ -31,9 +30,7 @@ private:
 	ID3DXFont*		FontStatus;
 	RECT			Rect;
 	RECT			RectShadow;
-	RECT			RectInfo;
-	RECT			RectInfoShadow;
-	int				FrameRateText;
-	time_t			LastFrameRateTextTime;
+	int				FrameRate;
+	int				FrameCounter;
 
 };

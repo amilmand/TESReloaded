@@ -39,7 +39,7 @@ void LowHSoundScript::Run() {
 						ElapsedTime = 0.0f;
 					}
 					else if (ElapsedTime >= 0.0f) {
-						ElapsedTime += TheFrameRateManager->ElapsedTime;
+						ElapsedTime += TheShaderManager->ElapsedTime;
 						if (ElapsedTime >= 1.5f) ElapsedTime = -1.0f;
 					}
 				}
@@ -77,7 +77,7 @@ void LowFSoundScript::Run() {
 						ElapsedTime = 0.0f;
 					}
 					else if (ElapsedTime >= 0.0f) {
-						ElapsedTime += TheFrameRateManager->ElapsedTime;
+						ElapsedTime += TheShaderManager->ElapsedTime;
 						if (ElapsedTime >= BreathingTime) ElapsedTime = -1.0f;
 					}
 				}
@@ -96,7 +96,7 @@ void PurgerScript::Run() {
 		bool PurgerKeyPressed = TheKeyboardManager->OnKeyDown(TheSettingManager->SettingsMain.Purger.Key);
 
 		if (PurgerTime || PurgerKeyPressed) {
-			ElapsedTime += TheFrameRateManager->ElapsedTime;
+			ElapsedTime += TheShaderManager->ElapsedTime;
 			if (ElapsedTime >= PurgerTime || PurgerKeyPressed) {
 				if (TheSettingManager->SettingsMain.Purger.PurgeTextures) { TheRenderManager->device->EvictManagedResources(); }
 				if (TheSettingManager->SettingsMain.Purger.PurgeCells) { Tes->PurgeCells(); Global->PurgeModels(); }
@@ -234,7 +234,7 @@ EquipmentSetupScript::StepType EquipmentSetupScript::GetCurrentEquipmentType() {
 		}
 	}
 	if (CurrentStep == Normal && GameStep == Swimming && ElapsedTime < 2.0f) {
-		ElapsedTime += TheFrameRateManager->ElapsedTime;
+		ElapsedTime += TheShaderManager->ElapsedTime;
 		CurrentStep = Swimming;
 	}
 	return CurrentStep;

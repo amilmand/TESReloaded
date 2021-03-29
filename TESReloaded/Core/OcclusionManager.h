@@ -30,8 +30,8 @@ public:
 	IDirect3DSurface9*		OcclusionMapSurface;
 	IDirect3DSurface9*		OcclusionMapDepthSurface;
 	D3DVIEWPORT9			OcclusionMapViewPort;
+	IDirect3DTexture9*		WaterTexture;
 	bool					WaterOccluded;
-	IDirect3DTexture9*		Tex;
 };
 
 void CreateOcclusionCullingHook();

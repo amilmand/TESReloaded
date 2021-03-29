@@ -1,6 +1,5 @@
+#define DEBUGSH 0
 #include <algorithm>
-#include <cmath>
-#include <ctime>
 
 #if defined(NEWVEGAS)
 #define RenderStateArgs 0, 0
@@ -609,19 +608,21 @@ void ShadowManager::RenderShadowMaps() {
 	}
 	Device->SetDepthStencilSurface(DepthSurface);
 
-	//if (TheKeyboardManager->OnKeyDown(26)) {
-	//	D3DXSaveSurfaceToFileA("C:\\Archivio\\Downloads\\shadowmap0.jpg", D3DXIFF_JPG, ShadowMapSurface[0], NULL, NULL);
-	//	D3DXSaveSurfaceToFileA("C:\\Archivio\\Downloads\\shadowmap1.jpg", D3DXIFF_JPG, ShadowMapSurface[1], NULL, NULL);
-	//	D3DXSaveSurfaceToFileA("C:\\Archivio\\Downloads\\shadowmap2.jpg", D3DXIFF_JPG, ShadowMapSurface[2], NULL, NULL);
-	//}
-	//if (TheKeyboardManager->OnKeyDown(26)) {
-	//	D3DXSaveSurfaceToFileA("C:\\Archivio\\Downloads\\shadowmap0.jpg", D3DXIFF_JPG, ShadowCubeMapSurface[0][0], NULL, NULL);
-	//	D3DXSaveSurfaceToFileA("C:\\Archivio\\Downloads\\shadowmap1.jpg", D3DXIFF_JPG, ShadowCubeMapSurface[0][1], NULL, NULL);
-	//	D3DXSaveSurfaceToFileA("C:\\Archivio\\Downloads\\shadowmap2.jpg", D3DXIFF_JPG, ShadowCubeMapSurface[0][2], NULL, NULL);
-	//	D3DXSaveSurfaceToFileA("C:\\Archivio\\Downloads\\shadowmap3.jpg", D3DXIFF_JPG, ShadowCubeMapSurface[0][3], NULL, NULL);
-	//	D3DXSaveSurfaceToFileA("C:\\Archivio\\Downloads\\shadowmap4.jpg", D3DXIFF_JPG, ShadowCubeMapSurface[0][4], NULL, NULL);
-	//	D3DXSaveSurfaceToFileA("C:\\Archivio\\Downloads\\shadowmap5.jpg", D3DXIFF_JPG, ShadowCubeMapSurface[0][5], NULL, NULL);
-	//}
+#if DEBUGSH
+	if (TheKeyboardManager->OnKeyDown(26)) {
+		D3DXSaveSurfaceToFileA("C:\\Archivio\\Downloads\\shadowmap0.jpg", D3DXIFF_JPG, ShadowMapSurface[0], NULL, NULL);
+		D3DXSaveSurfaceToFileA("C:\\Archivio\\Downloads\\shadowmap1.jpg", D3DXIFF_JPG, ShadowMapSurface[1], NULL, NULL);
+		D3DXSaveSurfaceToFileA("C:\\Archivio\\Downloads\\shadowmap2.jpg", D3DXIFF_JPG, ShadowMapSurface[2], NULL, NULL);
+	}
+	if (TheKeyboardManager->OnKeyDown(26)) {
+		D3DXSaveSurfaceToFileA("C:\\Archivio\\Downloads\\shadowcubemap0.jpg", D3DXIFF_JPG, ShadowCubeMapSurface[0][0], NULL, NULL);
+		D3DXSaveSurfaceToFileA("C:\\Archivio\\Downloads\\shadowcubemap1.jpg", D3DXIFF_JPG, ShadowCubeMapSurface[0][1], NULL, NULL);
+		D3DXSaveSurfaceToFileA("C:\\Archivio\\Downloads\\shadowcubemap2.jpg", D3DXIFF_JPG, ShadowCubeMapSurface[0][2], NULL, NULL);
+		D3DXSaveSurfaceToFileA("C:\\Archivio\\Downloads\\shadowcubemap3.jpg", D3DXIFF_JPG, ShadowCubeMapSurface[0][3], NULL, NULL);
+		D3DXSaveSurfaceToFileA("C:\\Archivio\\Downloads\\shadowcubemap4.jpg", D3DXIFF_JPG, ShadowCubeMapSurface[0][4], NULL, NULL);
+		D3DXSaveSurfaceToFileA("C:\\Archivio\\Downloads\\shadowcubemap5.jpg", D3DXIFF_JPG, ShadowCubeMapSurface[0][5], NULL, NULL);
+	}
+#endif
 
 }
 

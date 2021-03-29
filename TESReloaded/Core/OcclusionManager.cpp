@@ -1,3 +1,4 @@
+#define DEBUGOC 0
 #include "OcclusionManager.h"
 
 #if defined(NEWVEGAS)
@@ -34,17 +35,23 @@ OcclusionManager::OcclusionManager() {
 	Logger::Log("Starting the occlusion manager...");
 	TheOcclusionManager = this;
 	
-	Tex = NULL;
-	WaterOccluded = false;
-
 	IDirect3DDevice9* Device = TheRenderManager->device;
 	UINT OcclusionMapSizeX = TheRenderManager->width / TheSettingManager->SettingsMain.OcclusionCulling.OcclusionMapRatio;
 	UINT OcclusionMapSizeY = TheRenderManager->height / TheSettingManager->SettingsMain.OcclusionCulling.OcclusionMapRatio;
+#if !DEBUGOC	
+	char* VertexShaderName = "OcclusionMap.vso";
+	char* PixelShaderName = "OcclusionMap.pso";
+#else
+	char* VertexShaderName = "OcclusionMapDebug.vso";
+	char* PixelShaderName = "OcclusionMapDebug.pso";
+#endif
+	WaterOccluded = false;
+	WaterTexture = NULL;
 
 	OcclusionMapVertex = new ShaderRecord();
-	if (OcclusionMapVertex->LoadShader("OcclusionMap.vso")) Device->CreateVertexShader((const DWORD*)OcclusionMapVertex->Function, &OcclusionMapVertexShader);
+	if (OcclusionMapVertex->LoadShader(VertexShaderName)) Device->CreateVertexShader((const DWORD*)OcclusionMapVertex->Function, &OcclusionMapVertexShader);
 	OcclusionMapPixel = new ShaderRecord();
-	if (OcclusionMapPixel->LoadShader("OcclusionMap.pso")) Device->CreatePixelShader((const DWORD*)OcclusionMapPixel->Function, &OcclusionMapPixelShader);
+	if (OcclusionMapPixel->LoadShader(PixelShaderName)) Device->CreatePixelShader((const DWORD*)OcclusionMapPixel->Function, &OcclusionMapPixelShader);
 
 	Device->CreateQuery(D3DQUERYTYPE_OCCLUSION, &OcclusionQuery);
 	Device->CreateTexture(OcclusionMapSizeX, OcclusionMapSizeY, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &OcclusionMapTexture, NULL);
@@ -83,18 +90,8 @@ TESObjectREFR* OcclusionManager::GetRef(TESObjectREFR* Ref) {
 	TESObjectREFR* R = NULL;
 
 	if (Ref && Ref->GetNode()) {
-		TESForm* Form = Ref->baseForm;
-		UInt8 TypeID = Form->formType;
-		if ((TypeID == TESForm::FormType::kFormType_Activator && 0) ||
-			(TypeID == TESForm::FormType::kFormType_Apparatus && 0) ||
-			(TypeID == TESForm::FormType::kFormType_Book && 0) ||
-			(TypeID == TESForm::FormType::kFormType_Container && 0) ||
-			(TypeID == TESForm::FormType::kFormType_Door && 0) ||
-			(TypeID == TESForm::FormType::kFormType_Misc && 0) ||
-			(TypeID >= TESForm::FormType::kFormType_Stat && TypeID <= TESForm::FormType::kFormType_MoveableStatic && 1) ||
-			(TypeID == TESForm::FormType::kFormType_Furniture && 0) ||
-			(TypeID >= TESForm::FormType::kFormType_NPC && TypeID <= TESForm::FormType::kFormType_LeveledCreature && 0))
-			R = Ref;
+		UInt8 TypeID = Ref->baseForm->formType;
+		if (TypeID >= TESForm::FormType::kFormType_Stat && TypeID <= TESForm::FormType::kFormType_MoveableStatic && 1) R = Ref;
 	}
 	return R;
 
@@ -133,16 +130,20 @@ void OcclusionManager::RenderStatic(NiAVObject* Object, float MinBoundSize, floa
 							if (NiNode* GeoNode = CollisionObject->GeoNode) {
 								for (int i = 0; i < GeoNode->m_children.end; i++) {
 									NiGeometry* Geo = (NiGeometry*)GeoNode->m_children.data[i];
-									if (!Geo->geomData->BuffData) TheRenderManager->unsharedGeometryGroup->AddObject(Geo->geomData, NULL, NULL);
-									if (PerformOcclusion) OcclusionQuery->Issue(D3DISSUE_BEGIN);
-									Render(Geo);
-									if (PerformOcclusion) {
-										OcclusionQuery->Issue(D3DISSUE_END);
-										while (OcclusionQuery->GetData((void*)&Pixels, sizeof(DWORD), D3DGETDATA_FLUSH) == S_FALSE);
-										if (Pixels <= 10)
-											Geo->m_flags |= NiAVObject::kFlag_IsOccluded;
-										else
-											Geo->m_flags &= ~NiAVObject::kFlag_IsOccluded;
+									void* VFT = *(void**)Geo; 
+									//if (VFT == VFTNiNode) Geo = (NiGeometry*)((NiNode*)Geo)->m_children.data[0];
+									if (VFT == VFTNiTriShape || VFT == VFTNiTriStrips) {
+										if (!Geo->geomData->BuffData) TheRenderManager->unsharedGeometryGroup->AddObject(Geo->geomData, NULL, NULL);
+										if (PerformOcclusion) OcclusionQuery->Issue(D3DISSUE_BEGIN);
+										Render(Geo);
+										if (PerformOcclusion) {
+											OcclusionQuery->Issue(D3DISSUE_END);
+											while (OcclusionQuery->GetData((void*)&Pixels, sizeof(DWORD), D3DGETDATA_FLUSH) == S_FALSE);
+											if (Pixels <= 10)
+												Geo->m_flags |= NiAVObject::kFlag_IsOccluded;
+											else
+												Geo->m_flags &= ~NiAVObject::kFlag_IsOccluded;
+										}
 									}
 								}
 							}
@@ -228,10 +229,11 @@ void OcclusionManager::Render(NiGeometry* Geo) {
 
 	TheRenderManager->CreateD3DMatrix(&WorldMatrix, &Geo->m_worldTransform);
 	D3DXMatrixMultiplyTranspose(&TheShaderManager->ShaderConst.OcclusionMap.OcclusionWorldViewProj, &WorldMatrix, &TheRenderManager->ViewProjMatrix);
+#if DEBUGOC
 	BSShaderProperty* ShaderProperty = (BSShaderProperty*)Geo->GetProperty(NiProperty::PropertyType::kType_Shade);
 	if (ShaderProperty) {
 		if (ShaderProperty->IsLightingProperty()) {
-			if (NiTexture* Texture = *((BSShaderPPLightingProperty*)ShaderProperty)->textures[0]) { // Only for testing, remove the diffuse, we do not need it.
+			if (NiTexture* Texture = *((BSShaderPPLightingProperty*)ShaderProperty)->textures[0]) {
 				RenderState->SetTexture(0, Texture->rendererData->dTexture);
 				RenderState->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP, false);
 				RenderState->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP, false);
@@ -241,18 +243,16 @@ void OcclusionManager::Render(NiGeometry* Geo) {
 			}
 		}
 		else if (ShaderProperty->IsWaterProperty()) {
-			if (!Tex) D3DXCreateTextureFromFileA(TheRenderManager->device, "C:\\Bethesda Softworks\\Oblivion\\Data\\Textures\\Water\\water00.dds", &Tex); // Only for testing, remove the diffuse, we do not need it.
-			RenderState->SetTexture(0, Tex);
+			if (!WaterTexture) D3DXCreateTextureFromFileA(TheRenderManager->device, "C:\\Bethesda Softworks\\Oblivion\\Data\\Textures\\Water\\water00.dds", &WaterTexture);
+			RenderState->SetTexture(0, WaterTexture);
 			RenderState->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP, false);
 			RenderState->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP, false);
 			RenderState->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT, false);
 			RenderState->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT, false);
 			RenderState->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_POINT, false);
 		}
-		else {
-			return;
-		}
 	}
+#endif
 	TheRenderManager->PackGeometryBuffer(GeoData, ModelData, NULL, ShaderDeclaration);
 	for (UInt32 i = 0; i < GeoData->StreamCount; i++) {
 		Device->SetStreamSource(i, GeoData->VBChip[i]->VB, 0, GeoData->VertexStride[i]);
@@ -347,7 +347,9 @@ void OcclusionManager::RenderOcclusionMap(SettingsMainStruct::OcclusionCullingSt
 	RenderState->SetVertexShader(OcclusionMapVertexShader, false);
 	RenderState->SetPixelShader(OcclusionMapPixelShader, false);
 	Device->BeginScene();
-	//RenderState->SetRenderState(D3DRS_COLORWRITEENABLE, D3DZB_FALSE, RenderStateArgs);
+#if !DEBUGOC
+	RenderState->SetRenderState(D3DRS_COLORWRITEENABLE, D3DZB_FALSE, RenderStateArgs);
+#endif
 	for (UInt32 i = 0; i < CellArraySize; i++) {
 		if (TESObjectCELL* Cell = CellArray->grid[i].cell) {
 			NiNode* CellNode = Cell->niNode;
@@ -367,6 +369,14 @@ void OcclusionManager::RenderOcclusionMap(SettingsMainStruct::OcclusionCullingSt
 			}
 		}
 	}
+
+#if DEBUGOC
+	for (int i = 1; i < DistantRefLOD->m_children.end; i++) {
+		NiNode* ChildNode = (NiNode*)DistantRefLOD->m_children.data[i];
+		RenderDistantStatic(ChildNode);
+	}
+#endif
+
 	RenderState->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE, RenderStateArgs);
 	WaterOccluded = true;
 	RenderWater(WaterRoot);
@@ -387,12 +397,6 @@ void OcclusionManager::RenderOcclusionMap(SettingsMainStruct::OcclusionCullingSt
 			}
 		}
 	}
-
-	for (int i = 1; i < DistantRefLOD->m_children.end; i++) {
-		NiNode* ChildNode = (NiNode*)DistantRefLOD->m_children.data[i];
-		RenderDistantStatic(ChildNode);
-	}
-
 	Device->EndScene();
 
 }
@@ -415,8 +419,9 @@ void OcclusionManager::PerformOcclusionCulling() {
 		Device->SetDepthStencilSurface(DepthSurface);
 	}
 
+#if DEBUGOC
 	if (TheKeyboardManager->OnKeyDown(26)) D3DXSaveSurfaceToFileA("C:\\Archivio\\Downloads\\occlusionmap.jpg", D3DXIFF_JPG, OcclusionMapSurface, NULL, NULL);
-
+#endif
 }
 
 static __declspec(naked) void New1CollisionObjectHook() {

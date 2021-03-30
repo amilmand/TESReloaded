@@ -1067,7 +1067,6 @@ void ShaderManager::UpdateConstants() {
 			ShaderConst.Grass.Scale.x = TheSettingManager->SettingsGrass.ScaleX;
 			ShaderConst.Grass.Scale.y = TheSettingManager->SettingsGrass.ScaleY;
 			ShaderConst.Grass.Scale.z = TheSettingManager->SettingsGrass.ScaleZ;
-			ShaderConst.Grass.Scale.w = TheSettingManager->SettingsGrass.MinHeight;
 			switch (TheSettingManager->SettingsGrass.GrassDensity) {
 				case 1:
 					*SettingMinGrassSize = 240;
@@ -1078,60 +1077,28 @@ void ShaderManager::UpdateConstants() {
 					*SettingTexturePctThreshold = 0.2f;
 					break;
 				case 3:
-					*SettingMinGrassSize = 240;
-					*SettingTexturePctThreshold = 0.1f;
+					*SettingMinGrassSize = 120;
+					*SettingTexturePctThreshold = 0.3f;
 					break;
 				case 4:
-					*SettingMinGrassSize = 240;
-					*SettingTexturePctThreshold = 0.0f;
+					*SettingMinGrassSize = 120;
+					*SettingTexturePctThreshold = 0.2f;
 					break;
 				case 5:
-					*SettingMinGrassSize = 120;
+					*SettingMinGrassSize = 80;
 					*SettingTexturePctThreshold = 0.3f;
 					break;
 				case 6:
-					*SettingMinGrassSize = 120;
+					*SettingMinGrassSize = 80;
 					*SettingTexturePctThreshold = 0.2f;
 					break;
 				case 7:
-					*SettingMinGrassSize = 120;
-					*SettingTexturePctThreshold = 0.1f;
+					*SettingMinGrassSize = 20;
+					*SettingTexturePctThreshold = 0.3f;
 					break;
 				case 8:
-					*SettingMinGrassSize = 120;
-					*SettingTexturePctThreshold = 0.0f;
-					break;
-				case 9:
-					*SettingMinGrassSize = 80;
-					*SettingTexturePctThreshold = 0.3f;
-					break;
-				case 10:
-					*SettingMinGrassSize = 80;
-					*SettingTexturePctThreshold = 0.2f;
-					break;
-				case 11:
-					*SettingMinGrassSize = 80;
-					*SettingTexturePctThreshold = 0.1f;
-					break;
-				case 12:
-					*SettingMinGrassSize = 80;
-					*SettingTexturePctThreshold = 0.0f;
-					break;
-				case 13:
-					*SettingMinGrassSize = 20;
-					*SettingTexturePctThreshold = 0.3f;
-					break;
-				case 14:
 					*SettingMinGrassSize = 20;
 					*SettingTexturePctThreshold = 0.2f;
-					break;
-				case 15:
-					*SettingMinGrassSize = 20;
-					*SettingTexturePctThreshold = 0.1f;
-					break;
-				case 16:
-					*SettingMinGrassSize = 20;
-					*SettingTexturePctThreshold = 0.0f;
 					break;
 				default:
 					break;

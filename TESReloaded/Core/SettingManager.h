@@ -389,7 +389,6 @@ struct SettingsGrassStruct {
 	float ScaleX;
 	float ScaleY;
 	float ScaleZ;
-	float MinHeight;
 	float MinDistance;
 	float MaxDistance;
 };

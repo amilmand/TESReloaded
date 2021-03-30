@@ -154,7 +154,7 @@ void UpdateCamera(NiAVObject* CameraNode, NiPoint3* LocalPosition) {
 	NiMatrix33 mw, ml;
 	NiPoint3 v;
 	float x, y, z, r;
-
+	
 	if (SitSleepState < HighProcess::kSitSleep_SleepingIn || SitSleepState > HighProcess::kSitSleep_SleepingOut) From.x = 0.0f;
 	if (IsThirdPerson && SitSleepState >= HighProcess::kSitSleep_SleepingIn && SitSleepState <= HighProcess::kSitSleep_SleepingOut) {
 		if (From.x == 0.0f) {

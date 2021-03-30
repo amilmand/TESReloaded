@@ -689,8 +689,6 @@ void SettingManager::LoadSettings() {
 	SettingsGrass.ScaleY = atof(value);
 	GetPrivateProfileStringA("Default", "ScaleZ", "1.0", value, SettingStringBuffer, Filename);
 	SettingsGrass.ScaleZ = atof(value);
-	GetPrivateProfileStringA("Default", "MinHeight", "0.8", value, SettingStringBuffer, Filename);
-	SettingsGrass.MinHeight = atof(value);
 	GetPrivateProfileStringA("Default", "MinDistance", "11000.0", value, SettingStringBuffer, Filename);
 	SettingsGrass.MinDistance = atof(value);
 	GetPrivateProfileStringA("Default", "MaxDistance", "12000.0", value, SettingStringBuffer, Filename);
@@ -1419,7 +1417,6 @@ void SettingManager::SaveSettings(const char* Item, const char* Definition) {
 			WritePrivateProfileStringA("Default", "GrassDensity", ToString(SettingsGrass.GrassDensity).c_str(), Filename);
 			WritePrivateProfileStringA("Default", "MaxDistance", ToString(SettingsGrass.MaxDistance).c_str(), Filename);
 			WritePrivateProfileStringA("Default", "MinDistance", ToString(SettingsGrass.MinDistance).c_str(), Filename);
-			WritePrivateProfileStringA("Default", "MinHeight", ToString(SettingsGrass.MinHeight).c_str(), Filename);
 			WritePrivateProfileStringA("Default", "ScaleX", ToString(SettingsGrass.ScaleX).c_str(), Filename);
 			WritePrivateProfileStringA("Default", "ScaleY", ToString(SettingsGrass.ScaleY).c_str(), Filename);
 			WritePrivateProfileStringA("Default", "ScaleZ", ToString(SettingsGrass.ScaleZ).c_str(), Filename);
@@ -1992,7 +1989,6 @@ SettingsList SettingManager::GetMenuSettings(const char* Item, const char* Defin
 			Settings["GrassDensity"] = SettingsGrass.GrassDensity;
 			Settings["MaxDistance"] = SettingsGrass.MaxDistance;
 			Settings["MinDistance"] = SettingsGrass.MinDistance;
-			Settings["MinHeight"] = SettingsGrass.MinHeight;
 			Settings["ScaleX"] = SettingsGrass.ScaleX;
 			Settings["ScaleY"] = SettingsGrass.ScaleY;
 			Settings["ScaleZ"] = SettingsGrass.ScaleZ;
@@ -2599,8 +2595,6 @@ void SettingManager::SetMenuSetting(const char* Item, const char* Definition, co
 				SettingsGrass.MaxDistance = Value;
 			else if (!strcmp(Setting, "MinDistance"))
 				SettingsGrass.MinDistance = Value;
-			else if (!strcmp(Setting, "MinHeight"))
-				SettingsGrass.MinHeight = Value;
 			else if (!strcmp(Setting, "ScaleX"))
 				SettingsGrass.ScaleX = Value;
 			else if (!strcmp(Setting, "ScaleY"))

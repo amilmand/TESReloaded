@@ -375,8 +375,7 @@ void RenderHook::TrackWaterCullingProcess(NiAVObject* Object) {
 	if (Object == SceneNode) ProcessReflectionsGeos = true;
 	if (ProcessReflectionsGeos) {
 		float Radius = Object->GetWorldBoundRadius();
-
-		if (Radius < 100.0f || Object->m_worldTransform.pos.z + Radius < TheShaderManager->ShaderConst.Water.waterSettings.x) return;
+		if (Object->m_flags & NiAVObject::kFlag_IsOccluded || Radius < 500.0f || Object->m_worldTransform.pos.z + Radius < TheShaderManager->ShaderConst.Water.waterSettings.x) return;
 	}
 	(this->*WaterCullingProcess)(Object);
 

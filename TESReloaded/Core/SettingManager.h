@@ -502,7 +502,8 @@ struct SettingsBloomStruct {
 
 struct SettingsPrecipitationsStruct {
 	struct RainStruct {
-
+		float DepthStep;
+		float Speed;
 	};
 	
 	struct SnowStruct {

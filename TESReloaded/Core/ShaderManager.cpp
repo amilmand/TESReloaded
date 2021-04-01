@@ -60,9 +60,7 @@ ShaderProgram::~ShaderProgram() {
 
 void ShaderProgram::SetConstantTableValue(LPCSTR Name, UInt32 Index) {
 	
-	if (!strcmp(Name, "TESR_Tick"))
-		FloatShaderValues[Index].Value = &TheShaderManager->ShaderConst.Tick;
-	else if (!strcmp(Name, "TESR_ToneMapping"))
+	if (!strcmp(Name, "TESR_ToneMapping"))
 		FloatShaderValues[Index].Value = &TheShaderManager->ShaderConst.HDR.ToneMapping;
 	else if (!strcmp(Name, "TESR_ParallaxData"))
 		FloatShaderValues[Index].Value = &TheShaderManager->ShaderConst.POM.ParallaxData;
@@ -576,9 +574,9 @@ ShaderManager::ShaderManager() {
 	TheShaderManager = this;
 
 	LARGE_INTEGER Frequency;
-	
+	LARGE_INTEGER PerformaceCounter;
+
 	ElapsedTime = 0.0;
-	LastTick = 0.0;
 	SourceTexture = NULL;
 	SourceSurface = NULL;
 	RenderedTexture = NULL;
@@ -613,8 +611,8 @@ ShaderManager::ShaderManager() {
 	memset(WaterVertexShaders, NULL, sizeof(WaterVertexShaders));
 	memset(WaterPixelShaders, NULL, sizeof(WaterPixelShaders));
 	InitializeConstants();
-	QueryPerformanceFrequency(&Frequency);
-	PerformanceFrequency = Frequency.QuadPart;
+	QueryPerformanceFrequency(&Frequency); PerformanceFrequency = Frequency.QuadPart;
+	QueryPerformanceCounter(&PerformaceCounter); PerformanceCounterStart = PerformaceCounter.QuadPart;
 	ShaderConst.ReciprocalResolution.x = 1.0f / (float)TheRenderManager->width;
 	ShaderConst.ReciprocalResolution.y = 1.0f / (float)TheRenderManager->height;
 	ShaderConst.ReciprocalResolution.z = (float)TheRenderManager->width / (float)TheRenderManager->height;
@@ -686,12 +684,13 @@ void ShaderManager::InitializeConstants() {
 	ShaderConst.BloodLens.Percent = 0.0f;
 	ShaderConst.SnowAccumulation.Params.w = 0.0f;
 	ShaderConst.WetWorld.Data.x = 0.0f;
+
 }
 
 void ShaderManager::UpdateConstants() {
 
-	LARGE_INTEGER PerformanceCount;
-	double Tick = 0.0;
+	LARGE_INTEGER PerformanceCounterEnd;
+	double Tick = 0.0f;
 	bool IsThirdPersonView = false;
 	Sky* WorldSky = Tes->sky;
 	NiNode* SunRoot = WorldSky->sun->RootNode;
@@ -702,13 +701,14 @@ void ShaderManager::UpdateConstants() {
 	TESWorldSpace* currentWorldSpace = Player->GetWorldSpace();
 	TESRegion* currentRegion = Player->GetRegion();
 	float weatherPercent = WorldSky->weatherPercent;
+	float lastGameTime = ShaderConst.GameTime.y;
 
-	QueryPerformanceCounter(&PerformanceCount);
-	Tick = (double)PerformanceCount.QuadPart / (double)PerformanceFrequency;
-	ElapsedTime = Tick - LastTick;
-	LastTick = Tick;
-	ShaderConst.Tick.x = Tick;
-	ShaderConst.Tick.y = (double)PerformanceCount.QuadPart * 1000.0 / (double)PerformanceFrequency;
+	QueryPerformanceCounter(&PerformanceCounterEnd);
+	Tick = (double)(PerformanceCounterEnd.QuadPart - PerformanceCounterStart) / (double)PerformanceFrequency;
+	ElapsedTime = Tick - ShaderConst.GameTime.z;
+	ShaderConst.GameTime.x = TimeGlobals::GetGameTime();
+	ShaderConst.GameTime.y = ShaderConst.GameTime.x / 3600.0f;
+	ShaderConst.GameTime.z = Tick;
 
 	IsThirdPersonView = Player->IsThirdPersonView(TheSettingManager->SettingsMain.CameraMode.Enabled, TheRenderManager->FirstPersonView);
 	TheRenderManager->UpdateSceneCameraData();
@@ -718,14 +718,8 @@ void ShaderManager::UpdateConstants() {
 		ShaderConst.SunTiming.y = currentClimate->sunriseEnd / 6.0f;
 		ShaderConst.SunTiming.z = currentClimate->sunsetBegin / 6.0f;
 		ShaderConst.SunTiming.w = currentClimate->sunsetEnd / 6.0f + 1.0f;
-		
-		float deltay = ShaderConst.GameTime.y;
-		ShaderConst.GameTime.x = TimeGlobals::GetGameTime();
-		ShaderConst.GameTime.y = ShaderConst.GameTime.x / 3600.0f;
-		ShaderConst.GameTime.z = ((int)ShaderConst.GameTime.x / 60) % 60;
-		ShaderConst.GameTime.w = ((int)ShaderConst.GameTime.x) % 60;
 
-		if (deltay != ShaderConst.GameTime.y) {
+		if (lastGameTime != ShaderConst.GameTime.y) {
 			float deltaz = ShaderConst.SunDir.z;
 			ShaderConst.SunDir.x = SunRoot->m_localTransform.pos.x;
 			ShaderConst.SunDir.y = SunRoot->m_localTransform.pos.y;
@@ -1054,13 +1048,15 @@ void ShaderManager::UpdateConstants() {
 				ShaderConst.Precipitations.RainData.x = weatherPercent;
 			else if (!previousWeather || (previousWeather && previousWeather->weatherType == TESWeather::WeatherType::kType_Rainy))
 				ShaderConst.Precipitations.RainData.x = 1.0f - weatherPercent;
+			ShaderConst.Precipitations.RainData.y = TheSettingManager->SettingsPrecipitations.Rain.DepthStep;
+			ShaderConst.Precipitations.RainData.z = TheSettingManager->SettingsPrecipitations.Rain.Speed;
 			if (currentWeather->weatherType == TESWeather::WeatherType::kType_Snow)
 				ShaderConst.Precipitations.SnowData.x = weatherPercent;
 			else if (!previousWeather || (previousWeather && previousWeather->weatherType == TESWeather::WeatherType::kType_Snow))
 				ShaderConst.Precipitations.SnowData.x = 1.0f - weatherPercent;
 			ShaderConst.Precipitations.SnowData.y = TheSettingManager->SettingsPrecipitations.Snow.DepthStep;
-			ShaderConst.Precipitations.SnowData.z = TheSettingManager->SettingsPrecipitations.Snow.Flakes;
-			ShaderConst.Precipitations.SnowData.w = TheSettingManager->SettingsPrecipitations.Snow.Speed;
+			ShaderConst.Precipitations.SnowData.z = TheSettingManager->SettingsPrecipitations.Snow.Speed;
+			ShaderConst.Precipitations.SnowData.w = TheSettingManager->SettingsPrecipitations.Snow.Flakes;
 		}
 		
 		if (TheSettingManager->SettingsMain.Shaders.Grass) {

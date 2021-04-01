@@ -961,6 +961,10 @@ void SettingManager::LoadSettings() {
 	strcpy(Filename, CurrentPath);
 	strcat(Filename, SettingsPath);
 	strcat(Filename, "Precipitations\\Precipitations.ini");
+	GetPrivateProfileStringA("Rain", "DepthStep", "8.0", value, SettingStringBuffer, Filename);
+	SettingsPrecipitations.Rain.DepthStep = atof(value);
+	GetPrivateProfileStringA("Rain", "Speed", "4.0", value, SettingStringBuffer, Filename);
+	SettingsPrecipitations.Rain.Speed = atof(value);
 	GetPrivateProfileStringA("Snow", "DepthStep", "2.5", value, SettingStringBuffer, Filename);
 	SettingsPrecipitations.Snow.DepthStep = atof(value);
 	GetPrivateProfileStringA("Snow", "Flakes", "0.5", value, SettingStringBuffer, Filename);

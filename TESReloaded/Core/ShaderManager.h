@@ -151,7 +151,6 @@ struct ShaderConstants {
 	D3DXVECTOR4				SunTiming;
 	D3DXVECTOR4				SunAmount;
 	D3DXVECTOR4				GameTime;
-	D3DXVECTOR4				Tick;
 	TESWeather*				pWeather;
 	float					currentsunGlare;
 	float					currentwindSpeed;
@@ -278,8 +277,8 @@ public:
 	struct					FrameVS { float x, y, z, u, v; };
 
 	LONGLONG				PerformanceFrequency;
+	LONGLONG				PerformanceCounterStart;
 	double					ElapsedTime;
-	double					LastTick;
 	ShaderConstants			ShaderConst;
 	CustomConstants			CustomConst;
 	IDirect3DTexture9*		SourceTexture;

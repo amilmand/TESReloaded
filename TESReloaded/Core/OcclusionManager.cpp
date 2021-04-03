@@ -1,4 +1,4 @@
-#define DEBUGOC 0
+#define DEBUGOC 1
 #include "OcclusionManager.h"
 
 #if defined(NEWVEGAS)
@@ -45,6 +45,7 @@ OcclusionManager::OcclusionManager() {
 	char* VertexShaderName = "OcclusionMapDebug.vso";
 	char* PixelShaderName = "OcclusionMapDebug.pso";
 #endif
+
 	WaterOccluded = false;
 	WaterTexture = NULL;
 
@@ -99,7 +100,6 @@ TESObjectREFR* OcclusionManager::GetRef(TESObjectREFR* Ref) {
 
 void OcclusionManager::RenderStatic(NiAVObject* Object, float MinBoundSize, float MaxBoundSize, bool PerformOcclusion) {
 	
-	DWORD Pixels = 0;
 	NiPoint2 BoundSize;
 	float BoundBox = 0.0f;
 
@@ -118,35 +118,17 @@ void OcclusionManager::RenderStatic(NiAVObject* Object, float MinBoundSize, floa
 						if (VFT == VFTbhkCollisionObject) {
 							if (!CollisionObject->GeoNode) {
 								if (bhkRigidBody* RigidBody = CollisionObject->bRigidBody) {
-									NiNode* GeoNode = (NiNode*)MemoryAlloc(sizeof(NiNode)); GeoNode->New(1); GeoNode->m_flags |= NiAVObject::kFlag_IsOCNode;
+									NiNode* GeoNode = (NiNode*)MemoryAlloc(sizeof(NiNode)); GeoNode->New(1); GeoNode->SetName("bhkColDisp"); GeoNode->m_flags |= NiAVObject::kFlag_IsOCNode;
+									GeoNode->m_localTransform.scale = fabs(1.0f / Node->m_worldTransform.scale);
 									Node->AddObject(GeoNode, 1);
-									GeoNode->Update();
-									RigidBody->CreateNiGeometry(GeoNode);
-									GeoNode->Update();
+									GeoNode->UpdateDownwardPass(0.0f, false);
+									NiNode* GeoNodeR = RigidBody->CreateNiGeometry(GeoNode);
+									GeoNodeR->UpdateDownwardPass(0.0f, false);
 									Node->RemoveObject((NiAVObject**)&GeoNode, GeoNode);
 									CollisionObject->GeoNode = GeoNode;
 								}
 							}
-							if (NiNode* GeoNode = CollisionObject->GeoNode) {
-								for (int i = 0; i < GeoNode->m_children.end; i++) {
-									NiGeometry* Geo = (NiGeometry*)GeoNode->m_children.data[i];
-									void* VFT = *(void**)Geo; 
-									//if (VFT == VFTNiNode) Geo = (NiGeometry*)((NiNode*)Geo)->m_children.data[0];
-									if (VFT == VFTNiTriShape || VFT == VFTNiTriStrips) {
-										if (!Geo->geomData->BuffData) TheRenderManager->unsharedGeometryGroup->AddObject(Geo->geomData, NULL, NULL);
-										if (PerformOcclusion) OcclusionQuery->Issue(D3DISSUE_BEGIN);
-										Render(Geo);
-										if (PerformOcclusion) {
-											OcclusionQuery->Issue(D3DISSUE_END);
-											while (OcclusionQuery->GetData((void*)&Pixels, sizeof(DWORD), D3DGETDATA_FLUSH) == S_FALSE);
-											if (Pixels <= 10)
-												Geo->m_flags |= NiAVObject::kFlag_IsOccluded;
-											else
-												Geo->m_flags &= ~NiAVObject::kFlag_IsOccluded;
-										}
-									}
-								}
-							}
+							RenderImmediate(CollisionObject->GeoNode, PerformOcclusion);
 						}
 					}
 					else {
@@ -155,6 +137,36 @@ void OcclusionManager::RenderStatic(NiAVObject* Object, float MinBoundSize, floa
 						}
 					}
 				}
+			}
+		}
+	}
+
+}
+
+void OcclusionManager::RenderImmediate(NiAVObject* Object, bool PerformOcclusion) {
+	
+	DWORD Pixels = 0;
+	
+	if (Object) {
+		void* VFT = *(void**)Object;
+		if (VFT == VFTNiNode) {
+			NiNode* Node = (NiNode*)Object;
+			for (int i = 0; i < Node->m_children.end; i++) {
+				RenderImmediate(Node->m_children.data[i], PerformOcclusion);
+			}
+		}
+		else if (VFT == VFTNiTriShape || VFT == VFTNiTriStrips) {
+			NiGeometry* Geo = (NiGeometry*)Object;
+			if (!Geo->geomData->BuffData) TheRenderManager->unsharedGeometryGroup->AddObject(Geo->geomData, NULL, NULL);
+			if (PerformOcclusion) OcclusionQuery->Issue(D3DISSUE_BEGIN);
+			Render(Geo);
+			if (PerformOcclusion) {
+				OcclusionQuery->Issue(D3DISSUE_END);
+				while (OcclusionQuery->GetData((void*)&Pixels, sizeof(DWORD), D3DGETDATA_FLUSH) == S_FALSE);
+				if (Pixels <= 10)
+					Geo->m_flags |= NiAVObject::kFlag_IsOccluded;
+				else
+					Geo->m_flags &= ~NiAVObject::kFlag_IsOccluded;
 			}
 		}
 	}
@@ -326,7 +338,6 @@ void OcclusionManager::RenderDistantStatic(NiAVObject* Object) {
 
 void OcclusionManager::RenderOcclusionMap(SettingsMainStruct::OcclusionCullingStruct* OcclusionCulling) {
 	
-	NiNode* DistantRefLOD = *(NiNode**)0x00B34424;
 	NiNode* WaterRoot = *(NiNode**)0x00B35230;
 	IDirect3DDevice9* Device = TheRenderManager->device;
 	NiDX9RenderState* RenderState = TheRenderManager->renderState;
@@ -371,6 +382,7 @@ void OcclusionManager::RenderOcclusionMap(SettingsMainStruct::OcclusionCullingSt
 	}
 
 #if DEBUGOC
+	NiNode* DistantRefLOD = *(NiNode**)0x00B34424;
 	for (int i = 1; i < DistantRefLOD->m_children.end; i++) {
 		NiNode* ChildNode = (NiNode*)DistantRefLOD->m_children.data[i];
 		RenderDistantStatic(ChildNode);

@@ -421,7 +421,6 @@ void __cdecl TrackRenderObject(NiCamera* Camera, NiNode* Object, NiCullingProces
 	}
 
 }
-
 #elif defined(SKYRIM)
 void (__thiscall RenderHook::* Render)(BSRenderedTexture*, int, int);
 void (__thiscall RenderHook::* TrackRender)(BSRenderedTexture*, int, int);

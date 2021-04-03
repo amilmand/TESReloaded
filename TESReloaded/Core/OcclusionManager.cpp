@@ -1,4 +1,4 @@
-#define DEBUGOC 1
+#define DEBUGOC 0
 #include "OcclusionManager.h"
 
 #if defined(NEWVEGAS)

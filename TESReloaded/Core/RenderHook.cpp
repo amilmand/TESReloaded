@@ -265,6 +265,7 @@ void RenderHook::TrackRender(BSRenderedTexture* RenderedTexture) {
 	
 	SettingsMainStruct* SettingsMain = &TheSettingManager->SettingsMain;
 	
+	TheFrameRateManager->UpdatePerformance();
 	TheRenderManager->SetSceneGraph();
 	TheShaderManager->UpdateConstants();
 	if (SettingsMain->OcclusionCulling.Enabled) TheOcclusionManager->PerformOcclusionCulling();

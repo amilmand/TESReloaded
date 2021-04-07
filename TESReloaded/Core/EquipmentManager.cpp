@@ -502,7 +502,7 @@ UInt8 Equipment::TrackProcessControlAttack() {
 			if (TheEquipmentManager->LeftTime == -1.0f)
 				TheEquipmentManager->LeftTime = 0.0f;
 			else
-				TheEquipmentManager->LeftTime += TheShaderManager->ElapsedTime;
+				TheEquipmentManager->LeftTime += TheFrameRateManager->ElapsedTime;
 			if (TheEquipmentManager->LeftTime < TheSettingManager->SettingsMain.EquipmentMode.DualBlockDelay) TheKeyboardManager->SetControlState(6, 0, 0);
 		}
 		else if (TheEquipmentManager->LeftTime >= 0.0f) {
@@ -1009,25 +1009,25 @@ void CreateEquipmentHook() {
 
 	DetourTransactionBegin();
 	DetourUpdateThread(GetCurrentThread());
-	DetourAttach(&(PVOID&)NewHighProcess,			*((PVOID *)&TrackNewHighProcess));
-	DetourAttach(&(PVOID&)ManageItem,				*((PVOID *)&TrackManageItem));
-	DetourAttach(&(PVOID&)ProcessAction,			*((PVOID *)&TrackProcessAction));
-	DetourAttach(&(PVOID&)ProcessControlAttack,		*((PVOID *)&TrackProcessControlAttack));
-	DetourAttach(&(PVOID&)AttackHandling,			*((PVOID *)&TrackAttackHandling));
-	DetourAttach(&(PVOID&)GetEquippedWeaponData,	*((PVOID *)&TrackGetEquippedWeaponData));
-	DetourAttach(&(PVOID&)SetEquippedWeaponData,	*((PVOID *)&TrackSetEquippedWeaponData));
-	DetourAttach(&(PVOID&)EquipItem,				*((PVOID *)&TrackEquipItem));
-	DetourAttach(&(PVOID&)UnequipItem,				*((PVOID *)&TrackUnequipItem));
-	DetourAttach(&(PVOID&)EquipWeapon,				*((PVOID *)&TrackEquipWeapon));
-	DetourAttach(&(PVOID&)UnequipWeapon,			*((PVOID *)&TrackUnequipWeapon));
-	DetourAttach(&(PVOID&)EquipShield,				*((PVOID *)&TrackEquipShield));
+	DetourAttach(&(PVOID&)NewHighProcess,			*((PVOID*)&TrackNewHighProcess));
+	DetourAttach(&(PVOID&)ManageItem,				*((PVOID*)&TrackManageItem));
+	DetourAttach(&(PVOID&)ProcessAction,			*((PVOID*)&TrackProcessAction));
+	DetourAttach(&(PVOID&)ProcessControlAttack,		*((PVOID*)&TrackProcessControlAttack));
+	DetourAttach(&(PVOID&)AttackHandling,			*((PVOID*)&TrackAttackHandling));
+	DetourAttach(&(PVOID&)GetEquippedWeaponData,	*((PVOID*)&TrackGetEquippedWeaponData));
+	DetourAttach(&(PVOID&)SetEquippedWeaponData,	*((PVOID*)&TrackSetEquippedWeaponData));
+	DetourAttach(&(PVOID&)EquipItem,				*((PVOID*)&TrackEquipItem));
+	DetourAttach(&(PVOID&)UnequipItem,				*((PVOID*)&TrackUnequipItem));
+	DetourAttach(&(PVOID&)EquipWeapon,				*((PVOID*)&TrackEquipWeapon));
+	DetourAttach(&(PVOID&)UnequipWeapon,			*((PVOID*)&TrackUnequipWeapon));
+	DetourAttach(&(PVOID&)EquipShield,				*((PVOID*)&TrackEquipShield));
 	if (TheSettingManager->SettingsMain.EquipmentMode.TorchKey != 255) {
-		DetourAttach(&(PVOID&)EquipLight,			*((PVOID *)&TrackEquipLight));
-		DetourAttach(&(PVOID&)UnequipLight,			*((PVOID *)&TrackUnequipLight));
-		DetourAttach(&(PVOID&)GetEquippedLightData, *((PVOID *)&TrackGetEquippedLightData));
+		DetourAttach(&(PVOID&)EquipLight,			*((PVOID*)&TrackEquipLight));
+		DetourAttach(&(PVOID&)UnequipLight,			*((PVOID*)&TrackUnequipLight));
+		DetourAttach(&(PVOID&)GetEquippedLightData, *((PVOID*)&TrackGetEquippedLightData));
 	}
-	DetourAttach(&(PVOID&)HideEquipment,			*((PVOID *)&TrackHideEquipment));
-	DetourAttach(&(PVOID&)SaveGame,					*((PVOID *)&TrackSaveGame));
+	DetourAttach(&(PVOID&)HideEquipment,			*((PVOID*)&TrackHideEquipment));
+	DetourAttach(&(PVOID&)SaveGame,					*((PVOID*)&TrackSaveGame));
 	DetourTransactionCommit();
 
 	UInt32 HighProcessExSize = sizeof(HighProcessEx);

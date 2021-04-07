@@ -361,7 +361,7 @@ void GameMenuManager::Render() {
 			FrameCounter++;
 			if (FrameCounter == 10) {
 				FrameCounter = 0;
-				FrameRate = 1.0 / TheShaderManager->ElapsedTime;
+				FrameRate = 1.0 / TheFrameRateManager->ElapsedTime;
 			}
 			sprintf(Text, "%d", FrameRate);
 			SetRect(&Rect, 9, 6, 109, 6 + TextSize);

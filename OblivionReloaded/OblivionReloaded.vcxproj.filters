@@ -134,6 +134,9 @@
     <ClInclude Include="..\TESReloaded\Core\OcclusionManager.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="..\TESReloaded\Core\FrameRateManager.h">
+      <Filter>Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\TESReloaded\Core\Animation.cpp">
@@ -242,6 +245,9 @@
       <Filter>Main</Filter>
     </ClCompile>
     <ClCompile Include="..\TESReloaded\Core\OcclusionManager.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TESReloaded\Core\FrameRateManager.cpp">
       <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>

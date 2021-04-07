@@ -573,10 +573,6 @@ ShaderManager::ShaderManager() {
 	Logger::Log("Starting the shaders manager...");
 	TheShaderManager = this;
 
-	LARGE_INTEGER Frequency;
-	LARGE_INTEGER PerformaceCounter;
-
-	ElapsedTime = 0.0;
 	SourceTexture = NULL;
 	SourceSurface = NULL;
 	RenderedTexture = NULL;
@@ -611,8 +607,6 @@ ShaderManager::ShaderManager() {
 	memset(WaterVertexShaders, NULL, sizeof(WaterVertexShaders));
 	memset(WaterPixelShaders, NULL, sizeof(WaterPixelShaders));
 	InitializeConstants();
-	QueryPerformanceFrequency(&Frequency); PerformanceFrequency = Frequency.QuadPart;
-	QueryPerformanceCounter(&PerformaceCounter); PerformanceCounterStart = PerformaceCounter.QuadPart;
 	ShaderConst.ReciprocalResolution.x = 1.0f / (float)TheRenderManager->width;
 	ShaderConst.ReciprocalResolution.y = 1.0f / (float)TheRenderManager->height;
 	ShaderConst.ReciprocalResolution.z = (float)TheRenderManager->width / (float)TheRenderManager->height;
@@ -689,8 +683,6 @@ void ShaderManager::InitializeConstants() {
 
 void ShaderManager::UpdateConstants() {
 
-	LARGE_INTEGER PerformanceCounterEnd;
-	double Tick = 0.0f;
 	bool IsThirdPersonView = false;
 	Sky* WorldSky = Tes->sky;
 	NiNode* SunRoot = WorldSky->sun->RootNode;
@@ -703,16 +695,12 @@ void ShaderManager::UpdateConstants() {
 	float weatherPercent = WorldSky->weatherPercent;
 	float lastGameTime = ShaderConst.GameTime.y;
 
-	QueryPerformanceCounter(&PerformanceCounterEnd);
-	Tick = (double)(PerformanceCounterEnd.QuadPart - PerformanceCounterStart) / (double)PerformanceFrequency;
-	ElapsedTime = Tick - ShaderConst.GameTime.z;
-	ShaderConst.GameTime.x = TimeGlobals::GetGameTime();
-	ShaderConst.GameTime.y = ShaderConst.GameTime.x / 3600.0f;
-	ShaderConst.GameTime.z = Tick;
-
 	IsThirdPersonView = Player->IsThirdPersonView(TheSettingManager->SettingsMain.CameraMode.Enabled, TheRenderManager->FirstPersonView);
 	TheRenderManager->UpdateSceneCameraData();
-
+	
+	ShaderConst.GameTime.x = TimeGlobals::GetGameTime();
+	ShaderConst.GameTime.y = ShaderConst.GameTime.x / 3600.0f;
+	ShaderConst.GameTime.z = TheFrameRateManager->Time;
 	if (currentCell) {
 		ShaderConst.SunTiming.x = currentClimate->sunriseBegin / 6.0f - 1.0f;
 		ShaderConst.SunTiming.y = currentClimate->sunriseEnd / 6.0f;

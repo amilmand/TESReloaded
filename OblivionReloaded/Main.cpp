@@ -19,7 +19,7 @@
 extern "C" {
 
 	bool OBSEPlugin_Query(const PluginInterface* Interface, PluginInfo* Info) {
-		
+
 		Info->InfoVersion = PluginInfo::kInfoVersion;
 		Info->Name = "OblivionReloaded";
 		Info->Version = 8;
@@ -55,6 +55,7 @@ extern "C" {
 			CreateScriptHook();
 			CreateAnimationHook();
 			CreateShadowsHook();
+			CreateFrameRateHook();
 			if (TheSettingManager->SettingsMain.OcclusionCulling.Enabled) CreateOcclusionCullingHook();
 			if (TheSettingManager->SettingsMain.Main.MemoryManagement) CreateMemoryManagementHook();
 			if (TheSettingManager->SettingsMain.GrassMode.Enabled) CreateGrassHook();
@@ -77,6 +78,7 @@ extern "C" {
 			WriteRelJump(0x006738B1, 0x00673935); // Cancels the fPlayerDeathReloadTime
 			SafeWrite8(0x004344AB, 0x78); // Sets threads in the BSTaskManager
 			SafeWrite8(0x004344AF, 0x0A); // Sets threads in the BSTaskManager
+			SafeWrite32(0x00A2FC24, TheSettingManager->SettingsMain.Main.MemoryHeap);
 		}
 		else {
 			CreateEditorShadowsHook();

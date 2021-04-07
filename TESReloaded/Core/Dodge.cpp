@@ -47,7 +47,7 @@ void DoubleTap(UInt16 PressedDirection) {
 		if (DoubleTapTime == -1.0f)
 			DoubleTapTime = 0.0f;
 		else {
-			DoubleTapTime += TheShaderManager->ElapsedTime;
+			DoubleTapTime += TheFrameRateManager->ElapsedTime;
 			if (DoubleTapStep == 1 && Direction[0] == Direction[1]) {
 				IsDoubleTapped = 1;
 				DoubleTapStep = 0;
@@ -61,7 +61,7 @@ void DoubleTap(UInt16 PressedDirection) {
 	}
 	else if (DoubleTapTime >= 0.0f) {
 		if (DoubleTapTime < TheSettingManager->SettingsMain.Dodge.DoubleTapTime) {
-			DoubleTapTime += TheShaderManager->ElapsedTime;
+			DoubleTapTime += TheFrameRateManager->ElapsedTime;
 			if (DoubleTapStep == 0) DoubleTapStep = 1;
 		}
 		else {

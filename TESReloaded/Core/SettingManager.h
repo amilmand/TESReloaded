@@ -86,17 +86,24 @@ struct SettingsMainStruct {
 		bool	ReplaceIntro;
 		UInt8	AnisotropicFilter;
 		UInt16	ScreenshotKey;
-		int		WaterReflectionMapSize;
+		UInt32	MemoryHeap;
+		UInt32	WaterReflectionMapSize;
 		float	FarPlaneDistance;
 	};
 	
+	struct FrameRateStruct {
+		bool	SmartControl;
+		UInt32	SmartControlFPS;
+		float	FlowControl;
+	};
+
 	struct OcclusionCullingStruct {
 		bool	Enabled;
 		bool	OccludingStatic;
 		bool	OccludedStatic;
 		bool	OccludedDistantStatic;
 		bool	OccludedDistantStaticIC;
-		int		OcclusionMapRatio;
+		UInt32	OcclusionMapRatio;
 		float	OccludingStaticMin;
 		float	OccludedStaticMin;
 		float	OccludedStaticMax;
@@ -136,20 +143,6 @@ struct SettingsMainStruct {
 		NiPoint3	StaffOnBackRot;
 		NiPoint3	TorchOnBeltPos;
 		NiPoint3	TorchOnBeltRot;
-	};
-	
-	struct FrameRateStruct {
-		bool	Enabled;
-		int		Average;
-		int		Min;
-		int		Critical;
-		int		Gap;
-		int		Delay;
-		int		GridStep;
-		int		FadeMinObjects;
-		int		FadeMinActors;
-		int		GridMin;
-		float	FadeStep;
 	};
 
 	struct GrassModeStruct {

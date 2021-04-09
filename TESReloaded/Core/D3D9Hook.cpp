@@ -34,6 +34,6 @@ static __declspec(naked) void CreateDeviceHook()
 
 void CreateD3D9Hook() {
 
-	WriteRelJump(kCreateDeviceHook,		(UInt32)CreateDeviceHook);
+	SafeWriteJump(kCreateDeviceHook, (UInt32)CreateDeviceHook);
 
 }

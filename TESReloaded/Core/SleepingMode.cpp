@@ -167,15 +167,15 @@ void CreateSleepingModeHook() {
 	DetourTransactionCommit();
 
 #if defined(NEWVEGAS)
-	WriteRelJump(0x00509830, 0x0050983C); // Enables the Player to get into the bed
-	WriteRelJump(0x00942E0C, 0x00942E36); // Skips the possibility to get up by directional controls
+	SafeWriteJump(0x00509830, 0x0050983C); // Enables the Player to get into the bed
+	SafeWriteJump(0x00942E0C, 0x00942E36); // Skips the possibility to get up by directional controls
 #elif defined(OBLIVION)
-	WriteRelJump(0x004AEA1C, 0x004AEAEE); // Enables the Player to get into the bed
-	WriteRelJump(0x004AE961, 0x004AEAEE); // Enables the Player to get into the bed when in prison
-	WriteRelJump(0x00672BFF, 0x00672C18); // Enables the rest key when in prison
+	SafeWriteJump(0x004AEA1C, 0x004AEAEE); // Enables the Player to get into the bed
+	SafeWriteJump(0x004AE961, 0x004AEAEE); // Enables the Player to get into the bed when in prison
+	SafeWriteJump(0x00672BFF, 0x00672C18); // Enables the rest key when in prison
 #elif defined(SKYRIM)
-	WriteRelJump(0x0049A351, 0x0049A367); // Enables the Player to get into the bed
-	WriteRelJump(0x0049A30F, 0x0049A367); // Enables the Player to get into the bed when in prison
+	SafeWriteJump(0x0049A351, 0x0049A367); // Enables the Player to get into the bed
+	SafeWriteJump(0x0049A30F, 0x0049A367); // Enables the Player to get into the bed when in prison
 #endif
 
 }

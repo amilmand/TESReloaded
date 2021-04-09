@@ -28,6 +28,6 @@ static __declspec(naked) void GrassHook() {
 
 void CreateGrassHook() {
 	
-	WriteRelJump(kGrassHook, (UInt32)GrassHook);
+	SafeWriteJump(kGrassHook, (UInt32)GrassHook);
 
 }

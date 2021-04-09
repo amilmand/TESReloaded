@@ -1043,13 +1043,13 @@ void CreateEquipmentHook() {
 	SafeWrite32(0x0069F2F2, HighProcessExSize);
 	SafeWrite32(0x0069F3D4, HighProcessExSize);
 
-	WriteRelJump(kPrnHook,							(UInt32)PrnHook);
-	WriteRelJump(kSetWeaponRotationPositionHook,	(UInt32)SetWeaponRotationPositionHook);
-	WriteRelJump(kMenuMouseButtonHook,				(UInt32)MenuMouseButtonHook);
-	WriteRelJump(kEquipItemWornHook,				(UInt32)EquipItemWornHook);
+	SafeWriteJump(kPrnHook,							(UInt32)PrnHook);
+	SafeWriteJump(kSetWeaponRotationPositionHook,	(UInt32)SetWeaponRotationPositionHook);
+	SafeWriteJump(kMenuMouseButtonHook,				(UInt32)MenuMouseButtonHook);
+	SafeWriteJump(kEquipItemWornHook,				(UInt32)EquipItemWornHook);
 	if (TheSettingManager->SettingsMain.EquipmentMode.TorchKey != 255) {
-		WriteRelJump(0x004E1DA1, 0x004E1DAF); // Do not play the torch held LP sound on equipping light
-		WriteRelJump(kUnequipTorchHook, (UInt32)UnequipTorchHook);
+		SafeWriteJump(0x004E1DA1, 0x004E1DAF); // Do not play the torch held LP sound on equipping light
+		SafeWriteJump(kUnequipTorchHook, (UInt32)UnequipTorchHook);
 	}
 }
 #endif

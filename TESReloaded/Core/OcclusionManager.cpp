@@ -547,12 +547,12 @@ void CreateOcclusionCullingHook() {
 	SafeWrite8(0x0089E983, bhkCollisionObjectExSize);
 	SafeWrite8(0x0089EA16, bhkCollisionObjectExSize);
 
-	WriteRelJump(kNew1CollisionObjectHook,		(UInt32)New1CollisionObjectHook);
-	WriteRelJump(kNew2CollisionObjectHook,		(UInt32)New2CollisionObjectHook);
-	WriteRelJump(kNew3CollisionObjectHook,		(UInt32)New3CollisionObjectHook);
-	WriteRelJump(kDisposeCollisionObjectHook,	(UInt32)DisposeCollisionObjectHook);
-	WriteRelJump(kMaterialPropertyHook,			(UInt32)MaterialPropertyHook);
-	WriteRelJump(kCoordinateJackHook,			(UInt32)CoordinateJackHook);
-	WriteRelJump(kObjectCullHook,				(UInt32)ObjectCullHook);
+	SafeWriteJump(kNew1CollisionObjectHook,		(UInt32)New1CollisionObjectHook);
+	SafeWriteJump(kNew2CollisionObjectHook,		(UInt32)New2CollisionObjectHook);
+	SafeWriteJump(kNew3CollisionObjectHook,		(UInt32)New3CollisionObjectHook);
+	SafeWriteJump(kDisposeCollisionObjectHook,	(UInt32)DisposeCollisionObjectHook);
+	SafeWriteJump(kMaterialPropertyHook,		(UInt32)MaterialPropertyHook);
+	SafeWriteJump(kCoordinateJackHook,			(UInt32)CoordinateJackHook);
+	SafeWriteJump(kObjectCullHook,				(UInt32)ObjectCullHook);
 	
 }

@@ -101,6 +101,7 @@ SettingManager::SettingManager() {
 	SettingsMain.Main.ReplaceIntro = GetPrivateProfileIntA("Main", "ReplaceIntro", 0, Filename);
 
 	SettingsMain.FrameRate.SmartControl = GetPrivateProfileIntA("FrameRate", "SmartControl", 0, Filename);
+	SettingsMain.FrameRate.SmartBackgroundProcess = GetPrivateProfileIntA("FrameRate", "SmartBackgroundProcess", 0, Filename);
 	SettingsMain.FrameRate.SmartControlFPS = GetPrivateProfileIntA("FrameRate", "SmartControlFPS", 40, Filename);
 	GetPrivateProfileStringA("FrameRate", "FlowControl", "-1", value, SettingStringBuffer, Filename);
 	SettingsMain.FrameRate.FlowControl = atof(value);

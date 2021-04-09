@@ -2333,8 +2333,8 @@ public:
 
 	FormatPrefs			formatPrefs;	// 018
 	NiDX9TextureData*	rendererData;	// 024
-	NiTexture*			nextTex;		// 028 - linked list updated in ctor/dtor
-	NiTexture*			prevTex;		// 02C
+	NiTexture*			texPrev;		// 028
+	NiTexture*			texNext;		// 02C
 };
 assert(sizeof(NiTexture) == 0x030);
 
@@ -2953,19 +2953,18 @@ public:
 	virtual void			RenderLines(NiLines* obj);			
 	virtual void			RenderScreenTexture();
 
-	// 080
 	struct CriticalSection {
-		CRITICAL_SECTION	cs;								// 000
-		UInt32				pad018[(0x078 - 0x018) >> 2];	// 018
-		UInt32				curThread;						// 078
-		UInt32				entryCount;						// 07C
+		CRITICAL_SECTION	CriticalSection;				// 000
+		UInt32				pad018[24];						// 018
+		UInt32				ThreadOwner;					// 078
+		UInt32				LockCount;						// 07C
 	};
 
 	NiAccumulator*			accumulator;					// 008 BSShaderAccumulator
 	NiPropertyState*		propertyState;					// 00C
 	NiDynamicEffectState*	dynamicEffectState;				// 010
 	UInt32					pad014[(0x080 - 0x014) >> 2];	// 00C
-	CriticalSection			RendererLock;					// 080
+	CriticalSection			RendererLockCriticalSection;	// 080
 	CriticalSection			PrecacheCriticalSection;		// 100
 	CriticalSection			SourceDataCriticalSection;		// 180
 	UInt32					unk200;							// 200
@@ -3131,7 +3130,7 @@ public:
 	UInt8								lostDevice;						// 6F0 - disables drawing
 	UInt8								pad6F1[3];						// 6F1
 	Unk6F4								unk6F4[4];						// 6F4
-	UInt32								DefaultTextureFormat[4];		// 854 //NiPixelFormat*
+	UInt32								DefaultTextureFormat[4];		// 854 - NiPixelFormat*
 	NiPixelData*						DefaultTextureData[4];			// 864
 	UInt32								unk874;							// 874 - init'd to 0x16
 	NiRenderTargetGroup*				defaultRTGroup;					// 878 - probably back buffer

@@ -69,15 +69,13 @@ extern "C" {
 			if (TheSettingManager->SettingsMain.FlyCam.Enabled) CreateFlyCamHook();
 			if (TheSettingManager->SettingsMain.WeatherMode.Enabled) CreateWeatherModeHook();
 
-			WriteRelJump(0x0049849A, 0x004984A0); // Skips antialiasing deactivation if HDR is enabled on the D3DDevice
-			WriteRelJump(0x004984BD, 0x004984CD); // Skips antialiasing deactivation if AllowScreenshot is enabled
-			WriteRelJump(0x005DEE60, 0x005DEE68); // Skips antialiasing deactivation if HDR is enabled on loading the video menu
-			WriteRelJump(0x005DF69E, 0x005DF755); // Skips HDR deactivation changing antialising (video menu)
-			WriteRelJump(0x00497D5A, 0x00497D63); // Unlocks antialising bar if HDR is enabled (video menu)
-			WriteRelJump(0x005DF8E9, 0x005DF983); // Skips antialising deactivation changing HDR (video menu)
-			WriteRelJump(0x006738B1, 0x00673935); // Cancels the fPlayerDeathReloadTime
-			SafeWrite8(0x004344AB, 0x78); // Sets threads in the BSTaskManager
-			SafeWrite8(0x004344AF, 0x0A); // Sets threads in the BSTaskManager
+			SafeWriteJump(0x0049849A, 0x004984A0); // Skips antialiasing deactivation if HDR is enabled on the D3DDevice
+			SafeWriteJump(0x004984BD, 0x004984CD); // Skips antialiasing deactivation if AllowScreenshot is enabled
+			SafeWriteJump(0x005DEE60, 0x005DEE68); // Skips antialiasing deactivation if HDR is enabled on loading the video menu
+			SafeWriteJump(0x005DF69E, 0x005DF755); // Skips HDR deactivation changing antialising (video menu)
+			SafeWriteJump(0x00497D5A, 0x00497D63); // Unlocks antialising bar if HDR is enabled (video menu)
+			SafeWriteJump(0x005DF8E9, 0x005DF983); // Skips antialising deactivation changing HDR (video menu)
+			SafeWriteJump(0x006738B1, 0x00673935); // Cancels the fPlayerDeathReloadTime
 			SafeWrite32(0x00A2FC24, TheSettingManager->SettingsMain.Main.MemoryHeap);
 		}
 		else {

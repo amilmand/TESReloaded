@@ -382,13 +382,13 @@ void CreateCameraModeHook() {
 	DetourAttach(&(PVOID&)UpdateCameraCollisions,	*((PVOID*)&TrackUpdateCameraCollisions));
 	DetourTransactionCommit();
 
-	WriteRelJump(kUpdateCameraHook,		 (UInt32)UpdateCameraHook);
-	WriteRelJump(kSwitchCameraHook,		 (UInt32)SwitchCameraHook);
-	WriteRelJump(kSwitchCameraPOVHook,   (UInt32)SwitchCameraPOVHook);
+	SafeWriteJump(kUpdateCameraHook,	 (UInt32)UpdateCameraHook);
+	SafeWriteJump(kSwitchCameraHook,	 (UInt32)SwitchCameraHook);
+	SafeWriteJump(kSwitchCameraPOVHook,  (UInt32)SwitchCameraPOVHook);
 #if defined(OBLIVION)
-	WriteRelJump(kSetReticleOffsetHook,  (UInt32)SetReticleOffsetHook);
-	WriteRelJump(0x0066B769, 0x0066B795); // Does not lower the player Z axis value (fixes the bug of the camera on feet after resurrection)
-	WriteRelJump(0x00666704, 0x0066672D); // Enables the zoom with the bow
+	SafeWriteJump(kSetReticleOffsetHook, (UInt32)SetReticleOffsetHook);
+	SafeWriteJump(0x0066B769, 0x0066B795); // Does not lower the player Z axis value (fixes the bug of the camera on feet after resurrection)
+	SafeWriteJump(0x00666704, 0x0066672D); // Enables the zoom with the bow
 
 	// Extends the PlayerCharacter allocation (for each constructor call) to store additional data
 	SafeWrite32(0x00406775, sizeof(PlayerCharacterEx));

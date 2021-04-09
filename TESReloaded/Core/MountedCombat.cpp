@@ -311,22 +311,23 @@ static __declspec(naked) void HorsePaletteHook()
 
 }
 
-void CreateMountedCombatHook()
-{
-	WriteRelCall(kPlayerReadyWeaponHook,		(UInt32)ReadyWeaponHook);
-	WriteRelCall(kActorReadyWeaponHook,			(UInt32)ReadyWeaponHook);
-	WriteRelJump(kActorReadyWeaponSittingHook,	(UInt32)ActorReadyWeaponSittingHook);
-	WriteRelJump(kPlayerAttackHook,				(UInt32)PlayerAttackHook);
-	WriteRelJump(kHittingMountedCreatureHook,	(UInt32)HittingMountedCreatureHook);
-	WriteRelJump(kHideWeaponHook,				(UInt32)HideWeaponHook);
-	WriteRelJump(kBowEquipHook,					(UInt32)BowEquipHook);
-	WriteRelJump(kBowUnequipHook,				(UInt32)BowUnequipHook);
-	WriteRelJump(kAnimControllerHook,			(UInt32)AnimControllerHook);
-	WriteRelJump(kHorsePaletteHook,				(UInt32)HorsePaletteHook);
-	WriteRelJump(0x005FB089, 0x005FB0AD); // Enables the possibility to equip the weapon when sitting/mounting
-	WriteRelJump(0x005F2F97, 0x005F2FE8); // Enables the possibility to unequip the weapon when sitting/mounting
+void CreateMountedCombatHook() {
+
+	SafeWriteCall(kPlayerReadyWeaponHook,		(UInt32)ReadyWeaponHook);
+	SafeWriteCall(kActorReadyWeaponHook,		(UInt32)ReadyWeaponHook);
+	SafeWriteJump(kActorReadyWeaponSittingHook,	(UInt32)ActorReadyWeaponSittingHook);
+	SafeWriteJump(kPlayerAttackHook,			(UInt32)PlayerAttackHook);
+	SafeWriteJump(kHittingMountedCreatureHook,	(UInt32)HittingMountedCreatureHook);
+	SafeWriteJump(kHideWeaponHook,				(UInt32)HideWeaponHook);
+	SafeWriteJump(kBowEquipHook,				(UInt32)BowEquipHook);
+	SafeWriteJump(kBowUnequipHook,				(UInt32)BowUnequipHook);
+	SafeWriteJump(kAnimControllerHook,			(UInt32)AnimControllerHook);
+	SafeWriteJump(kHorsePaletteHook,			(UInt32)HorsePaletteHook);
+	SafeWriteJump(0x005FB089, 0x005FB0AD); // Enables the possibility to equip the weapon when sitting/mounting
+	SafeWriteJump(0x005F2F97, 0x005F2FE8); // Enables the possibility to unequip the weapon when sitting/mounting
 
 	SafeWrite16(0x005F4E55, 0xC031); // Enables blockhit animation when mounting
 	SafeWrite16(0x005F4F45, 0xC031); // Enables recoil animation when mounting
 	SafeWrite16(0x005F4FEF, 0xC031); // Enables stagger animation when mounting
+
 }

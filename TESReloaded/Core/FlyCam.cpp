@@ -116,9 +116,9 @@ void CreateFlyCamHook()
 	DetourAttach(&(PVOID&)UpdateFlyCam,		*((PVOID *)&TrackUpdateFlyCam));
 	DetourTransactionCommit();
 
-	WriteRelJump(kUpdateForwardFlyCamHook,	(UInt32)UpdateForwardFlyCamHook);
-	WriteRelJump(kUpdateBackwardFlyCamHook, (UInt32)UpdateBackwardFlyCamHook);
-	WriteRelJump(kUpdateRightFlyCamHook,	(UInt32)UpdateRightFlyCamHook);
-	WriteRelJump(kUpdateLeftFlyCamHook,		(UInt32)UpdateLeftFlyCamHook);
+	SafeWriteJump(kUpdateForwardFlyCamHook,		(UInt32)UpdateForwardFlyCamHook);
+	SafeWriteJump(kUpdateBackwardFlyCamHook,	(UInt32)UpdateBackwardFlyCamHook);
+	SafeWriteJump(kUpdateRightFlyCamHook,		(UInt32)UpdateRightFlyCamHook);
+	SafeWriteJump(kUpdateLeftFlyCamHook,		(UInt32)UpdateLeftFlyCamHook);
 
 }

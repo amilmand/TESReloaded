@@ -102,6 +102,6 @@ void CreateFormLoadHook() {
 	// Extends the TESRegion allocation (for each constructor call) to store additional data
 	SafeWrite8(0x0048BC15, sizeof(TESRegionEx));
 #endif
-	WriteRelJump(kSetRegionEditorName, (UInt32)SetEditorNameHook);
+	SafeWriteJump(kSetRegionEditorName, (UInt32)SetEditorNameHook);
 
 }

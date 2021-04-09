@@ -48,6 +48,6 @@ void CreateWeatherModeHook() {
 	SafeWrite32(0x00442B22, 0x898);
 	SafeWrite32(0x004EF7F5, 0x898);
 #endif
-	WriteRelJump(kSetWeatherEditorName, (UInt32)SetEditorNameHook);
+	SafeWriteJump(kSetWeatherEditorName, (UInt32)SetEditorNameHook);
 
 }

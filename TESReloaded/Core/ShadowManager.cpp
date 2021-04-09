@@ -776,11 +776,11 @@ static __declspec(naked) void LeavesNodeNameHook() {
 
 void CreateShadowsHook() {
 	
-	WriteRelJump(kRenderShadowMapHook,		(UInt32)RenderShadowMapHook);
-	WriteRelJump(kAddCastShadowFlagHook,	(UInt32)AddCastShadowFlagHook);
+	SafeWriteJump(kRenderShadowMapHook,		(UInt32)RenderShadowMapHook);
+	SafeWriteJump(kAddCastShadowFlagHook,	(UInt32)AddCastShadowFlagHook);
 
 #if defined(NEWVEGAS)
-	WriteRelJump(kLeavesNodeName, (UInt32)LeavesNodeNameHook);
+	SafeWriteJump(kLeavesNodeName,			(UInt32)LeavesNodeNameHook);
 #endif
 }
 
@@ -810,7 +810,7 @@ static __declspec(naked) void EditorCastShadowFlagHook() {
 
 void CreateEditorShadowsHook() {
 
-	WriteRelJump(kEditorCastShadowFlagHook, (UInt32)EditorCastShadowFlagHook);
+	SafeWriteJump(kEditorCastShadowFlagHook, (UInt32)EditorCastShadowFlagHook);
 
 }
 #elif defined(SKYRIM)

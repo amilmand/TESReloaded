@@ -14,6 +14,6 @@ HRESULT __stdcall CreateTextureHook(LPDIRECT3DDEVICE9 pDevice, LPCVOID pSrcData,
 
 void CreateMemoryManagementHook() {
 
-	WriteRelCall(kCreateTextureHook, (UInt32)CreateTextureHook);
+	SafeWriteCall(kCreateTextureHook, (UInt32)CreateTextureHook);
 
 }

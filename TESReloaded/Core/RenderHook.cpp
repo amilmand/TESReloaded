@@ -729,13 +729,13 @@ void CreateRenderHook() {
 #endif
     DetourTransactionCommit();
 
-	WriteRelJump(kRenderInterface,				(UInt32)RenderInterface);
+	SafeWriteJump(kRenderInterface,					(UInt32)RenderInterface);
 #if defined(NEWVEGAS) || defined(OBLIVION)
-	WriteRelCall(kDetectorWindowSetNodeName,	(UInt32)DetectorWindowSetNodeName);
-	WriteRelJump(kDetectorWindowCreateTreeView,	(UInt32)DetectorWindowCreateTreeViewHook);
-	WriteRelJump(kDetectorWindowDumpAttributes,	(UInt32)DetectorWindowDumpAttributesHook);
-	WriteRelJump(kDetectorWindowConsoleCommand, (UInt32)DetectorWindowConsoleCommandHook);
-	WriteRelJump(kDetectorWindowScale,			kDetectorWindowScaleReturn); // Avoids to add the scale to the node description in the detector window
+	SafeWriteCall(kDetectorWindowSetNodeName,		(UInt32)DetectorWindowSetNodeName);
+	SafeWriteJump(kDetectorWindowCreateTreeView,	(UInt32)DetectorWindowCreateTreeViewHook);
+	SafeWriteJump(kDetectorWindowDumpAttributes,	(UInt32)DetectorWindowDumpAttributesHook);
+	SafeWriteJump(kDetectorWindowConsoleCommand,	(UInt32)DetectorWindowConsoleCommandHook);
+	SafeWriteJump(kDetectorWindowScale,				kDetectorWindowScaleReturn); // Avoids to add the scale to the node description in the detector window
 #endif
 #if defined(NEWVEGAS)
 	WriteRelJump(0x004E4C3B, 0x004E4C42); // Fixes reflections when cell water height is not like worldspace water height
@@ -758,16 +758,16 @@ void CreateRenderHook() {
 	SafeWrite32(0x007C1103, TheSettingManager->SettingsMain.Main.WaterReflectionMapSize); // RenderedSurface
 	SafeWrite8(0x00A38280, 0x5A); // Fixes the "purple water bug"
 	SafeWrite8(0x0040CE11, 0); // Stops to clear the depth buffer when rendering the 1st person node
-	WriteRelJump(0x00553EAC, 0x00553EB2); // Patches the use of Lighting30Shader only for the hair
-	WriteRelJump(0x007D1BC4, 0x007D1BFD); // Patches the use of Lighting30Shader only for the hair
-	WriteRelJump(0x007D1BCD, 0x007D1BFD); // Patches the use of Lighting30Shader only for the hair
-	WriteRelJump(0x0049C3A2, 0x0049C41D); // Avoids to manage the cells culling for reflections
-	WriteRelJump(0x0049C8CB, 0x0049C931); // Avoids to manage the cells culling for reflections
+	SafeWriteJump(0x00553EAC, 0x00553EB2); // Patches the use of Lighting30Shader only for the hair
+	SafeWriteJump(0x007D1BC4, 0x007D1BFD); // Patches the use of Lighting30Shader only for the hair
+	SafeWriteJump(0x007D1BCD, 0x007D1BFD); // Patches the use of Lighting30Shader only for the hair
+	SafeWriteJump(0x0049C3A2, 0x0049C41D); // Avoids to manage the cells culling for reflections
+	SafeWriteJump(0x0049C8CB, 0x0049C931); // Avoids to manage the cells culling for reflections
 	if (TheSettingManager->SettingsMain.Shaders.Water) {
-		WriteRelJump(0x007E1ACC, 0x007E1B1D); // Disables the first WaterHeightMap shader pass
-		WriteRelJump(0x007E1B76, 0x007E1BC7); // Disables the second WaterHeightMap shader pass
-		WriteRelJump(0x007E1CA1, 0x007E1CEE); // Disables the third WaterHeightMap shader pass
-		WriteRelJump(0x007E1E87, 0x007E1EDD); // Disables the fourth WaterHeightMap shader pass
+		SafeWriteJump(0x007E1ACC, 0x007E1B1D); // Disables the first WaterHeightMap shader pass
+		SafeWriteJump(0x007E1B76, 0x007E1BC7); // Disables the second WaterHeightMap shader pass
+		SafeWriteJump(0x007E1CA1, 0x007E1CEE); // Disables the third WaterHeightMap shader pass
+		SafeWriteJump(0x007E1E87, 0x007E1EDD); // Disables the fourth WaterHeightMap shader pass
 		SafeWrite32(0x007E109C, 0); // Disables additional WaterHeightMap shader passes
 		*LocalWaterHiRes = 1;
 	}
@@ -775,7 +775,7 @@ void CreateRenderHook() {
 		SafeWrite8(0x007BE1D3, TheSettingManager->SettingsMain.Main.AnisotropicFilter);
 		SafeWrite8(0x007BE32B, TheSettingManager->SettingsMain.Main.AnisotropicFilter);
 	}
-	if (TheSettingManager->SettingsMain.Main.RemovePrecipitations) WriteRelJump(0x00543167, 0x00543176);
+	if (TheSettingManager->SettingsMain.Main.RemovePrecipitations) SafeWriteJump(0x00543167, 0x00543176);
 #elif defined(SKYRIM)
 	WriteRelJump(kRenderingGeometry,		(UInt32)RenderingGeometryHook);
 	if (TheSettingManager->SettingsMain.ShadowMode.NearQuality) {

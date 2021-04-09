@@ -93,6 +93,7 @@ struct SettingsMainStruct {
 	
 	struct FrameRateStruct {
 		bool	SmartControl;
+		bool	SmartBackgroundProcess;
 		UInt32	SmartControlFPS;
 		float	FlowControl;
 	};

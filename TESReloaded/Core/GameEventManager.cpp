@@ -89,6 +89,6 @@ static __declspec(naked) void HitEventHook()
 
 void CreateGameEventHook() {
 
-	WriteRelJump(kHitEventHook, (UInt32)HitEventHook);
+	SafeWriteJump(kHitEventHook, (UInt32)HitEventHook);
 
 }

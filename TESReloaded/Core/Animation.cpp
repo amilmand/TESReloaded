@@ -231,8 +231,8 @@ void CreateAnimationHook()
 	DetourAttach(&(PVOID&)LoadTESAnimGroup,					   &TrackLoadTESAnimGroup);
 	DetourTransactionCommit();
 
-	WriteRelJump(kNewAnimSequenceSingleHook, (UInt32)NewAnimSequenceSingleHook);
-	WriteRelJump(kRemoveSequenceHook,		 (UInt32)RemoveSequenceHook);
+	SafeWriteJump(kNewAnimSequenceSingleHook, (UInt32)NewAnimSequenceSingleHook);
+	SafeWriteJump(kRemoveSequenceHook,		  (UInt32)RemoveSequenceHook);
 
 	// Extends the ActorAnimData allocation (for each constructor call) to store additional data
 	SafeWrite32(0x004E3814, sizeof(ActorAnimDataEx));

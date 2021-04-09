@@ -28,14 +28,14 @@ void SafeWrite32(UInt32 addr, UInt32 data) {
 
 }
 
-void WriteRelJump(UInt32 jumpSrc, UInt32 jumpTgt) {
+void SafeWriteJump(UInt32 jumpSrc, UInt32 jumpTgt) {
 
 	SafeWrite8(jumpSrc, 0xE9);
 	SafeWrite32(jumpSrc + 1, jumpTgt - jumpSrc - 1 - 4);
 
 }
 
-void WriteRelCall(UInt32 jumpSrc, UInt32 jumpTgt) {
+void SafeWriteCall(UInt32 jumpSrc, UInt32 jumpTgt) {
 
 	SafeWrite8(jumpSrc, 0xE8);
 	SafeWrite32(jumpSrc + 1, jumpTgt - jumpSrc - 1 - 4);

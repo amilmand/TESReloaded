@@ -93,9 +93,9 @@ void CreateDodgeHook() {
 	SafeWrite8(0x00672A17, TheSettingManager->SettingsMain.Dodge.AcrobaticsLevel);
 
 	if (TheSettingManager->SettingsMain.Dodge.DoubleTap) {
-		WriteRelJump(0x00672941,	    0x00672954);
-		WriteRelJump(kJumpPressedHook,  (UInt32)JumpPressedHook);
-		WriteRelJump(kDoubleTapHook,	(UInt32)DoubleTapHook);
+		SafeWriteJump(0x00672941, 0x00672954);
+		SafeWriteJump(kJumpPressedHook,	(UInt32)JumpPressedHook);
+		SafeWriteJump(kDoubleTapHook,	(UInt32)DoubleTapHook);
 	}
 
 }

@@ -77,6 +77,25 @@ void EndProcess() {
 
 }
 
+static const UInt32 testr1 = 0x007AC9B9;
+static const UInt32 testr2 = 0x007ACF2B;
+static const UInt32 IsRenderingWaterReflections = 0x00B42CE8;
+static __declspec(naked) void test() {
+
+	__asm {
+		cmp		edi, 400
+		jnz		short loc_continue
+		jmp		testr2
+	loc_continue:
+		mov		[esp + 0x10], ecx
+		movzx   esi, di
+		cmp     IsRenderingWaterReflections, 0
+		jmp		testr1
+	}
+
+}
+
+
 void CreateFrameRateHook() {
 	
 	SettingsMainStruct::FrameRateStruct* FrameRate = &TheSettingManager->SettingsMain.FrameRate;
@@ -99,9 +118,12 @@ void CreateFrameRateHook() {
 		SafeWriteJump(0x007D6AC5, 0x007D6ACA); // Skips entering RendererLockCriticalSection (NiRenderer::BeginRenderTargetGroup)
 		SafeWriteJump(0x007D6AEF, 0x007D6AF6); // Skips leaving  RendererLockCriticalSection (NiRenderer::BeginRenderTargetGroup)
 		SafeWriteJump(0x007D6B30, 0x007D6B62); // Skips leaving  RendererLockCriticalSection (NiRenderer::EndRenderTargetGroup)
+		SafeWrite32(0x004335ED, 1000000); // Allows to manage less time between threads
 		SafeWrite8(0x004344AB, 0x78); // Sets threads in the BSTaskManager
 		SafeWrite8(0x004344AF, 0x0A); // Sets threads in the BSTaskManager
 	}
 	SafeWriteJump(0x0040F488, (UInt32)EndProcess);
 	
+	SafeWriteJump(0x007AC9B2, (UInt32)test); move this to the renderhook.cpp
+
 }

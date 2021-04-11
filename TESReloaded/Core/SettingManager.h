@@ -95,6 +95,7 @@ struct SettingsMainStruct {
 		bool	SmartControl;
 		bool	SmartBackgroundProcess;
 		UInt32	SmartControlFPS;
+		UInt32  BackgroundThreadPriority;
 		float	FlowControl;
 	};
 

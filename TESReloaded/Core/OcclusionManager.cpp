@@ -420,7 +420,7 @@ void OcclusionManager::PerformOcclusionCulling() {
 	IDirect3DSurface9* DepthSurface = NULL;
 	SettingsMainStruct::OcclusionCullingStruct* OcclusionCulling = &TheSettingManager->SettingsMain.OcclusionCulling;
 
-	if (Player->GetWorldSpace()) {
+	if (Player->GetWorldSpace() && !Player->isMovingToNewSpace) {
 		for (int i = 1; i < DistantRefLOD->m_children.end; i++) {
 			NiNode* ChildNode = (NiNode*)DistantRefLOD->m_children.data[i];
 			ManageDistantStatic(ChildNode, OcclusionCulling->OccludedDistantStaticMax);

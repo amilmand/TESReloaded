@@ -103,6 +103,7 @@ SettingManager::SettingManager() {
 	SettingsMain.FrameRate.SmartControl = GetPrivateProfileIntA("FrameRate", "SmartControl", 0, Filename);
 	SettingsMain.FrameRate.SmartBackgroundProcess = GetPrivateProfileIntA("FrameRate", "SmartBackgroundProcess", 0, Filename);
 	SettingsMain.FrameRate.SmartControlFPS = GetPrivateProfileIntA("FrameRate", "SmartControlFPS", 40, Filename);
+	SettingsMain.FrameRate.BackgroundThreadPriority = GetPrivateProfileIntA("FrameRate", "BackgroundThreadPriority", 100, Filename);
 	GetPrivateProfileStringA("FrameRate", "FlowControl", "-1", value, SettingStringBuffer, Filename);
 	SettingsMain.FrameRate.FlowControl = atof(value);
 
@@ -3117,6 +3118,10 @@ bool Settings::TrackReadSetting(GameSetting* Setting) {
 #if defined(OBLIVION)
 	else if (!strcmp(Setting->Name, "bUseWaterDepth:Water") && TheSettingManager->SettingsMain.Shaders.Water)
 		Setting->iValue = 0;
+	else if (!strcmp(Setting->Name, "iPostProcessMilliseconds:BackgroundLoad") && TheSettingManager->SettingsMain.FrameRate.SmartBackgroundProcess)
+		Setting->iValue = TheSettingManager->SettingsMain.FrameRate.BackgroundThreadPriority;
+	else if (!strcmp(Setting->Name, "iPostProcessMillisecondsLoadingQueuedPriority:BackgroundLoad") && TheSettingManager->SettingsMain.FrameRate.SmartBackgroundProcess)
+		Setting->iValue = TheSettingManager->SettingsMain.FrameRate.BackgroundThreadPriority;
 #endif
 	return r;
 

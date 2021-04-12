@@ -32,6 +32,8 @@ static const UInt32 kDetectorWindowConsoleCommandReturn = 0x00872D10;
 static const UInt32 kRenderInterface = 0x0057F3F3;
 static const UInt32 kRenderInterfaceReturn = 0x0057F3F8;
 static const UInt32 kRenderInterfaceMethod = 0x0070E0A0;
+static const UInt32 kSkipFogPass = 0x007AE6F5;
+static const UInt32 kSkipFogPassReturn = 0x007AE6FB;
 static const UInt32 kDetectorWindowSetNodeName = 0x0049658E;
 static const UInt32 kDetectorWindowCreateTreeView = 0x00495E1F;
 static const UInt32 kDetectorWindowCreateTreeViewReturn = 0x00495E27;
@@ -424,6 +426,20 @@ void __cdecl TrackRenderObject(NiCamera* Camera, NiNode* Object, NiCullingProces
 	}
 
 }
+
+static __declspec(naked) void SkipFogPassHook() {
+
+	__asm {
+		cmp		edi, 0x190
+		jnz		short loc_continue
+		add		edi, 1
+	loc_continue:
+		cmp     edi, 0x198
+		jmp		kSkipFogPassReturn
+	}
+
+}
+
 #elif defined(SKYRIM)
 void (__thiscall RenderHook::* Render)(BSRenderedTexture*, int, int);
 void (__thiscall RenderHook::* TrackRender)(BSRenderedTexture*, int, int);
@@ -737,7 +753,7 @@ void CreateRenderHook() {
 	SafeWriteJump(kDetectorWindowCreateTreeView,	(UInt32)DetectorWindowCreateTreeViewHook);
 	SafeWriteJump(kDetectorWindowDumpAttributes,	(UInt32)DetectorWindowDumpAttributesHook);
 	SafeWriteJump(kDetectorWindowConsoleCommand,	(UInt32)DetectorWindowConsoleCommandHook);
-	SafeWriteJump(kDetectorWindowScale,				kDetectorWindowScaleReturn); // Avoids to add the scale to the node description in the detector window
+	SafeWriteJump(kDetectorWindowScale,	kDetectorWindowScaleReturn); // Avoids to add the scale to the node description in the detector window
 #endif
 #if defined(NEWVEGAS)
 	WriteRelJump(0x004E4C3B, 0x004E4C42); // Fixes reflections when cell water height is not like worldspace water height
@@ -765,6 +781,7 @@ void CreateRenderHook() {
 	SafeWriteJump(0x007D1BCD, 0x007D1BFD); // Patches the use of Lighting30Shader only for the hair
 	SafeWriteJump(0x0049C3A2, 0x0049C41D); // Avoids to manage the cells culling for reflections
 	SafeWriteJump(0x0049C8CB, 0x0049C931); // Avoids to manage the cells culling for reflections
+	SafeWriteJump(kSkipFogPass, (UInt32)SkipFogPassHook);
 	if (TheSettingManager->SettingsMain.Shaders.Water) {
 		SafeWriteJump(0x007E1ACC, 0x007E1B1D); // Disables the first WaterHeightMap shader pass
 		SafeWriteJump(0x007E1B76, 0x007E1BC7); // Disables the second WaterHeightMap shader pass

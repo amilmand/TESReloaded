@@ -37,8 +37,8 @@ public:
 	void					ClearShadowCubeMaps(IDirect3DDevice9* Device, int From, ShadowCubeMapStateEnum NewState);
 	void					CalculateBlend(NiPointLight** Lights, int LightIndex);
 
-	ShaderRecord*			ShadowMapVertex;
-	ShaderRecord*			ShadowMapPixel;
+	ShaderRecordVertex*		ShadowMapVertex;
+	ShaderRecordPixel*		ShadowMapPixel;
 	IDirect3DVertexShader9* ShadowMapVertexShader;
 	IDirect3DPixelShader9*  ShadowMapPixelShader;
 	IDirect3DTexture9*		ShadowMapTexture[3];
@@ -51,14 +51,14 @@ public:
 	IDirect3DCubeTexture9*	ShadowCubeMapTexture[4];
 	IDirect3DSurface9*		ShadowCubeMapSurface[4][6];
 	IDirect3DSurface9*		ShadowCubeMapDepthSurface;
-	ShaderRecord*			ShadowCubeMapVertex;
-	ShaderRecord*			ShadowCubeMapPixel;
+	ShaderRecordVertex*		ShadowCubeMapVertex;
+	ShaderRecordPixel*		ShadowCubeMapPixel;
 	IDirect3DVertexShader9* ShadowCubeMapVertexShader;
 	IDirect3DPixelShader9*	ShadowCubeMapPixelShader;
 	D3DVIEWPORT9			ShadowCubeMapViewPort;
 	NiPointLight*			ShadowCubeMapLights[4];
-	ShaderRecord*			CurrentVertex;
-	ShaderRecord*			CurrentPixel;
+	ShaderRecordVertex*		CurrentVertex;
+	ShaderRecordPixel*		CurrentPixel;
 	TESObjectCELL*			CurrentCell;
 	ShadowCubeMapStateEnum	ShadowCubeMapState;
 	bool					AlphaEnabled;

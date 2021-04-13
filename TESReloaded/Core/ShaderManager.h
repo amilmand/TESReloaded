@@ -25,12 +25,6 @@ enum EffectRecordType
 	EffectRecordType_Extra,
 };
 
-enum ShaderType
-{
-	ShaderType_Vertex,
-	ShaderType_Pixel,
-};
-
 struct ShaderConstants {
 	
 	struct ShadowMapStruct {
@@ -203,52 +197,67 @@ struct ShaderValue {
 class ShaderProgram {
 public:
 	ShaderProgram();
-	~ShaderProgram();
-
+	virtual ~ShaderProgram();
+	
 	void					SetConstantTableValue(LPCSTR Name, UInt32 Index);
 
 	ShaderValue*			FloatShaderValues;
 	UInt32					FloatShaderValuesCount;
 	ShaderValue*			TextureShaderValues;
 	UInt32					TextureShaderValuesCount;
+	bool					Enabled;
 };
 
 class ShaderRecord : public ShaderProgram {
 public:
 	ShaderRecord();
-	~ShaderRecord();
-
-	void					CreateCT();
-	void					SetCT();
-	bool					LoadShader(const char* Name);
-	bool					LoadShader(const char* Name, const char* Path, const char* SubPath);
+	virtual ~ShaderRecord();
 	
-	ShaderType				Type;
-	bool					Enabled;
+	virtual void			SetShaderConstantF(UInt32 RegisterIndex, D3DXVECTOR4* Value, UInt32 RegisterCount) = 0;
+
+	static ShaderRecord*	LoadShader(const char* Name, const char* SubPath);
+
+	void					CreateCT(const char* ShaderSource, ID3DXConstantTable* ConstantTable);
+	void					SetCT();
+	
 	bool					HasCT;
 	bool					HasRB; 
 	bool					HasDB;
-	void*					Function;
-	char* 					Source;
-	ID3DXBuffer*			Errors;
-	ID3DXBuffer*			Shader;
-	ID3DXConstantTable*		Table;
+};
+
+class ShaderRecordVertex : public ShaderRecord {
+public:
+	ShaderRecordVertex();
+	virtual ~ShaderRecordVertex();
+	
+	virtual void			SetShaderConstantF(UInt32 RegisterIndex, D3DXVECTOR4* Value, UInt32 RegisterCount);
+
+	IDirect3DVertexShader9* ShaderHandle;
+};
+
+class ShaderRecordPixel : public ShaderRecord {
+public:
+	ShaderRecordPixel();
+	virtual ~ShaderRecordPixel();
+	
+	virtual void			SetShaderConstantF(UInt32 RegisterIndex, D3DXVECTOR4* Value, UInt32 RegisterCount);
+
+	IDirect3DPixelShader9*	ShaderHandle;
 };
 
 class EffectRecord : public ShaderProgram {
 public:
 	EffectRecord();
-	~EffectRecord();
+	virtual ~EffectRecord();
+	
+	bool					LoadEffect(const char* Name);
+	void					CreateCT();
+	void					SetCT();
+	void					Render(IDirect3DDevice9* Device, IDirect3DSurface9* RenderTarget, IDirect3DSurface9* RenderedSurface, bool ClearRenderTarget);
 
-	bool						LoadEffect(const char* Name);
-	void						CreateCT();
-	void						SetCT();
-	void						Render(IDirect3DDevice9* Device, IDirect3DSurface9* RenderTarget, IDirect3DSurface9* RenderedSurface, bool ClearRenderTarget);
-
-	bool						Enabled;
-	char*	 					Source;
-	ID3DXBuffer*				Errors;
-	ID3DXEffect*				Effect;
+	char*	 				Source;
+	ID3DXBuffer*			Errors;
+	ID3DXEffect*			Effect;
 };
 
 typedef std::map<std::string, EffectRecord*> ExtraEffectsList;
@@ -257,6 +266,7 @@ typedef std::map<std::string, D3DXVECTOR4> CustomConstants;
 class ShaderManager { // Never disposed
 public:
 	ShaderManager();
+
 	void					CreateFrameVertex(UInt32 Width, UInt32 Height, IDirect3DVertexBuffer9** FrameVertex);
 	void					CreateEffects();
 	void					InitializeConstants();

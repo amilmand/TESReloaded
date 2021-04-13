@@ -55,15 +55,10 @@ ShadowManager::ShadowManager() {
 	CurrentCell = NULL;
 	ShadowCubeMapState = ShadowCubeMapStateEnum::None;
 
-	ShadowMapVertex = new ShaderRecord();
-	if (ShadowMapVertex->LoadShader("ShadowMap.vso")) Device->CreateVertexShader((const DWORD*)ShadowMapVertex->Function, &ShadowMapVertexShader);
-	ShadowMapPixel = new ShaderRecord();
-	if (ShadowMapPixel->LoadShader("ShadowMap.pso")) Device->CreatePixelShader((const DWORD*)ShadowMapPixel->Function, &ShadowMapPixelShader);
-
-	ShadowCubeMapVertex = new ShaderRecord();
-	if (ShadowCubeMapVertex->LoadShader("ShadowCubeMap.vso")) Device->CreateVertexShader((const DWORD*)ShadowCubeMapVertex->Function, &ShadowCubeMapVertexShader);
-	ShadowCubeMapPixel = new ShaderRecord();
-	if (ShadowCubeMapPixel->LoadShader("ShadowCubeMap.pso")) Device->CreatePixelShader((const DWORD*)ShadowCubeMapPixel->Function, &ShadowCubeMapPixelShader);
+	ShadowMapVertex = (ShaderRecordVertex*)ShaderRecord::LoadShader("ShadowMap.vso", NULL);
+	ShadowMapPixel = (ShaderRecordPixel*)ShaderRecord::LoadShader("ShadowMap.pso", NULL);
+	ShadowCubeMapVertex = (ShaderRecordVertex*)ShaderRecord::LoadShader("ShadowCubeMap.vso", NULL);
+	ShadowCubeMapPixel = (ShaderRecordPixel*)ShaderRecord::LoadShader("ShadowCubeMap.pso", NULL);
 
 	for (int i = 0; i < 3; i++) {
 		UINT ShadowMapSize = ShadowsExteriors->ShadowMapSize[i];

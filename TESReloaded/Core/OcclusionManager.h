@@ -22,10 +22,8 @@ public:
 	void					RenderOcclusionMap(SettingsMainStruct::OcclusionCullingStruct* OcclusionCulling);
 	void					PerformOcclusionCulling();
 	
-	ShaderRecord*			OcclusionMapVertex;
-	ShaderRecord*			OcclusionMapPixel;
-	IDirect3DVertexShader9* OcclusionMapVertexShader;
-	IDirect3DPixelShader9*	OcclusionMapPixelShader;
+	ShaderRecordVertex*		OcclusionMapVertex;
+	ShaderRecordPixel*		OcclusionMapPixel;
 	IDirect3DQuery9*		OcclusionQuery;
 	IDirect3DTexture9*		OcclusionMapTexture;
 	IDirect3DSurface9*		OcclusionMapSurface;

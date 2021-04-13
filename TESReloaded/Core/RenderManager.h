@@ -10,16 +10,20 @@
 
 class NiD3DVertexShaderEx : public NiD3DVertexShader {
 public:
-	ShaderRecord*			ShaderProg;
+	ShaderRecordVertex*		ShaderProg;
+	ShaderRecordVertex*		ShaderProgE;
+	ShaderRecordVertex*		ShaderProgI;
 	IDirect3DVertexShader9*	ShaderHandleBackup;
-	char*					ShaderName;
+	char					ShaderName[40];
 };
 
 class NiD3DPixelShaderEx : public NiD3DPixelShader {
 public:
-	ShaderRecord*			ShaderProg;
+	ShaderRecordPixel*		ShaderProg;
+	ShaderRecordPixel*		ShaderProgE;
+	ShaderRecordPixel*		ShaderProgI;
 	IDirect3DPixelShader9*	ShaderHandleBackup;
-	char*					ShaderName;
+	char					ShaderName[40];
 };
 
 class RenderManager: public NiDX9Renderer {

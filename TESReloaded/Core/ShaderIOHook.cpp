@@ -49,8 +49,9 @@ NiD3DVertexShader* ShaderIOHook::TrackCreateVertexShader(char* FileName, char* A
 	NiD3DVertexShaderEx* VertexShader = (NiD3DVertexShaderEx*)(this->*CreateVertexShader)(FileName, Arg2, ShaderType, ShaderName);
 
 	VertexShader->ShaderProg = NULL;
-	VertexShader->ShaderHandleBackup = NULL;
-	VertexShader->ShaderName = new char[40];
+	VertexShader->ShaderProgE = NULL;
+	VertexShader->ShaderProgI = NULL;
+	VertexShader->ShaderHandleBackup = VertexShader->ShaderHandle;
 	strcpy(VertexShader->ShaderName, ShaderName);
 	if (!memcmp(VertexShader->ShaderName, "ISNOISENORMALMAP", 16)) {
 		strcpy(VertexShader->ShaderName, "WATERHEIGHTMAP.vso");
@@ -68,8 +69,9 @@ NiD3DPixelShader* ShaderIOHook::TrackCreatePixelShader(char* FileName, char* Arg
 	NiD3DPixelShaderEx* PixelShader = (NiD3DPixelShaderEx*)(this->*CreatePixelShader)(FileName, Arg2, ShaderType, ShaderName);
 
 	PixelShader->ShaderProg = NULL;
-	PixelShader->ShaderHandleBackup = NULL;
-	PixelShader->ShaderName = new char[40];
+	PixelShader->ShaderProgE = NULL;
+	PixelShader->ShaderProgI = NULL;
+	PixelShader->ShaderHandleBackup = PixelShader->ShaderHandle;
 	strcpy(PixelShader->ShaderName, ShaderName);
 	if (!memcmp(PixelShader->ShaderName, "ISNOISENORMALMAP", 16)) {
 		strcpy(PixelShader->ShaderName, "WATERHEIGHTMAP.pso");
@@ -87,8 +89,9 @@ NiD3DVertexShader* ShaderIOHook::TrackCreateVertexShader(char* FileName, char* A
 	NiD3DVertexShaderEx* VertexShader = (NiD3DVertexShaderEx*)(this->*CreateVertexShader)(FileName, Arg2, ShaderType, ShaderName, Arg5, Arg6);
 
 	VertexShader->ShaderProg = NULL;
-	VertexShader->ShaderHandleBackup = NULL;
-	VertexShader->ShaderName = new char[24];
+	VertexShader->ShaderProgE = NULL;
+	VertexShader->ShaderProgI = NULL;
+	VertexShader->ShaderHandleBackup = VertexShader->ShaderHandle;
 	strcpy(VertexShader->ShaderName, ShaderName);
 	TheShaderManager->LoadShader(VertexShader);
 	return (NiD3DVertexShader*)VertexShader;
@@ -102,8 +105,9 @@ NiD3DPixelShader* ShaderIOHook::TrackCreatePixelShader(char* FileName, char* Arg
 	NiD3DPixelShaderEx* PixelShader = (NiD3DPixelShaderEx*)(this->*CreatePixelShader)(FileName, Arg2, ShaderType, ShaderName, Arg5, Arg6);
 
 	PixelShader->ShaderProg = NULL;
-	PixelShader->ShaderHandleBackup = NULL;
-	PixelShader->ShaderName = new char[24];
+	PixelShader->ShaderProgE = NULL;
+	PixelShader->ShaderProgI = NULL;
+	PixelShader->ShaderHandleBackup = PixelShader->ShaderHandle;
 	strcpy(PixelShader->ShaderName, ShaderName);
 	TheShaderManager->LoadShader(PixelShader);
 	return (NiD3DPixelShader*)PixelShader;
@@ -119,8 +123,9 @@ int ShaderIOHook::TrackCreateVertexShader(BSIStream* ShaderPackage, int Arg2) {
 	char Counter[8];
 
 	VertexShader->ShaderProg = NULL;
-	VertexShader->ShaderHandleBackup = NULL;
-	VertexShader->ShaderName = new char[16];
+	VertexShader->ShaderProgE = NULL;
+	VertexShader->ShaderProgI = NULL;
+	VertexShader->ShaderHandleBackup = VertexShader->ShaderHandle;
 	VertexShaderCounter += 1;
 	_itoa(VertexShaderCounter, Counter, 10);
 	strcpy(VertexShader->ShaderName, ShaderPrefix);
@@ -141,8 +146,9 @@ int ShaderIOHook::TrackCreatePixelShader(BSIStream* ShaderPackage, int Arg2) {
 	char Counter[8];
 	
 	PixelShader->ShaderProg = NULL;
-	PixelShader->ShaderHandleBackup = NULL;
-	PixelShader->ShaderName = new char[16];
+	PixelShader->ShaderProgE = NULL;
+	PixelShader->ShaderProgI = NULL;
+	PixelShader->ShaderHandleBackup = PixelShader->ShaderHandle;
 	PixelShaderCounter += 1;
 	_itoa(PixelShaderCounter, Counter, 10);
 	strcpy(PixelShader->ShaderName, ShaderPrefix);

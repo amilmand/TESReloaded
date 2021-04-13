@@ -13,7 +13,7 @@ class LowHSoundScript : public BaseScript { // Never disposed
 public:
 	LowHSoundScript();
 
-	void			Run();
+	virtual void	Run();
 
 	TESSound*		HeartSlow;
 };
@@ -22,7 +22,7 @@ class LowFSoundScript : public BaseScript { // Never disposed
 public:
 	LowFSoundScript();
 
-	void			Run();
+	virtual void	Run();
 
 	TESSound*		BreathingF;
 	TESSound*		BreathingM;
@@ -33,14 +33,14 @@ class PurgerScript : public BaseScript { // Never disposed
 public:
 	PurgerScript();
 
-	void			Run();
+	virtual void	Run();
 };
 
 class GravityScript : public BaseScript { // Never disposed
 public:
 	GravityScript();
 
-	void			Run();
+	virtual void	Run();
 };
 
 class EquipmentSetupScript : public BaseScript { // Never disposed
@@ -57,7 +57,8 @@ public:
 		Swimming,
 	};
 
-	void					Run();
+	virtual void			Run();
+
 	void					EquipItems(StepType From, StepType To);
 	StepType				GetCurrentEquipmentType();
 

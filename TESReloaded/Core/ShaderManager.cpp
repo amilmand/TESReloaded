@@ -214,85 +214,94 @@ void ShaderProgram::SetConstantTableValue(LPCSTR Name, UInt32 Index) {
 
 ShaderRecord::ShaderRecord() {
 	
-	Enabled		= false;
-	HasCT		= false;
-	HasRB		= false;
-	HasDB		= false;
-	Function	= NULL;
-	Source		= NULL;
-	Shader		= NULL;
-	Table		= NULL;
-	Errors		= NULL;
+	Enabled	= false;
+	HasCT = false;
+	HasRB = false;
+	HasDB = false;
 
 }
+ShaderRecord::~ShaderRecord() { }
 
-ShaderRecord::~ShaderRecord() {
-
-	if (Shader) Shader->Release();
-	if (Table) Table->Release();
-	if (Errors) Errors->Release();
-	if (Source) delete Source;
-
-}
-
-bool ShaderRecord::LoadShader(const char* Name) {
-  
-	char Path[MAX_PATH];
+ShaderRecordVertex::ShaderRecordVertex() {
 	
-	strcpy(Path, ShadersPath);
+	ShaderHandle = NULL;
+
+}
+ShaderRecordVertex::~ShaderRecordVertex() {}
+
+ShaderRecordPixel::ShaderRecordPixel() {
+
+	ShaderHandle = NULL;
+
+}
+ShaderRecordPixel::~ShaderRecordPixel() {}
+
+void ShaderRecordVertex::SetShaderConstantF(UInt32 RegisterIndex, D3DXVECTOR4* Value, UInt32 RegisterCount) {
+	
+	TheRenderManager->device->SetVertexShaderConstantF(RegisterIndex, (const float*)Value, RegisterCount);
+
+}
+
+void ShaderRecordPixel::SetShaderConstantF(UInt32 RegisterIndex, D3DXVECTOR4* Value, UInt32 RegisterCount) {
+	
+	TheRenderManager->device->SetPixelShaderConstantF(RegisterIndex, (const float*)Value, RegisterCount);
+
+}
+
+ShaderRecord* ShaderRecord::LoadShader(const char* Name, const char* SubPath) {
+	
+	ShaderRecord* ShaderProg = NULL;
+	char* ShaderSource = NULL;
+	ID3DXBuffer* Shader = NULL;
+	ID3DXBuffer* Errors = NULL;
+	ID3DXConstantTable* ConstantTable = NULL;
+	void* Function = NULL;
+	char ShaderProfile[7];
+	char FileName[MAX_PATH];
+	char FileNameBinary[MAX_PATH];
+
+	strcpy(FileName, ShadersPath);
 	if (!memcmp(Name, "WATER", 5)) {
 		if (!TheSettingManager->SettingsMain.Shaders.Water) return false;
-		strcat(Path, "Water\\");
+		strcat(FileName, "Water\\");
 	}
 	else if (!memcmp(Name, "GRASS", 5)) {
 		if (!TheSettingManager->SettingsMain.Shaders.Grass) return false;
-		strcat(Path, "Grass\\");
+		strcat(FileName, "Grass\\");
 	}
 	else if (!memcmp(Name, "HDR", 3)) {
 		if (!TheSettingManager->SettingsMain.Shaders.HDR) return false;
-		strcat(Path, "HDR\\");
+		strcat(FileName, "HDR\\");
 	}
 	else if (!memcmp(Name, "PAR", 3)) {
 		if (!TheSettingManager->SettingsMain.Shaders.POM) return false;
-		strcat(Path, "POM\\");
+		strcat(FileName, "POM\\");
 	}
 	else if (!memcmp(Name, "SKIN", 4)) {
 		if (!TheSettingManager->SettingsMain.Shaders.Skin) return false;
-		strcat(Path, "Skin\\");
+		strcat(FileName, "Skin\\");
 	}
 	else if (strstr(TerrainShaders, Name)) {
 		if (!TheSettingManager->SettingsMain.Shaders.Terrain) return false;
-		strcat(Path, "Terrain\\");
+		strcat(FileName, "Terrain\\");
 	}
 	else if (strstr(BloodShaders, Name)) {
 		if (!TheSettingManager->SettingsMain.Shaders.Blood) return false;
-		strcat(Path, "Blood\\");
+		strcat(FileName, "Blood\\");
 	}
 	else if (!memcmp(Name, "NIGHTEYE", 8)) {
 		if (!TheSettingManager->SettingsMain.Shaders.NightEye) return false;
-		strcat(Path, "NightEye\\");
+		strcat(FileName, "NightEye\\");
 	}
 	else if (!memcmp(Name, "Shadow", 6)) {
-		strcat(Path, "Shadows\\");
+		strcat(FileName, "Shadows\\");
 	}
 	else if (!memcmp(Name, "Occlusion", 9)) {
-		strcat(Path, "Occlusion\\");
+		strcat(FileName, "Occlusion\\");
 	}
 	else {
-		strcat(Path, "ExtraShaders\\");
+		strcat(FileName, "ExtraShaders\\");
 	}
-	if (LoadShader(Name, Path, NULL)) return true;
-	if (LoadShader(Name, Path, "Exteriors\\")) return true;
-	if (LoadShader(Name, Path, "Interiors\\")) return true;
-	return false;
-}
-
-bool ShaderRecord::LoadShader(const char* Name, const char* Path, const char* SubPath) {
-
-	char FileName[MAX_PATH];
-	char FileNameBinary[MAX_PATH];
-	
-	strcpy(FileName, Path);
 	if (SubPath) strcat(FileName, SubPath);
 	strcat(FileName, Name);
 	strcpy(FileNameBinary, FileName);
@@ -300,20 +309,21 @@ bool ShaderRecord::LoadShader(const char* Name, const char* Path, const char* Su
 	std::ifstream FileSource(FileName, std::ios::in | std::ios::binary | std::ios::ate);
 	if (FileSource.is_open()) {
 		std::streampos size = FileSource.tellg();
-		Source = new char[size];
+		ShaderSource = new char[size];
 		FileSource.seekg(0, std::ios::beg);
-		FileSource.read(Source, size);
+		FileSource.read(ShaderSource, size);
 		FileSource.close();
 		if (strstr(Name, ".vso"))
-			Type = ShaderType_Vertex;
+			strcpy(ShaderProfile, "vs_3_0");
 		else if (strstr(Name, ".pso"))
-			Type = ShaderType_Pixel;
+			strcpy(ShaderProfile, "ps_3_0");
 		if (TheSettingManager->SettingsMain.Develop.CompileShaders) {
-			D3DXCompileShaderFromFileA(FileName, NULL, NULL, "main", (Type == ShaderType_Vertex ? "vs_3_0" : "ps_3_0"), NULL, &Shader, &Errors, &Table);
+			D3DXCompileShaderFromFileA(FileName, NULL, NULL, "main", ShaderProfile, NULL, &Shader, &Errors, &ConstantTable);
 			if (Errors) Logger::Log((char*)Errors->GetBufferPointer());
 			if (Shader) {
+				Function = Shader->GetBufferPointer();
 				std::ofstream FileBinary(FileNameBinary, std::ios::out | std::ios::binary);
-				FileBinary.write((char*)Shader->GetBufferPointer(), Shader->GetBufferSize());
+				FileBinary.write((const char*)Function, Shader->GetBufferSize());
 				FileBinary.flush();
 				FileBinary.close();
 				Logger::Log("Shader compiled: %s", FileName);
@@ -325,27 +335,36 @@ bool ShaderRecord::LoadShader(const char* Name, const char* Path, const char* Su
 				size = FileBinary.tellg();
 				D3DXCreateBuffer(size, &Shader);
 				FileBinary.seekg(0, std::ios::beg);
-				void* pShaderBuffer = Shader->GetBufferPointer();
-				FileBinary.read((char*)pShaderBuffer, size);
+				Function = Shader->GetBufferPointer();
+				FileBinary.read((char*)Function, size);
 				FileBinary.close();
-				D3DXGetShaderConstantTable((const DWORD*)pShaderBuffer, &Table);
+				D3DXGetShaderConstantTable((const DWORD*)Function, &ConstantTable);
 			}
 			else {
 				Logger::Log("ERROR: Shader %s not found. Try to enable the CompileShader option to recompile the shaders.", FileNameBinary);
 			}
 		}
 		if (Shader) {
-			Function = Shader->GetBufferPointer();
-			CreateCT();
+			if (ShaderProfile[0] == 'v') {
+				ShaderProg = new ShaderRecordVertex();
+				TheRenderManager->device->CreateVertexShader((const DWORD*)Function, &((ShaderRecordVertex*)ShaderProg)->ShaderHandle);
+			}
+			else {
+				ShaderProg = new ShaderRecordPixel();
+				TheRenderManager->device->CreatePixelShader((const DWORD*)Function, &((ShaderRecordPixel*)ShaderProg)->ShaderHandle);
+			}
+			ShaderProg->CreateCT(ShaderSource, ConstantTable);
 			Logger::Log("Shader loaded: %s", FileNameBinary);
-			return true;
 		}
 	}
-	return false;
+	if (ShaderSource) delete ShaderSource;
+	if (Shader) Shader->Release();
+	if (Errors) Errors->Release();
+	return ShaderProg;
 
 }
 
-void ShaderRecord::CreateCT() {
+void ShaderRecord::CreateCT(const char* ShaderSource, ID3DXConstantTable* ConstantTable) {
 
 	D3DXCONSTANTTABLE_DESC ConstantTableDesc;
 	D3DXCONSTANT_DESC ConstantDesc;
@@ -354,10 +373,10 @@ void ShaderRecord::CreateCT() {
 	UInt32 FloatIndex = 0;
 	UInt32 TextureIndex = 0;
 	
-	Table->GetDesc(&ConstantTableDesc);
+	ConstantTable->GetDesc(&ConstantTableDesc);
     for (UINT c = 0; c < ConstantTableDesc.Constants; c++) {
-		Handle = Table->GetConstant(NULL, c);
-		Table->GetConstantDesc(Handle, &ConstantDesc, &ConstantCount);
+		Handle = ConstantTable->GetConstant(NULL, c);
+		ConstantTable->GetConstantDesc(Handle, &ConstantDesc, &ConstantCount);
 		if (ConstantDesc.RegisterSet == D3DXRS_FLOAT4 && !memcmp(ConstantDesc.Name, "TESR_", 5)) FloatShaderValuesCount += 1;
 		if (ConstantDesc.RegisterSet == D3DXRS_SAMPLER && !memcmp(ConstantDesc.Name, "TESR_", 5)) TextureShaderValuesCount += 1;
     }
@@ -366,8 +385,8 @@ void ShaderRecord::CreateCT() {
 		FloatShaderValues = (ShaderValue*)malloc(FloatShaderValuesCount * sizeof(ShaderValue));
 		TextureShaderValues = (ShaderValue*)malloc(TextureShaderValuesCount * sizeof(ShaderValue));
 		for (UINT c = 0; c < ConstantTableDesc.Constants; c++) {
-			Handle = Table->GetConstant(NULL, c);
-			Table->GetConstantDesc(Handle, &ConstantDesc, &ConstantCount);
+			Handle = ConstantTable->GetConstant(NULL, c);
+			ConstantTable->GetConstantDesc(Handle, &ConstantDesc, &ConstantCount);
 			if (!memcmp(ConstantDesc.Name, "TESR_", 5)) {
 				switch (ConstantDesc.RegisterSet) {
 					case D3DXRS_FLOAT4:
@@ -379,7 +398,7 @@ void ShaderRecord::CreateCT() {
 					case D3DXRS_SAMPLER:
 						if (!strcmp(ConstantDesc.Name, WordRenderedBuffer)) HasRB = true;
 						if (!strcmp(ConstantDesc.Name, WordDepthBuffer)) HasDB = true;
-						TextureShaderValues[TextureIndex].Texture = TheTextureManager->LoadTexture(Source, ConstantDesc.RegisterIndex);
+						TextureShaderValues[TextureIndex].Texture = TheTextureManager->LoadTexture(ShaderSource, ConstantDesc.RegisterIndex);
 						TextureShaderValues[TextureIndex].RegisterIndex = ConstantDesc.RegisterIndex;
 						TextureShaderValues[TextureIndex].RegisterCount = 1;
 						TextureIndex++;
@@ -415,10 +434,7 @@ void ShaderRecord::SetCT() {
 		}
 		for (UInt32 c = 0; c < FloatShaderValuesCount; c++) {
 			Value = &FloatShaderValues[c];
-			if (Type == ShaderType_Vertex)
-				TheRenderManager->device->SetVertexShaderConstantF(Value->RegisterIndex, (const float *)Value->Value, Value->RegisterCount);
-			else
-				TheRenderManager->device->SetPixelShaderConstantF(Value->RegisterIndex, (const float *)Value->Value, Value->RegisterCount);
+			SetShaderConstantF(Value->RegisterIndex, Value->Value, Value->RegisterCount);
 		}
 	}
 
@@ -1467,33 +1483,21 @@ void ShaderManager::CreateShader(const char* Name) {
 
 void ShaderManager::LoadShader(NiD3DVertexShader* Shader) {
 	
-	ShaderRecord* ShaderProg = new ShaderRecord();
 	NiD3DVertexShaderEx* VertexShader = (NiD3DVertexShaderEx*)Shader;
 
-	if (ShaderProg->LoadShader(VertexShader->ShaderName)) {
-		VertexShader->ShaderProg = ShaderProg;
-		VertexShader->ShaderHandleBackup = VertexShader->ShaderHandle;
-		TheRenderManager->device->CreateVertexShader((const DWORD*)ShaderProg->Function, &VertexShader->ShaderHandle);
-	}
-	else {
-		delete ShaderProg;
-	}
+	VertexShader->ShaderProg  = (ShaderRecordVertex*)ShaderRecord::LoadShader(VertexShader->ShaderName, NULL);
+	VertexShader->ShaderProgE = (ShaderRecordVertex*)ShaderRecord::LoadShader(VertexShader->ShaderName, "Exteriors\\");
+	VertexShader->ShaderProgI = (ShaderRecordVertex*)ShaderRecord::LoadShader(VertexShader->ShaderName, "Interiors\\");
 
 }
 
 void ShaderManager::LoadShader(NiD3DPixelShader* Shader) {
 
-	ShaderRecord* ShaderProg = new ShaderRecord();
 	NiD3DPixelShaderEx* PixelShader = (NiD3DPixelShaderEx*)Shader;
 
-	if (ShaderProg->LoadShader(PixelShader->ShaderName)) {
-		PixelShader->ShaderProg = ShaderProg;
-		PixelShader->ShaderHandleBackup = PixelShader->ShaderHandle;
-		TheRenderManager->device->CreatePixelShader((const DWORD*)ShaderProg->Function, &PixelShader->ShaderHandle);
-	}
-	else {
-		delete ShaderProg;
-	}
+	PixelShader->ShaderProg  = (ShaderRecordPixel*)ShaderRecord::LoadShader(PixelShader->ShaderName, NULL);
+	PixelShader->ShaderProgE = (ShaderRecordPixel*)ShaderRecord::LoadShader(PixelShader->ShaderName, "Exteriors\\");
+	PixelShader->ShaderProgI = (ShaderRecordPixel*)ShaderRecord::LoadShader(PixelShader->ShaderName, "Interiors\\");
 
 }
 

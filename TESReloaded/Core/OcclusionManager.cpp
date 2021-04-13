@@ -49,10 +49,8 @@ OcclusionManager::OcclusionManager() {
 	WaterOccluded = false;
 	WaterTexture = NULL;
 
-	OcclusionMapVertex = new ShaderRecord();
-	if (OcclusionMapVertex->LoadShader(VertexShaderName)) Device->CreateVertexShader((const DWORD*)OcclusionMapVertex->Function, &OcclusionMapVertexShader);
-	OcclusionMapPixel = new ShaderRecord();
-	if (OcclusionMapPixel->LoadShader(PixelShaderName)) Device->CreatePixelShader((const DWORD*)OcclusionMapPixel->Function, &OcclusionMapPixelShader);
+	OcclusionMapVertex = (ShaderRecordVertex*)ShaderRecord::LoadShader(VertexShaderName, NULL);
+	OcclusionMapPixel = (ShaderRecordPixel*)ShaderRecord::LoadShader(PixelShaderName, NULL);
 
 	Device->CreateQuery(D3DQUERYTYPE_OCCLUSION, &OcclusionQuery);
 	Device->CreateTexture(OcclusionMapSizeX, OcclusionMapSizeY, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &OcclusionMapTexture, NULL);
@@ -355,8 +353,8 @@ void OcclusionManager::RenderOcclusionMap(SettingsMainStruct::OcclusionCullingSt
 	RenderState->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE, RenderStateArgs);
 	RenderState->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE, RenderStateArgs);
 	RenderState->SetRenderState(D3DRS_ALPHABLENDENABLE, 0, RenderStateArgs);
-	RenderState->SetVertexShader(OcclusionMapVertexShader, false);
-	RenderState->SetPixelShader(OcclusionMapPixelShader, false);
+	RenderState->SetVertexShader(OcclusionMapVertex->ShaderHandle, false);
+	RenderState->SetPixelShader(OcclusionMapPixel->ShaderHandle, false);
 	Device->BeginScene();
 #if !DEBUGOC
 	RenderState->SetRenderState(D3DRS_COLORWRITEENABLE, D3DZB_FALSE, RenderStateArgs);

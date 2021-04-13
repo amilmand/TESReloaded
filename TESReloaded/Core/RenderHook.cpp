@@ -315,8 +315,18 @@ UInt32 RenderHook::TrackSetupShaderPrograms(NiGeometry* Geometry, NiSkinInstance
 	NiD3DPass* Pass = ((NiD3DShader*)this)->CurrentPass;
 	NiD3DVertexShaderEx* VertexShader = (NiD3DVertexShaderEx*)Pass->VertexShader;
 	NiD3DPixelShaderEx* PixelShader = (NiD3DPixelShaderEx*)Pass->PixelShader;
+	UInt32 Result;
 
+	Toggles->y = 1.0f;
+	Result = (this->*SetupShaderPrograms)(Geometry, SkinInstance, SkinPartition, GeometryBufferData, PropertyState, EffectState, WorldTransform, WorldBound);
 	if (VertexShader && PixelShader) {
+		to do. set the correct shaderhandle
+		to do. update enabling/disabling shader
+
+		//if (VertexShader->ShaderProgE && VertexShader->ShaderProg != VertexShader->ShaderProgE && Player->GetWorldSpace()) VertexShader->ShaderProg = VertexShader->ShaderProgE;
+		//if (PixelShader->ShaderProgE && PixelShader->ShaderProg != PixelShader->ShaderProgE && Player->GetWorldSpace()) PixelShader->ShaderProg = PixelShader->ShaderProgE;
+		//if (VertexShader->ShaderProgI && VertexShader->ShaderProg != VertexShader->ShaderProgI && !Player->GetWorldSpace()) VertexShader->ShaderProg = VertexShader->ShaderProgI;
+		//if (PixelShader->ShaderProgI && PixelShader->ShaderProg != PixelShader->ShaderProgI && !Player->GetWorldSpace()) PixelShader->ShaderProg = PixelShader->ShaderProgI;
 		if (VertexShader->ShaderProg && TheRenderManager->renderState->GetVertexShader() != VertexShader->ShaderHandle) VertexShader->ShaderProg->SetCT();
 		if (PixelShader->ShaderProg && TheRenderManager->renderState->GetPixelShader() != PixelShader->ShaderHandle) PixelShader->ShaderProg->SetCT();
 		if (DWNode::Get()) {
@@ -326,10 +336,8 @@ UInt32 RenderHook::TrackSetupShaderPrograms(NiGeometry* Geometry, NiSkinInstance
 			if (!PixelShader->ShaderProg) strcat(Name, " - Pixel: vanilla");
 			DWNode::AddNode(Name, Geometry->m_parent, Geometry);
 		}
-		Toggles->y = 1.0f;
 	}
-	return (this->*SetupShaderPrograms)(Geometry, SkinInstance, SkinPartition, GeometryBufferData, PropertyState, EffectState, WorldTransform, WorldBound);
-	
+	return Result;
 }
 
 HRESULT (__thiscall RenderHook::* SetSamplerState)(UInt32, D3DSAMPLERSTATETYPE, UInt32, UInt8);

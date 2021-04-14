@@ -311,33 +311,24 @@ UInt32 (__thiscall RenderHook::* TrackSetupShaderPrograms)(NiGeometry*, NiSkinIn
 UInt32 RenderHook::TrackSetupShaderPrograms(NiGeometry* Geometry, NiSkinInstance* SkinInstance, NiSkinPartition::Partition* SkinPartition, NiGeometryBufferData* GeometryBufferData, NiPropertyState* PropertyState, NiDynamicEffectState* EffectState, NiTransform* WorldTransform, UInt32 WorldBound) {
 	
 	D3DXVECTOR4* Toggles = (D3DXVECTOR4*)0x00B46688;
-	UInt32 PassIndex = *(UInt32*)0x00B42E90;
 	NiD3DPass* Pass = ((NiD3DShader*)this)->CurrentPass;
 	NiD3DVertexShaderEx* VertexShader = (NiD3DVertexShaderEx*)Pass->VertexShader;
 	NiD3DPixelShaderEx* PixelShader = (NiD3DPixelShaderEx*)Pass->PixelShader;
-	UInt32 Result;
 
-	Toggles->y = 1.0f;
-	Result = (this->*SetupShaderPrograms)(Geometry, SkinInstance, SkinPartition, GeometryBufferData, PropertyState, EffectState, WorldTransform, WorldBound);
 	if (VertexShader && PixelShader) {
-		to do. set the correct shaderhandle
-		to do. update enabling/disabling shader
-
-		//if (VertexShader->ShaderProgE && VertexShader->ShaderProg != VertexShader->ShaderProgE && Player->GetWorldSpace()) VertexShader->ShaderProg = VertexShader->ShaderProgE;
-		//if (PixelShader->ShaderProgE && PixelShader->ShaderProg != PixelShader->ShaderProgE && Player->GetWorldSpace()) PixelShader->ShaderProg = PixelShader->ShaderProgE;
-		//if (VertexShader->ShaderProgI && VertexShader->ShaderProg != VertexShader->ShaderProgI && !Player->GetWorldSpace()) VertexShader->ShaderProg = VertexShader->ShaderProgI;
-		//if (PixelShader->ShaderProgI && PixelShader->ShaderProg != PixelShader->ShaderProgI && !Player->GetWorldSpace()) PixelShader->ShaderProg = PixelShader->ShaderProgI;
-		if (VertexShader->ShaderProg && TheRenderManager->renderState->GetVertexShader() != VertexShader->ShaderHandle) VertexShader->ShaderProg->SetCT();
-		if (PixelShader->ShaderProg && TheRenderManager->renderState->GetPixelShader() != PixelShader->ShaderHandle) PixelShader->ShaderProg->SetCT();
+		VertexShader->SetupShader();
+		PixelShader->SetupShader();
 		if (DWNode::Get()) {
+			UInt32 PassIndex = *(UInt32*)0x00B42E90;
 			char Name[256];
 			sprintf(Name, "Pass %i %s, %s (%s %s)", PassIndex, GetPassDescription(PassIndex), Geometry->m_pcName, VertexShader->ShaderName, PixelShader->ShaderName);
-			if (!VertexShader->ShaderProg) strcat(Name, " - Vertex: vanilla");
-			if (!PixelShader->ShaderProg) strcat(Name, " - Pixel: vanilla");
+			if (VertexShader->ShaderProg->ShaderHandle == VertexShader->ShaderHandleBackup) strcat(Name, " - Vertex: vanilla");
+			if (PixelShader->ShaderProg->ShaderHandle == PixelShader->ShaderHandleBackup) strcat(Name, " - Pixel: vanilla");
 			DWNode::AddNode(Name, Geometry->m_parent, Geometry);
 		}
+		Toggles->y = 1.0f;
 	}
-	return Result;
+	return (this->*SetupShaderPrograms)(Geometry, SkinInstance, SkinPartition, GeometryBufferData, PropertyState, EffectState, WorldTransform, WorldBound);
 }
 
 HRESULT (__thiscall RenderHook::* SetSamplerState)(UInt32, D3DSAMPLERSTATETYPE, UInt32, UInt8);

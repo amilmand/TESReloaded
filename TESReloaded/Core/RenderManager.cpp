@@ -1,3 +1,4 @@
+#include "RenderManager.h"
 #if defined(NEWVEGAS)
 #define kCameraWorldTranslate 0x011F474C
 #elif defined(OBLIVION)
@@ -307,6 +308,46 @@ void RenderManager::ResolveDepthBuffer() {
 			NvAPI_D3D9_StretchRectEx(device, DepthSurface, NULL, DepthTexture, NULL, D3DTEXF_NONE);
 		else
 			NvAPI_D3D9_StretchRectEx(device, DepthTextureINTZ, NULL, DepthTexture, NULL, D3DTEXF_NONE);
+	}
+
+}
+
+void NiD3DVertexShaderEx::SetupShader() {
+
+	if (ShaderProgE && Player->GetWorldSpace()) {
+		ShaderHandle = ShaderProgE->ShaderHandle;
+		ShaderProgE->SetCT();
+	}
+	else if (ShaderProgI && !Player->GetWorldSpace()) {
+		ShaderHandle = ShaderProgI->ShaderHandle;
+		ShaderProgI->SetCT();
+	}
+	else if (ShaderProg) {
+		ShaderHandle = ShaderProg->ShaderHandle;
+		ShaderProg->SetCT();
+	}
+	else {
+		ShaderHandle = ShaderHandleBackup;
+	}
+
+}
+
+void NiD3DPixelShaderEx::SetupShader() {
+
+	if (ShaderProgE && Player->GetWorldSpace()) {
+		ShaderHandle = ShaderProgE->ShaderHandle;
+		ShaderProgE->SetCT();
+	}
+	else if (ShaderProgI && !Player->GetWorldSpace()) {
+		ShaderHandle = ShaderProgI->ShaderHandle;
+		ShaderProgI->SetCT();
+	}
+	else if (ShaderProg) {
+		ShaderHandle = ShaderProg->ShaderHandle;
+		ShaderProg->SetCT();
+	}
+	else {
+		ShaderHandle = ShaderHandleBackup;
 	}
 
 }

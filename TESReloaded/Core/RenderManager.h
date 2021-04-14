@@ -10,6 +10,8 @@
 
 class NiD3DVertexShaderEx : public NiD3DVertexShader {
 public:
+	void					SetupShader();
+
 	ShaderRecordVertex*		ShaderProg;
 	ShaderRecordVertex*		ShaderProgE;
 	ShaderRecordVertex*		ShaderProgI;
@@ -19,6 +21,8 @@ public:
 
 class NiD3DPixelShaderEx : public NiD3DPixelShader {
 public:
+	void					SetupShader();
+
 	ShaderRecordPixel*		ShaderProg;
 	ShaderRecordPixel*		ShaderProgE;
 	ShaderRecordPixel*		ShaderProgI;

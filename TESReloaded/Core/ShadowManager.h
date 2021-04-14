@@ -39,8 +39,6 @@ public:
 
 	ShaderRecordVertex*		ShadowMapVertex;
 	ShaderRecordPixel*		ShadowMapPixel;
-	IDirect3DVertexShader9* ShadowMapVertexShader;
-	IDirect3DPixelShader9*  ShadowMapPixelShader;
 	IDirect3DTexture9*		ShadowMapTexture[3];
 	IDirect3DSurface9*		ShadowMapSurface[3];
 	IDirect3DSurface9*		ShadowMapDepthSurface[3];
@@ -53,8 +51,6 @@ public:
 	IDirect3DSurface9*		ShadowCubeMapDepthSurface;
 	ShaderRecordVertex*		ShadowCubeMapVertex;
 	ShaderRecordPixel*		ShadowCubeMapPixel;
-	IDirect3DVertexShader9* ShadowCubeMapVertexShader;
-	IDirect3DPixelShader9*	ShadowCubeMapPixelShader;
 	D3DVIEWPORT9			ShadowCubeMapViewPort;
 	NiPointLight*			ShadowCubeMapLights[4];
 	ShaderRecordVertex*		CurrentVertex;

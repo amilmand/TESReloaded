@@ -401,8 +401,8 @@ void ShadowManager::RenderShadowMap(ShadowMapTypeEnum ShadowMapType, SettingsSha
 		RenderState->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE, RenderStateArgs);
 		RenderState->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE, RenderStateArgs);
 		RenderState->SetRenderState(D3DRS_ALPHABLENDENABLE, 0, RenderStateArgs);
-		RenderState->SetVertexShader(ShadowMapVertexShader, false);
-		RenderState->SetPixelShader(ShadowMapPixelShader, false);
+		RenderState->SetVertexShader(ShadowMapVertex->ShaderHandle, false);
+		RenderState->SetPixelShader(ShadowMapPixel->ShaderHandle, false);
 		Device->BeginScene();
 		for (UInt32 i = 0; i < CellArraySize; i++) {
 			if (TESObjectCELL* Cell = CellArray->grid[i].cell) {
@@ -494,8 +494,8 @@ void ShadowManager::RenderShadowCubeMap(NiPointLight** Lights, int LightIndex, S
 				RenderState->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE, RenderStateArgs);
 				RenderState->SetRenderState(D3DRS_ALPHABLENDENABLE, 0, RenderStateArgs);
 				Device->SetViewport(&ShadowCubeMapViewPort);
-				RenderState->SetVertexShader(ShadowCubeMapVertexShader, false);
-				RenderState->SetPixelShader(ShadowCubeMapPixelShader, false);
+				RenderState->SetVertexShader(ShadowCubeMapVertex->ShaderHandle, false);
+				RenderState->SetPixelShader(ShadowCubeMapPixel->ShaderHandle, false);
 				TList<TESObjectREFR>::Entry* Entry = &Player->parentCell->objectList.First;
 				while (Entry) {
 					if (TESObjectREFR* Ref = GetRef(Entry->item, &ShadowsInteriors->Forms, &ShadowsInteriors->ExcludedForms)) {

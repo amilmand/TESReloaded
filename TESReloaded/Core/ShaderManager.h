@@ -201,11 +201,11 @@ public:
 	
 	void					SetConstantTableValue(LPCSTR Name, UInt32 Index);
 
+	bool					Enabled;
 	ShaderValue*			FloatShaderValues;
 	UInt32					FloatShaderValuesCount;
 	ShaderValue*			TextureShaderValues;
 	UInt32					TextureShaderValuesCount;
-	bool					Enabled;
 };
 
 class ShaderRecord : public ShaderProgram {

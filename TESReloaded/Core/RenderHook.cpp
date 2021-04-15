@@ -92,7 +92,8 @@ bool (__thiscall RenderHook::* BeginScene)();
 bool (__thiscall RenderHook::* TrackBeginScene)();
 bool RenderHook::TrackBeginScene() {
 
-	TheShaderManager->BeginScene();
+	TheShaderManager->RenderedBufferFilled = false;
+	TheShaderManager->DepthBufferFilled = false;
 	return (this->*BeginScene)();
 
 }

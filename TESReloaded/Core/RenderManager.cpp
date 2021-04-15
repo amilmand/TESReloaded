@@ -316,19 +316,27 @@ void NiD3DVertexShaderEx::SetupShader() {
 
 	if (ShaderProgE && Player->GetWorldSpace()) {
 		ShaderHandle = ShaderProgE->ShaderHandle;
-		ShaderProgE->SetCT();
+		if (TheRenderManager->renderState->GetVertexShader() != ShaderHandle) ShaderProgE->SetCT();
 	}
 	else if (ShaderProgI && !Player->GetWorldSpace()) {
 		ShaderHandle = ShaderProgI->ShaderHandle;
-		ShaderProgI->SetCT();
+		if (TheRenderManager->renderState->GetVertexShader() != ShaderHandle) ShaderProgI->SetCT();
 	}
 	else if (ShaderProg) {
 		ShaderHandle = ShaderProg->ShaderHandle;
-		ShaderProg->SetCT();
+		if (TheRenderManager->renderState->GetVertexShader() != ShaderHandle) ShaderProg->SetCT();
 	}
 	else {
 		ShaderHandle = ShaderHandleBackup;
 	}
+
+}
+
+void NiD3DVertexShaderEx::DisposeShader() {
+	
+	if (ShaderProgE) delete ShaderProgE; ShaderProgE = NULL;
+	if (ShaderProgI) delete ShaderProgI; ShaderProgI = NULL;
+	if (ShaderProg) delete ShaderProg; ShaderProg = NULL;
 
 }
 
@@ -349,6 +357,14 @@ void NiD3DPixelShaderEx::SetupShader() {
 	else {
 		ShaderHandle = ShaderHandleBackup;
 	}
+
+}
+
+void NiD3DPixelShaderEx::DisposeShader() {
+	
+	if (ShaderProgE) delete ShaderProgE; ShaderProgE = NULL;
+	if (ShaderProgI) delete ShaderProgI; ShaderProgI = NULL;
+	if (ShaderProg) delete ShaderProg; ShaderProg = NULL;
 
 }
 

@@ -199,9 +199,11 @@ public:
 	ShaderProgram();
 	virtual ~ShaderProgram();
 	
+	virtual void			SetCT() = 0;
+	virtual void			CreateCT(const char* ShaderSource, ID3DXConstantTable* ConstantTable) = 0;
+
 	void					SetConstantTableValue(LPCSTR Name, UInt32 Index);
 
-	bool					Enabled;
 	ShaderValue*			FloatShaderValues;
 	UInt32					FloatShaderValuesCount;
 	ShaderValue*			TextureShaderValues;
@@ -213,12 +215,11 @@ public:
 	ShaderRecord();
 	virtual ~ShaderRecord();
 	
+	virtual void			SetCT();
+	virtual void			CreateCT(const char* ShaderSource, ID3DXConstantTable* ConstantTable);
 	virtual void			SetShaderConstantF(UInt32 RegisterIndex, D3DXVECTOR4* Value, UInt32 RegisterCount) = 0;
 
 	static ShaderRecord*	LoadShader(const char* Name, const char* SubPath);
-
-	void					CreateCT(const char* ShaderSource, ID3DXConstantTable* ConstantTable);
-	void					SetCT();
 	
 	bool					HasCT;
 	bool					HasRB; 
@@ -249,14 +250,15 @@ class EffectRecord : public ShaderProgram {
 public:
 	EffectRecord();
 	virtual ~EffectRecord();
-	
-	bool					LoadEffect(const char* Name);
-	void					CreateCT();
-	void					SetCT();
-	void					Render(IDirect3DDevice9* Device, IDirect3DSurface9* RenderTarget, IDirect3DSurface9* RenderedSurface, bool ClearRenderTarget);
 
-	char*	 				Source;
-	ID3DXBuffer*			Errors;
+	virtual void			SetCT();
+	virtual void			CreateCT(const char* ShaderSource, ID3DXConstantTable* ConstantTable);
+
+	static EffectRecord*	LoadEffect(const char* Name);
+
+	void					Render(IDirect3DDevice9* Device, IDirect3DSurface9* RenderTarget, IDirect3DSurface9* RenderedSurface, bool ClearRenderTarget);
+	
+	bool					Enabled;
 	ID3DXEffect*			Effect;
 };
 
@@ -271,13 +273,11 @@ public:
 	void					CreateEffects();
 	void					InitializeConstants();
 	void					UpdateConstants();
-	void					BeginScene();
 	void					CreateShader(const char *Name);
 	void					LoadShader(NiD3DVertexShader* Shader);
 	void					LoadShader(NiD3DPixelShader* Shader);
 	void					DisposeShader(const char* Name);
 	void					CreateEffect(EffectRecordType EffectType);
-	bool					LoadEffect(EffectRecordType EffectType, EffectRecord* TheEffect, char* Filename);
 	void					DisposeEffect(EffectRecordType EffectType);
 	void					RenderEffects(IDirect3DSurface9* RenderTarget);
 	void					SwitchShaderStatus(const char* Name);

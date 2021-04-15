@@ -11,6 +11,7 @@
 class NiD3DVertexShaderEx : public NiD3DVertexShader {
 public:
 	void					SetupShader();
+	void					DisposeShader();
 
 	ShaderRecordVertex*		ShaderProg;
 	ShaderRecordVertex*		ShaderProgE;
@@ -22,6 +23,7 @@ public:
 class NiD3DPixelShaderEx : public NiD3DPixelShader {
 public:
 	void					SetupShader();
+	void					DisposeShader();
 
 	ShaderRecordPixel*		ShaderProg;
 	ShaderRecordPixel*		ShaderProgE;

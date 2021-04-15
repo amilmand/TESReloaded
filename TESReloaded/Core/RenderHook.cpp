@@ -323,8 +323,8 @@ UInt32 RenderHook::TrackSetupShaderPrograms(NiGeometry* Geometry, NiSkinInstance
 			UInt32 PassIndex = *(UInt32*)0x00B42E90;
 			char Name[256];
 			sprintf(Name, "Pass %i %s, %s (%s %s)", PassIndex, GetPassDescription(PassIndex), Geometry->m_pcName, VertexShader->ShaderName, PixelShader->ShaderName);
-			if (VertexShader->ShaderProg->ShaderHandle == VertexShader->ShaderHandleBackup) strcat(Name, " - Vertex: vanilla");
-			if (PixelShader->ShaderProg->ShaderHandle == PixelShader->ShaderHandleBackup) strcat(Name, " - Pixel: vanilla");
+			if (VertexShader->ShaderHandle == VertexShader->ShaderHandleBackup) strcat(Name, " - Vertex: vanilla");
+			if (PixelShader->ShaderHandle == PixelShader->ShaderHandleBackup) strcat(Name, " - Pixel: vanilla");
 			DWNode::AddNode(Name, Geometry->m_parent, Geometry);
 		}
 		Toggles->y = 1.0f;

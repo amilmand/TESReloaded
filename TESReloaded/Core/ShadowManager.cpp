@@ -198,7 +198,7 @@ void ShadowManager::RenderInterior(NiAVObject* Object, float MinRadius) {
 		float Radius = Object->GetWorldBoundRadius();
 		if (!(Object->m_flags & NiAVObject::kFlag_AppCulled) && Radius >= MinRadius) {
 			void* VFT = *(void**)Object;
-			if (VFT == VFTNiNode || VFT == VFTBSFaceGenNiNode) {
+			if (VFT == VFTNiNode || VFT == VFTBSFadeNode || VFT == VFTBSFaceGenNiNode) {
 				NiNode* Node = (NiNode*)Object;
 				for (int i = 0; i < Node->m_children.end; i++) {
 					RenderInterior(Node->m_children.data[i], MinRadius);

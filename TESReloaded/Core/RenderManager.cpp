@@ -344,15 +344,15 @@ void NiD3DPixelShaderEx::SetupShader() {
 
 	if (ShaderProgE && Player->GetWorldSpace()) {
 		ShaderHandle = ShaderProgE->ShaderHandle;
-		ShaderProgE->SetCT();
+		if (TheRenderManager->renderState->GetPixelShader() != ShaderHandle) ShaderProgE->SetCT();
 	}
 	else if (ShaderProgI && !Player->GetWorldSpace()) {
 		ShaderHandle = ShaderProgI->ShaderHandle;
-		ShaderProgI->SetCT();
+		if (TheRenderManager->renderState->GetPixelShader() != ShaderHandle) ShaderProgI->SetCT();
 	}
 	else if (ShaderProg) {
 		ShaderHandle = ShaderProg->ShaderHandle;
-		ShaderProg->SetCT();
+		if (TheRenderManager->renderState->GetPixelShader() != ShaderHandle) ShaderProg->SetCT();
 	}
 	else {
 		ShaderHandle = ShaderHandleBackup;

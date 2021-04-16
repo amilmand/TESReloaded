@@ -1577,21 +1577,21 @@ void ShaderManager::DisposeShader(const char* Name) {
 	else if (!strcmp(Name, "Terrain")) {
 		for (int i = 0; i < 76; i++) {
 			NiD3DVertexShaderEx* VS = ShadowLightVertexShaders[i];
-			if (VS && VS->ShaderProg && strstr(TerrainShaders, VS->ShaderName)) VS->DisposeShader();
+			if (VS && strstr(TerrainShaders, VS->ShaderName)) VS->DisposeShader();
 		}
 		for (int i = 0; i < 82; i++) {
 			NiD3DPixelShaderEx* PS = ShadowLightPixelShaders[i];
-			if (PS && PS->ShaderProg && strstr(TerrainShaders, PS->ShaderName)) PS->DisposeShader();
+			if (PS && strstr(TerrainShaders, PS->ShaderName)) PS->DisposeShader();
 		}
 	}
 	else if (!strcmp(Name, "ExtraShaders")) {
 		for (int i = 0; i < 76; i++) {
 			NiD3DVertexShaderEx* VS = ShadowLightVertexShaders[i];
-			if (VS && VS->ShaderProg && !strstr(TerrainShaders, VS->ShaderName)) VS->DisposeShader();
+			if (VS && !strstr(TerrainShaders, VS->ShaderName)) VS->DisposeShader();
 		}
 		for (int i = 0; i < 82; i++) {
 			NiD3DPixelShaderEx* PS = ShadowLightPixelShaders[i];
-			if (PS && PS->ShaderProg && !strstr(TerrainShaders, PS->ShaderName)) PS->DisposeShader();
+			if (PS && !strstr(TerrainShaders, PS->ShaderName)) PS->DisposeShader();
 		}
 	}
 	else if (!strcmp(Name, "Blood")) {

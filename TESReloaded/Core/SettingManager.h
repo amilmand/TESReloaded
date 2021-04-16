@@ -346,6 +346,7 @@ struct SettingsShadowStruct {
 		int					Quality;
 		int					ShadowCubeMapSize;
 		float				Darkness;
+		float				LightRadiusMult;
 		ExcludedFormsList	ExcludedForms;
 	};
 

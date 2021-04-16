@@ -1219,7 +1219,9 @@ void SettingManager::LoadSettings() {
 	SettingsShadows.Interiors.ShadowCubeMapSize = GetPrivateProfileIntA("Interiors", "ShadowCubeMapSize", 512, Filename);
 	GetPrivateProfileStringA("Interiors", "Darkness", "1.0", value, SettingStringBuffer, Filename);
 	SettingsShadows.Interiors.Darkness = atof(value);
-	
+	GetPrivateProfileStringA("Interiors", "LightRadiusMult", "1.0", value, SettingStringBuffer, Filename);
+	SettingsShadows.Interiors.LightRadiusMult = atof(value);
+
 	ValueList FormValue;
 	char Form[12] = { NULL };
 	char FormType[4] = { NULL };

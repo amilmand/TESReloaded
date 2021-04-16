@@ -1,4 +1,5 @@
 #pragma once
+#define CubeMapsMax 4
 
 class ShadowManager { // Never disposed
 public:
@@ -9,11 +10,7 @@ public:
 		MapFar		= 1,
 		MapOrtho	= 2,
 	};
-	enum ShadowCubeMapStateEnum {
-		None		= 0,
-		Exterior	= 1,
-		Interior	= 2,
-	};
+
 	enum PlaneEnum {
 		PlaneNear	= 0,
 		PlaneFar	= 1,
@@ -34,7 +31,6 @@ public:
 	void					RenderShadowMap(ShadowMapTypeEnum ShadowMapType, SettingsShadowStruct::ExteriorsStruct* ShadowsExteriors, D3DXVECTOR3* At, D3DXVECTOR4* SunDir);
 	void					RenderShadowCubeMap(NiPointLight** Lights, int LightIndex, SettingsShadowStruct::InteriorsStruct* ShadowsInteriors);
 	void					RenderShadowMaps();
-	void					ClearShadowCubeMaps(IDirect3DDevice9* Device, int From, ShadowCubeMapStateEnum NewState);
 	void					CalculateBlend(NiPointLight** Lights, int LightIndex);
 
 	ShaderRecordVertex*		ShadowMapVertex;
@@ -46,8 +42,8 @@ public:
 	D3DXPLANE				ShadowMapFrustum[3][6];
 	NiVector4				BillboardRight;
 	NiVector4				BillboardUp;
-	IDirect3DCubeTexture9*	ShadowCubeMapTexture[4];
-	IDirect3DSurface9*		ShadowCubeMapSurface[4][6];
+	IDirect3DCubeTexture9*	ShadowCubeMapTexture[CubeMapsMax];
+	IDirect3DSurface9*		ShadowCubeMapSurface[CubeMapsMax][6];
 	IDirect3DSurface9*		ShadowCubeMapDepthSurface;
 	ShaderRecordVertex*		ShadowCubeMapVertex;
 	ShaderRecordPixel*		ShadowCubeMapPixel;
@@ -55,8 +51,6 @@ public:
 	NiPointLight*			ShadowCubeMapLights[4];
 	ShaderRecordVertex*		CurrentVertex;
 	ShaderRecordPixel*		CurrentPixel;
-	TESObjectCELL*			CurrentCell;
-	ShadowCubeMapStateEnum	ShadowCubeMapState;
 	bool					AlphaEnabled;
 };
 

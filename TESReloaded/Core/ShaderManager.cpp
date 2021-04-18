@@ -669,6 +669,9 @@ void ShaderManager::InitializeConstants() {
 	ShaderConst.BloodLens.Percent = 0.0f;
 	ShaderConst.SnowAccumulation.Params.w = 0.0f;
 	ShaderConst.WetWorld.Data.x = 0.0f;
+	LARGE_INTEGER PerformanceCount;
+	QueryPerformanceCounter(&PerformanceCount);
+	PerformanceStartingTime = PerformanceCount.QuadPart;
 }
 
 void ShaderManager::UpdateConstants() {
@@ -687,9 +690,12 @@ void ShaderManager::UpdateConstants() {
 	float weatherPercent = WorldSky->weatherPercent;
 
 	QueryPerformanceCounter(&PerformanceCount);
-	Tick = (double)PerformanceCount.QuadPart / (double)PerformanceFrequency;
+	PerformanceElapsedMicroseconds.QuadPart = PerformanceCount.QuadPart - PerformanceStartingTime;
+	Tick = PerformanceElapsedMicroseconds.QuadPart / PerformanceFrequency;
+	PerformanceElapsedMicroseconds.QuadPart *= 1000;
+	PerformanceElapsedMicroseconds.QuadPart /= PerformanceFrequency;
 	ShaderConst.Tick.x = Tick;
-	ShaderConst.Tick.y = (double)PerformanceCount.QuadPart * 1000.0 / (double)PerformanceFrequency;
+	ShaderConst.Tick.y = PerformanceElapsedMicroseconds.QuadPart;
 	TheFrameRateManager->SetFrameTime(Tick);
 	IsThirdPersonView = Player->IsThirdPersonView(TheSettingManager->SettingsMain.CameraMode.Enabled, TheRenderManager->FirstPersonView);
 	TheRenderManager->GetSceneCameraData();
